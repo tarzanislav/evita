@@ -169,6 +169,55 @@ public class Udalost
     public DateTime Zmenene { get; set; }
 }
 
+public enum PrioritaUlohy
+{
+    Nizka = 0,
+    Normalna = 1,
+    Vysoka = 2,
+}
+
+/// <summary>Úloha zo zoznamu úloh (To Do) – nezávislá od kalendára, voliteľne s termínom a naviazaním na položku.</summary>
+public class Uloha
+{
+    public int Id { get; set; }
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public string Text { get; set; } = "";
+    public string? Popis { get; set; }
+    public DateTime? Termin { get; set; }
+    public PrioritaUlohy Priorita { get; set; } = PrioritaUlohy.Normalna;
+    public bool Hotovo { get; set; }
+    public DateTime? DatumHotovo { get; set; }
+    public DateTime Vytvorene { get; set; }
+    public int Poradie { get; set; }
+
+    public int? PolozkaId { get; set; }
+    public Polozka? Polozka { get; set; }
+}
+
+/// <summary>Poznámka v poznámkovom bloku – voliteľne prepojená s položkou, dňom v kalendári alebo udalosťou.</summary>
+public class Poznamka
+{
+    public int Id { get; set; }
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public string Nazov { get; set; } = "";
+    public string Text { get; set; } = "";
+
+    /// <summary>Farba lístka v tvare #RRGGBB.</summary>
+    public string Farba { get; set; } = "#FFF59D";
+
+    public bool Pripnuta { get; set; }
+    public DateTime Vytvorene { get; set; }
+    public DateTime Zmenene { get; set; }
+
+    /// <summary>Deň v kalendári, ku ktorému poznámka patrí.</summary>
+    public DateTime? Datum { get; set; }
+
+    public int? PolozkaId { get; set; }
+    public Polozka? Polozka { get; set; }
+    public int? UdalostId { get; set; }
+    public Udalost? Udalost { get; set; }
+}
+
 /// <summary>Jeden záznam o zálohe alebo obnove (aj neúspešnej).</summary>
 public class ZaznamZalohy
 {

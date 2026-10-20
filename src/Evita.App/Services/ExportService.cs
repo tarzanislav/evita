@@ -373,6 +373,39 @@ public sealed class ExportService
                     Stav = u.Stav.ToString(),
                 })
                 .ToList();
+            balik.Ulohy = db.Ulohy.AsNoTracking().Include(u => u.Polozka)
+                .OrderBy(u => u.Hotovo).ThenBy(u => u.Poradie).ThenBy(u => u.Id).ToList()
+                .Select(u => new UlohaPrenos
+                {
+                    Guid = u.Guid.ToString(),
+                    Text = u.Text,
+                    Popis = u.Popis,
+                    Termin = Prevod.TextIso(u.Termin, false),
+                    Priorita = u.Priorita.ToString(),
+                    Hotovo = u.Hotovo,
+                    DatumHotovo = Prevod.TextIso(u.DatumHotovo, true),
+                    Vytvorene = Prevod.TextIso(u.Vytvorene, true),
+                    PolozkaGuid = u.Polozka?.Guid.ToString(),
+                    PolozkaCislo = u.Polozka?.PrirastkoveCislo,
+                })
+                .ToList();
+            balik.Poznamky = db.Poznamky.AsNoTracking().Include(p => p.Polozka).Include(p => p.Udalost)
+                .OrderBy(p => p.Vytvorene).ToList()
+                .Select(p => new PoznamkaPrenos
+                {
+                    Guid = p.Guid.ToString(),
+                    Nazov = p.Nazov,
+                    Text = p.Text,
+                    Farba = p.Farba,
+                    Pripnuta = p.Pripnuta,
+                    Vytvorene = Prevod.TextIso(p.Vytvorene, true),
+                    Zmenene = Prevod.TextIso(p.Zmenene, true),
+                    Datum = Prevod.TextIso(p.Datum, false),
+                    PolozkaGuid = p.Polozka?.Guid.ToString(),
+                    PolozkaCislo = p.Polozka?.PrirastkoveCislo,
+                    UdalostGuid = p.Udalost?.Guid.ToString(),
+                })
+                .ToList();
         }
 
         if (sHistoriou)
@@ -556,6 +589,51 @@ public sealed class ExportService
                     Atribut(w, "osoba", u.Osoba);
                     Atribut(w, "stav", u.Stav);
                     Prvok(w, "Popis", u.Popis);
+                    w.WriteEndElement();
+                }
+
+                w.WriteEndElement();
+            }
+
+            if (balik.Ulohy is not null)
+            {
+                w.WriteStartElement("Ulohy");
+                foreach (var u in balik.Ulohy)
+                {
+                    w.WriteStartElement("Uloha");
+                    Atribut(w, "guid", u.Guid);
+                    w.WriteAttributeString("text", u.Text);
+                    Atribut(w, "termin", u.Termin);
+                    Atribut(w, "priorita", u.Priorita);
+                    w.WriteAttributeString("hotovo", u.Hotovo ? "true" : "false");
+                    Atribut(w, "datumHotovo", u.DatumHotovo);
+                    Atribut(w, "vytvorene", u.Vytvorene);
+                    Atribut(w, "polozkaGuid", u.PolozkaGuid);
+                    Atribut(w, "polozkaCislo", u.PolozkaCislo?.ToString(CultureInfo.InvariantCulture));
+                    Prvok(w, "Popis", u.Popis);
+                    w.WriteEndElement();
+                }
+
+                w.WriteEndElement();
+            }
+
+            if (balik.Poznamky is not null)
+            {
+                w.WriteStartElement("Poznamky");
+                foreach (var p in balik.Poznamky)
+                {
+                    w.WriteStartElement("Poznamka");
+                    Atribut(w, "guid", p.Guid);
+                    w.WriteAttributeString("nazov", p.Nazov);
+                    Atribut(w, "farba", p.Farba);
+                    w.WriteAttributeString("pripnuta", p.Pripnuta ? "true" : "false");
+                    Atribut(w, "vytvorene", p.Vytvorene);
+                    Atribut(w, "zmenene", p.Zmenene);
+                    Atribut(w, "datum", p.Datum);
+                    Atribut(w, "polozkaGuid", p.PolozkaGuid);
+                    Atribut(w, "polozkaCislo", p.PolozkaCislo?.ToString(CultureInfo.InvariantCulture));
+                    Atribut(w, "udalostGuid", p.UdalostGuid);
+                    Prvok(w, "Text", p.Text);
                     w.WriteEndElement();
                 }
 

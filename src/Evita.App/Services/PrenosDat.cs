@@ -324,6 +324,39 @@ public class BalikEviTA
     [JsonPropertyOrder(5)] public List<ZmenaPrenos>? Historia { get; set; }
     [JsonPropertyOrder(6)] public List<TypUdalostiPrenos>? TypyUdalosti { get; set; }
     [JsonPropertyOrder(7)] public List<UdalostPrenos>? Udalosti { get; set; }
+    [JsonPropertyOrder(8)] public List<UlohaPrenos>? Ulohy { get; set; }
+    [JsonPropertyOrder(9)] public List<PoznamkaPrenos>? Poznamky { get; set; }
+}
+
+/// <summary>Úloha zo zoznamu úloh pri prenose.</summary>
+public sealed class UlohaPrenos
+{
+    public string? Guid { get; set; }
+    public string Text { get; set; } = "";
+    public string? Popis { get; set; }
+    public string? Termin { get; set; }
+    public string Priorita { get; set; } = "Normalna";
+    public bool Hotovo { get; set; }
+    public string? DatumHotovo { get; set; }
+    public string? Vytvorene { get; set; }
+    public string? PolozkaGuid { get; set; }
+    public int? PolozkaCislo { get; set; }
+}
+
+/// <summary>Poznámka pri prenose. Väzba na udalosť je podľa jej identifikátora.</summary>
+public sealed class PoznamkaPrenos
+{
+    public string? Guid { get; set; }
+    public string Nazov { get; set; } = "";
+    public string Text { get; set; } = "";
+    public string Farba { get; set; } = "#FFF59D";
+    public bool Pripnuta { get; set; }
+    public string? Vytvorene { get; set; }
+    public string? Zmenene { get; set; }
+    public string? Datum { get; set; }
+    public string? PolozkaGuid { get; set; }
+    public int? PolozkaCislo { get; set; }
+    public string? UdalostGuid { get; set; }
 }
 
 /// <summary>Typ udalosti pracovného kalendára pri prenose.</summary>
@@ -610,6 +643,53 @@ public static class XsdEviTA
                           <xs:attribute name="miestnost" type="xs:string" />
                           <xs:attribute name="osoba" type="xs:string" />
                           <xs:attribute name="stav" type="xs:string" />
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+
+                <xs:element name="Ulohy" minOccurs="0">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element name="Uloha" minOccurs="0" maxOccurs="unbounded">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="Popis" type="xs:string" minOccurs="0" />
+                          </xs:sequence>
+                          <xs:attribute name="guid" type="xs:string" />
+                          <xs:attribute name="text" type="xs:string" use="required" />
+                          <xs:attribute name="termin" type="xs:date" />
+                          <xs:attribute name="priorita" type="xs:string" />
+                          <xs:attribute name="hotovo" type="xs:boolean" default="false" />
+                          <xs:attribute name="datumHotovo" type="xs:dateTime" />
+                          <xs:attribute name="vytvorene" type="xs:dateTime" />
+                          <xs:attribute name="polozkaGuid" type="xs:string" />
+                          <xs:attribute name="polozkaCislo" type="xs:int" />
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+
+                <xs:element name="Poznamky" minOccurs="0">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element name="Poznamka" minOccurs="0" maxOccurs="unbounded">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="Text" type="xs:string" minOccurs="0" />
+                          </xs:sequence>
+                          <xs:attribute name="guid" type="xs:string" />
+                          <xs:attribute name="nazov" type="xs:string" use="required" />
+                          <xs:attribute name="farba" type="xs:string" />
+                          <xs:attribute name="pripnuta" type="xs:boolean" default="false" />
+                          <xs:attribute name="vytvorene" type="xs:dateTime" />
+                          <xs:attribute name="zmenene" type="xs:dateTime" />
+                          <xs:attribute name="datum" type="xs:date" />
+                          <xs:attribute name="polozkaGuid" type="xs:string" />
+                          <xs:attribute name="polozkaCislo" type="xs:int" />
+                          <xs:attribute name="udalostGuid" type="xs:string" />
                         </xs:complexType>
                       </xs:element>
                     </xs:sequence>

@@ -76,9 +76,64 @@ public partial class UdalostEditViewModel : ObservableObject
         }
 
         AktualizujPolozku();
+        NacitajPoznamky();
     }
 
     public bool JeNova { get; }
+
+    /// <summary>Poznámky prepojené s udalosťou.</summary>
+    [ObservableProperty] private List<PoznamkaRiadok> _poznamky = new();
+
+    private void NacitajPoznamky()
+    {
+        if (JeNova)
+        {
+            return;
+        }
+
+        try
+        {
+            Poznamky = new PoznamkyService().PreUdalost(_id);
+        }
+        catch (Exception)
+        {
+            Poznamky = new List<PoznamkaRiadok>();
+        }
+    }
+
+    [RelayCommand]
+    private void NovaPoznamka()
+    {
+        if (JeNova)
+        {
+            return;
+        }
+
+        if (Views.PoznamkaWindow.Otvor(new PoznamkaEditViewModel(null, DatumOd, udalostId: _id)))
+        {
+            NacitajPoznamky();
+        }
+    }
+
+    [RelayCommand]
+    private void OtvorPoznamku(PoznamkaRiadok? poznamka)
+    {
+        if (poznamka is null)
+        {
+            return;
+        }
+
+        try
+        {
+            Views.PoznamkaWindow.Otvor(new PoznamkaEditViewModel(poznamka.Id));
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+        }
+
+        NacitajPoznamky();
+    }
     public string Titulok { get; }
 
     public List<TypUdalosti> Typy { get; }

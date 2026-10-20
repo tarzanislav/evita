@@ -22,21 +22,21 @@ public sealed class InverzBool : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value is not true;
 }
 
-/// <summary>Neprázdny text → viditeľné, prázdny alebo null → skryté.</summary>
+/// <summary>Neprázdny text → viditeľné, prázdny alebo null → skryté (s parametrom „opacne“ naopak).</summary>
 public sealed class NieJePrazdne : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
-        value is string text && text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        (value is string text && text.Length > 0) != (parameter as string == "opacne") ? Visibility.Visible : Visibility.Collapsed;
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
 
-/// <summary>Číslo 0 → viditeľné (napr. text „žiadne položky“), inak skryté.</summary>
+/// <summary>Číslo 0 → viditeľné (napr. text „žiadne položky“), inak skryté (s parametrom „opacne“ naopak).</summary>
 public sealed class NulaNaViditelnost : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
-        value is 0 ? Visibility.Visible : Visibility.Collapsed;
+        (value is 0) != (parameter as string == "opacne") ? Visibility.Visible : Visibility.Collapsed;
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
@@ -75,6 +75,36 @@ public sealed class FarbaNaStetec : IValueConverter
             Vyrovnavacia[text] = stetec;
             return stetec;
         }
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
+/// <summary>Hodnoty (napr. kurz za posledné dni) → body malého grafu 60 × 18.</summary>
+public sealed class HodnotyNaKrivku : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var body = new System.Windows.Media.PointCollection();
+        if (value is not IReadOnlyList<decimal> hodnoty || hodnoty.Count < 2)
+        {
+            return body;
+        }
+
+        const double sirka = 60, vyska = 18;
+        var min = hodnoty.Min();
+        var max = hodnoty.Max();
+        var rozsah = max - min;
+        for (var i = 0; i < hodnoty.Count; i++)
+        {
+            var x = sirka * i / (hodnoty.Count - 1);
+            var y = rozsah == 0 ? vyska / 2 : vyska - (double)((hodnoty[i] - min) / rozsah) * vyska;
+            body.Add(new Point(x, y));
+        }
+
+        body.Freeze();
+        return body;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>

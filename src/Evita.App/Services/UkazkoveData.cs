@@ -482,6 +482,48 @@ public static class UkazkoveData
         });
         Databaza.Zapis(db, "Kalendar.DatumInventury", "11-30");
 
+        // --- úlohy a poznámky -----------------------------------------------------------
+        db.SaveChanges();
+        var notebook = vsetkyPolozky.FirstOrDefault(p => p.Nazov.StartsWith("Notebook") && p.Stav == StavPolozky.VPrevadzke);
+        Uloha UlohaNova(string text, DateTime? termin = null, PrioritaUlohy priorita = PrioritaUlohy.Normalna, bool hotovo = false,
+            Polozka? polozka = null, string? popis = null, int poradieUlohy = 0) => new()
+        {
+            Text = text, Termin = termin, Priorita = priorita, Hotovo = hotovo, DatumHotovo = hotovo ? teraz.AddDays(-1) : null,
+            PolozkaId = polozka?.Id, Popis = popis, Vytvorene = teraz.AddDays(-7), Poradie = poradieUlohy,
+        };
+        db.Ulohy.AddRange(new[]
+        {
+            UlohaNova("Objednať toner do tlačiarne v zborovni", dnes.AddDays(-1), PrioritaUlohy.Vysoka, polozka: tlaciaren, poradieUlohy: 1),
+            UlohaNova("Nastaviť e-mail novej kolegyni", dnes, PrioritaUlohy.Vysoka, poradieUlohy: 2),
+            UlohaNova("Skontrolovať licencie Microsoft 365", dnes.AddDays(5), poradieUlohy: 3,
+                popis: "Počet licencií porovnať s počtom zamestnancov a žiakov."),
+            UlohaNova("Vymeniť batérie v bezdrôtových myšiach", poradieUlohy: 4),
+            UlohaNova("Aktualizovať firmvér routera", dnes.AddDays(10), PrioritaUlohy.Nizka, poradieUlohy: 5),
+            UlohaNova("Pripraviť notebook na zapožičanie", dnes.AddDays(2), polozka: notebook, poradieUlohy: 6),
+            UlohaNova("Vyčistiť filtre projektorov", hotovo: true, poradieUlohy: 7),
+        });
+
+        Poznamka PoznamkaNova(string nazov, string text, string farba, bool pripnuta = false, DateTime? datum = null,
+            Polozka? polozka = null, Udalost? udalost = null) => new()
+        {
+            Nazov = nazov, Text = text, Farba = farba, Pripnuta = pripnuta, Datum = datum, PolozkaId = polozka?.Id, Udalost = udalost,
+            Vytvorene = teraz.AddDays(-3), Zmenene = teraz.AddHours(-5),
+        };
+        var skolenie = db.Udalosti.Local.FirstOrDefault(u => u.Nazov.StartsWith("Školenie"));
+        db.Poznamky.AddRange(new[]
+        {
+            PoznamkaNova("Wi-Fi pre hostí", "Sieť: Skola-Host\nHeslo sa mení každý mesiac – aktuálne je na nástenke v zborovni.\nPripojenie platí 8 hodín.",
+                PoznamkyService.Farby[0], pripnuta: true),
+            PoznamkaNova("Kontakty na servis", "Tlačiarne: servis Kopírky s. r. o., 0900 123 456\nProjektory: AV Technik, 0911 222 333\nSieť a internet: poskytovateľ, linka 24/7",
+                PoznamkyService.Farby[4], pripnuta: true),
+            PoznamkaNova("Projektor – lampa", "Lampa má odsvietených 3 850 hodín z 4 000. Náhradná je objednaná, dodanie do týždňa.",
+                PoznamkyService.Farby[1], polozka: projektor),
+            PoznamkaNova("Školenie – čo pripraviť", "• prihlasovacie údaje pre všetkých učiteľov\n• projektor a reproduktory v učebni\n• krátky návod na OneDrive",
+                PoznamkyService.Farby[6], datum: skolenie?.Zaciatok.Date, udalost: skolenie),
+            PoznamkaNova("Nápady na budúci rok", "Nové interaktívne tabule do dvoch tried, výmena najstarších PC v učebni informatiky.",
+                PoznamkyService.Farby[3]),
+        });
+
         Databaza.Zapis(db, Databaza.KlucPoslednePrirastkove, poradie.Count.ToString());
         Databaza.Zapis(db, Databaza.KlucUkazkoveData, "1");
         db.SaveChanges();

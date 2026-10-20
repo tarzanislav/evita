@@ -10,7 +10,7 @@ namespace Evita.Data;
 public static class Databaza
 {
     /// <summary>Aktuálna verzia dátovej štruktúry. Pri každej zmene štruktúry sa zvýši a pribudne krok v <see cref="Migracie"/>.</summary>
-    public const int VerziaSchemy = 3;
+    public const int VerziaSchemy = 4;
 
     /// <summary>
     /// Kroky, ktoré upravia staršiu databázu na novú verziu štruktúry. Každý príkaz musí byť bezpečný aj pri
@@ -33,6 +33,18 @@ public static class Databaza
             """CREATE INDEX IF NOT EXISTS "IX_Udalosti_PolozkaId" ON "Udalosti" ("PolozkaId");""",
             """CREATE INDEX IF NOT EXISTS "IX_Udalosti_MiestnostId" ON "Udalosti" ("MiestnostId");""",
             """CREATE INDEX IF NOT EXISTS "IX_Udalosti_OsobaId" ON "Udalosti" ("OsobaId");""",
+        }),
+        (4, "úlohy a poznámky", new[]
+        {
+            """CREATE TABLE IF NOT EXISTS "Ulohy" ("Id" INTEGER NOT NULL CONSTRAINT "PK_Ulohy" PRIMARY KEY AUTOINCREMENT, "Guid" TEXT NOT NULL, "Text" TEXT NOT NULL, "Popis" TEXT NULL, "Termin" TEXT NULL, "Priorita" INTEGER NOT NULL, "Hotovo" INTEGER NOT NULL, "DatumHotovo" TEXT NULL, "Vytvorene" TEXT NOT NULL, "Poradie" INTEGER NOT NULL, "PolozkaId" INTEGER NULL, CONSTRAINT "FK_Ulohy_Polozky_PolozkaId" FOREIGN KEY ("PolozkaId") REFERENCES "Polozky" ("Id") ON DELETE SET NULL);""",
+            """CREATE UNIQUE INDEX IF NOT EXISTS "IX_Ulohy_Guid" ON "Ulohy" ("Guid");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Ulohy_Hotovo" ON "Ulohy" ("Hotovo");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Ulohy_PolozkaId" ON "Ulohy" ("PolozkaId");""",
+            """CREATE TABLE IF NOT EXISTS "Poznamky" ("Id" INTEGER NOT NULL CONSTRAINT "PK_Poznamky" PRIMARY KEY AUTOINCREMENT, "Guid" TEXT NOT NULL, "Nazov" TEXT NOT NULL, "Text" TEXT NOT NULL, "Farba" TEXT NOT NULL, "Pripnuta" INTEGER NOT NULL, "Vytvorene" TEXT NOT NULL, "Zmenene" TEXT NOT NULL, "Datum" TEXT NULL, "PolozkaId" INTEGER NULL, "UdalostId" INTEGER NULL, CONSTRAINT "FK_Poznamky_Polozky_PolozkaId" FOREIGN KEY ("PolozkaId") REFERENCES "Polozky" ("Id") ON DELETE SET NULL, CONSTRAINT "FK_Poznamky_Udalosti_UdalostId" FOREIGN KEY ("UdalostId") REFERENCES "Udalosti" ("Id") ON DELETE SET NULL);""",
+            """CREATE UNIQUE INDEX IF NOT EXISTS "IX_Poznamky_Guid" ON "Poznamky" ("Guid");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Poznamky_Datum" ON "Poznamky" ("Datum");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Poznamky_PolozkaId" ON "Poznamky" ("PolozkaId");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Poznamky_UdalostId" ON "Poznamky" ("UdalostId");""",
         }),
     };
 

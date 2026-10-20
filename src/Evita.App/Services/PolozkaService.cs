@@ -10,6 +10,10 @@ public sealed class EvitaException : Exception
     public EvitaException(string sprava) : base(sprava)
     {
     }
+
+    public EvitaException(string sprava, Exception vnutorna) : base(sprava, vnutorna)
+    {
+    }
 }
 
 /// <summary>Evidencia položiek vrátane zápisu každej zmeny do histórie.</summary>

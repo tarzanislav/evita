@@ -26,6 +26,9 @@ public partial class MainViewModel : ObservableObject
         ImportExport = new ImportExportViewModel(this);
         Tlac = new TlacViewModel(this);
         Kalendar = new KalendarViewModel(this);
+        Ulohy = new UlohyViewModel();
+        Poznamky = new PoznamkyViewModel();
+        Nastavenia = new NastaveniaViewModel(this);
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -38,11 +41,14 @@ public partial class MainViewModel : ObservableObject
     public ImportExportViewModel ImportExport { get; }
     public TlacViewModel Tlac { get; }
     public KalendarViewModel Kalendar { get; }
+    public UlohyViewModel Ulohy { get; }
+    public PoznamkyViewModel Poznamky { get; }
+    public NastaveniaViewModel Nastavenia { get; }
 
-    public string TitulokOkna => $"EviTA {AktualizaciaService.AktualnaVerzia} – evidencia IT techniky";
+    public string TitulokOkna => Preklad.F($"EviTA {AktualizaciaService.AktualnaVerzia} – evidencia IT techniky");
 
     public string VerziaText =>
-        "Verzia " + (typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "0.1.0");
+        Preklad.F($"Verzia {typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "0.1.0"}");
 
     [ObservableProperty]
     private object? _aktualnyObsah;
@@ -107,6 +113,9 @@ public partial class MainViewModel : ObservableObject
             "import" => ImportExport,
             "tlac" => Tlac,
             "kalendar" => Kalendar,
+            "ulohy" => Ulohy,
+            "poznamky" => Poznamky,
+            "nastavenia" => Nastavenia,
             _ => Dashboard,
         };
 
@@ -133,6 +142,13 @@ public partial class MainViewModel : ObservableObject
         {
             obnovitelny.Obnov();
         }
+    }
+
+    /// <summary>Po načítaní konfigurácie – panely dashboardu a ďalšie nastavenia sa načítajú znova.</summary>
+    public void PoZmeneKonfiguracie()
+    {
+        Dashboard.NacitajPanely();
+        Evidencia.OznacNaObnovenie();
     }
 
     public void AktualizujStav()

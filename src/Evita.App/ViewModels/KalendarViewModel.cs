@@ -31,8 +31,11 @@ public sealed class DenKalendara
     public string? Sviatok { get; init; }
     public string Meniny { get; init; } = "";
     public List<VyskytUdalosti> Udalosti { get; init; } = new();
+    public List<PoznamkaRiadok> Poznamky { get; init; } = new();
 
     public int Cislo => Datum.Day;
+    public bool MaPoznamky => Poznamky.Count > 0;
+    public string PoznamkyTip => string.Join("\n", Poznamky.Select(p => "• " + p.Nazov));
     public string NazovDna => Datum.ToString("dddd", Sk.Kultura);
     public string KratkyNazovDna => Datum.ToString("ddd", Sk.Kultura);
     public string DatumText => Datum.ToString("d. M.", Sk.Kultura);
@@ -199,7 +202,7 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
     {
         var od = AktualnyDatum.Date;
         var po = od.AddDays(PocetDniZoznamu - 1);
-        DniZoznamu = VytvorDni(od, po, null).Where(d => d.Udalosti.Count > 0 || d.MaSviatok).ToList();
+        DniZoznamu = VytvorDni(od, po, null).Where(d => d.Udalosti.Count > 0 || d.MaSviatok || d.MaPoznamky).ToList();
         Titulok = $"{Sk.Datum(od)} – {Sk.Datum(po)}";
         Suhrn = $"Zoznam na {PocetDniZoznamu} dní od zvoleného dátumu: {DniZoznamu.Sum(d => d.Udalosti.Count)} udalostí a termínov.";
     }
@@ -238,6 +241,16 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
             // bez sviatkov
         }
 
+        var poznamky = new List<PoznamkaRiadok>();
+        try
+        {
+            poznamky = new PoznamkyService().PreDni(od, po);
+        }
+        catch (Exception)
+        {
+            // kalendár funguje aj bez poznámok
+        }
+
         var dnes = DateTime.Today;
         var dni = new List<DenKalendara>();
         for (var d = od.Date; d <= po.Date; d = d.AddDays(1))
@@ -265,6 +278,7 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
                 Sviatok = sviatkyDna.Count == 0 ? null : string.Join(", ", sviatkyDna.Where(x => x.Druh != DruhSviatku.PamatnyDen || sviatkyDna.Count == 1).Select(x => x.Nazov)),
                 Meniny = meniny,
                 Udalosti = vyskyty.Where(v => v.Zaciatok.Date <= datum && v.PoslednyDen >= datum).ToList(),
+                Poznamky = poznamky.Where(p => p.Datum?.Date == datum).ToList(),
             });
         }
 
@@ -373,6 +387,56 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         }
 
         Nastavenia();
+    }
+
+    // ------------------------------------------------------------------ poznámky
+
+    [RelayCommand]
+    private void NovaPoznamka(DenKalendara? den)
+    {
+        if (PoznamkaWindow.Otvor(new PoznamkaEditViewModel(null, den?.Datum ?? AktualnyDatum)))
+        {
+            Obnov();
+        }
+    }
+
+    [RelayCommand]
+    private void OtvorPoznamku(PoznamkaRiadok? poznamka)
+    {
+        if (poznamka is null)
+        {
+            return;
+        }
+
+        try
+        {
+            PoznamkaWindow.Otvor(new PoznamkaEditViewModel(poznamka.Id));
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+        }
+
+        Obnov();
+    }
+
+    /// <summary>Klik na značku poznámok v mesiaci: jedna poznámka sa otvorí, viac sa ukáže v týždni.</summary>
+    [RelayCommand]
+    private void PoznamkyDna(DenKalendara? den)
+    {
+        if (den is null || den.Poznamky.Count == 0)
+        {
+            return;
+        }
+
+        if (den.Poznamky.Count == 1)
+        {
+            OtvorPoznamku(den.Poznamky[0]);
+        }
+        else
+        {
+            ZobrazDen(den);
+        }
     }
 
     private void OtvorEditor(UdalostEditViewModel model)

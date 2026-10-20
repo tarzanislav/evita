@@ -3,18 +3,46 @@ using System.Text;
 
 namespace Evita.Services;
 
-/// <summary>Slovenské formátovanie, radenie a porovnávanie textov.</summary>
+/// <summary>Formátovanie podľa jazyka programu, radenie a porovnávanie textov (pôvodne len slovenské – odtiaľ názov).</summary>
 public static class Sk
 {
-    public static readonly CultureInfo Kultura = new("sk-SK");
+    private static StringComparer _porovnanie = StringComparer.Create(new CultureInfo("sk-SK"), CompareOptions.IgnoreCase);
 
-    /// <summary>Abecedné radenie podľa slovenských pravidiel (ch za h, á pri a …).</summary>
-    public static readonly StringComparer Porovnanie = StringComparer.Create(Kultura, CompareOptions.IgnoreCase);
+    /// <summary>Kultúra aktuálneho jazyka programu (formát čísel, názvy dní a mesiacov).</summary>
+    public static CultureInfo Kultura => Preklad.Kultura;
+
+    /// <summary>Abecedné radenie podľa pravidiel jazyka programu (v slovenčine ch za h, á pri a …).</summary>
+    public static StringComparer Porovnanie => _porovnanie;
+
+    internal static void ZmenaJazyka() => _porovnanie = StringComparer.Create(Preklad.Kultura, CompareOptions.IgnoreCase);
 
     public static string Datum(DateTime? datum) =>
-        datum.HasValue ? datum.Value.ToString("d. M. yyyy", Kultura) : "";
+        datum.HasValue ? datum.Value.ToString(Preklad.Aktualny.Datum, Kultura) : "";
 
-    public static string DatumCas(DateTime datum) => datum.ToString("d. M. yyyy H:mm", Kultura);
+    public static string DatumCas(DateTime datum) => datum.ToString(Preklad.Aktualny.DatumCas, Kultura);
+
+    /// <summary>Deň a mesiac bez roka (napr. 20. 10.).</summary>
+    public static string KratkyDatum(DateTime? datum) =>
+        datum.HasValue ? datum.Value.ToString(Preklad.Aktualny.KratkyDatum, Kultura) : "";
+
+    /// <summary>Deň v týždni (skratka), deň a mesiac – napr. „po 20. 10.“.</summary>
+    public static string DenAKratkyDatum(DateTime datum) => $"{datum.ToString("ddd", Kultura)} {KratkyDatum(datum)}";
+
+    /// <summary>Dlhý dátum s dňom v týždni a veľkým začiatočným písmenom (napr. „Utorok 20. októbra 2026“).</summary>
+    public static string DlhyDatum(DateTime datum)
+    {
+        var text = Preklad.JeSlovencina ? datum.ToString("dddd d. MMMM yyyy", Kultura) : datum.ToString("D", Kultura);
+        return VelkePrve(text);
+    }
+
+    /// <summary>Mesiac a rok s veľkým začiatočným písmenom (napr. „Október 2026“).</summary>
+    public static string MesiacRok(DateTime datum) =>
+        VelkePrve(datum.ToString(Preklad.JeSlovencina ? "MMMM yyyy" : "Y", Kultura));
+
+    public static string VelkePrve(string text) =>
+        string.IsNullOrEmpty(text) ? text : char.ToUpper(text[0], Kultura) + text[1..];
+
+    public static string Cas(DateTime cas) => cas.ToString("t", Kultura);
 
     public static string Suma(decimal? suma) =>
         suma.HasValue ? suma.Value.ToString("N2", Kultura) + " €" : "";
@@ -49,7 +77,18 @@ public static class Sk
             return true;
         }
 
-        var cisty = text.Replace("€", "").Replace(" ", "").Replace(" ", "").Replace(" ", "").Replace(",", ".").Trim();
+        var cisty = new string(text.Where(z => !char.IsWhiteSpace(z) && z != '\u202F' && z != '\'' && z != '€').ToArray());
+        // 1,234.50 aj 1.234,50 – desatinný je posledný oddeľovač, ostatné oddeľujú tisíce
+        var posledny = Math.Max(cisty.LastIndexOf(','), cisty.LastIndexOf('.'));
+        if (posledny >= 0)
+        {
+            var celaCast = cisty[..posledny].Replace(",", "").Replace(".", "");
+            var desatinna = cisty[(posledny + 1)..];
+            cisty = desatinna.Length == 3 && celaCast.Length > 0 && cisty.Count(z => z is ',' or '.') > 1
+                ? celaCast + desatinna
+                : celaCast + "." + desatinna;
+        }
+
         if (decimal.TryParse(cisty, NumberStyles.Number, CultureInfo.InvariantCulture, out var hodnota) && hodnota >= 0)
         {
             suma = Math.Round(hodnota, 2);

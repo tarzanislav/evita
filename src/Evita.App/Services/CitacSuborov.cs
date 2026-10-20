@@ -575,6 +575,37 @@ public static class CitacSuborov
                 Stav = A(e, "stav") ?? "Naplanovane",
             })
             .ToList();
+        balik.Ulohy = koren.Element("Ulohy")?.Elements("Uloha")
+            .Select(e => new UlohaPrenos
+            {
+                Guid = A(e, "guid"),
+                Text = A(e, "text") ?? "",
+                Popis = e.Element("Popis")?.Value,
+                Termin = A(e, "termin"),
+                Priorita = A(e, "priorita") ?? "Normalna",
+                Hotovo = A(e, "hotovo") is "true" or "1",
+                DatumHotovo = A(e, "datumHotovo"),
+                Vytvorene = A(e, "vytvorene"),
+                PolozkaGuid = A(e, "polozkaGuid"),
+                PolozkaCislo = int.TryParse(A(e, "polozkaCislo"), out var uc) ? uc : null,
+            })
+            .ToList();
+        balik.Poznamky = koren.Element("Poznamky")?.Elements("Poznamka")
+            .Select(e => new PoznamkaPrenos
+            {
+                Guid = A(e, "guid"),
+                Nazov = A(e, "nazov") ?? "",
+                Text = e.Element("Text")?.Value ?? "",
+                Farba = A(e, "farba") ?? "#FFF59D",
+                Pripnuta = A(e, "pripnuta") is "true" or "1",
+                Vytvorene = A(e, "vytvorene"),
+                Zmenene = A(e, "zmenene"),
+                Datum = A(e, "datum"),
+                PolozkaGuid = A(e, "polozkaGuid"),
+                PolozkaCislo = int.TryParse(A(e, "polozkaCislo"), out var nc) ? nc : null,
+                UdalostGuid = A(e, "udalostGuid"),
+            })
+            .ToList();
         return balik;
     }
 

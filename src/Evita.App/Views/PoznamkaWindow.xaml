@@ -1,0 +1,19 @@
+<Window x:Class="Evita.Views.PoznamkaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:Evita.Views"
+        Title="{Binding Titulok}"
+        Width="680" Height="640" MinWidth="520" MinHeight="460"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <DockPanel Margin="24,18,24,20">
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+            <Button DockPanel.Dock="Left" Content="Vymazať" MinWidth="100" Command="{Binding VymazatCommand}"
+                    Visibility="{Binding JeNova, Converter={StaticResource InverzBoolNaViditelnost}}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Uložiť" MinWidth="120" Command="{Binding UlozitCommand}" Style="{DynamicResource AccentButtonStyle}" />
+                <Button Content="Zrušiť" MinWidth="110" Margin="8,0,0,0" IsCancel="True" />
+            </StackPanel>
+        </DockPanel>
+        <v:PoznamkaEditor x:Name="Editor" />
+    </DockPanel>
+</Window>

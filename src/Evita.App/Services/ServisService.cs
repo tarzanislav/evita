@@ -62,6 +62,8 @@ public sealed class ServisService
         using (var db = Databaza.Otvor())
         using (var transakcia = db.Database.BeginTransaction())
         {
+            db.Poznamky.ExecuteDelete();
+            db.Ulohy.ExecuteDelete();
             db.Udalosti.ExecuteDelete();
             db.Historia.ExecuteDelete();
             db.Polozky.ExecuteDelete();

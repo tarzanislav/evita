@@ -25,6 +25,8 @@ public sealed class EvitaDbContext : DbContext
     public DbSet<ZaznamZalohy> ZaznamyZaloh => Set<ZaznamZalohy>();
     public DbSet<TypUdalosti> TypyUdalosti => Set<TypUdalosti>();
     public DbSet<Udalost> Udalosti => Set<Udalost>();
+    public DbSet<Uloha> Ulohy => Set<Uloha>();
+    public DbSet<Poznamka> Poznamky => Set<Poznamka>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -97,6 +99,27 @@ public sealed class EvitaDbContext : DbContext
             e.HasOne(x => x.Polozka).WithMany().HasForeignKey(x => x.PolozkaId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(x => x.Miestnost).WithMany().HasForeignKey(x => x.MiestnostId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(x => x.Osoba).WithMany().HasForeignKey(x => x.OsobaId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        model.Entity<Uloha>(e =>
+        {
+            e.ToTable("Ulohy");
+            e.HasIndex(x => x.Guid).IsUnique();
+            e.HasIndex(x => x.Hotovo);
+            e.Property(x => x.Text).IsRequired();
+            e.HasOne(x => x.Polozka).WithMany().HasForeignKey(x => x.PolozkaId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        model.Entity<Poznamka>(e =>
+        {
+            e.ToTable("Poznamky");
+            e.HasIndex(x => x.Guid).IsUnique();
+            e.HasIndex(x => x.Datum);
+            e.Property(x => x.Nazov).IsRequired();
+            e.Property(x => x.Text).IsRequired();
+            e.Property(x => x.Farba).IsRequired();
+            e.HasOne(x => x.Polozka).WithMany().HasForeignKey(x => x.PolozkaId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne(x => x.Udalost).WithMany().HasForeignKey(x => x.UdalostId).OnDelete(DeleteBehavior.SetNull);
         });
 
         model.Entity<ZaznamZalohy>(e =>

@@ -15,6 +15,7 @@
             <pom:NieJePrazdne x:Key="NieJePrazdne" />
             <pom:NulaNaViditelnost x:Key="NulaNaViditelnost" />
             <pom:FarbaNaStetec x:Key="FarbaNaStetec" />
+            <pom:HodnotyNaKrivku x:Key="HodnotyNaKrivku" />
 
             <FontFamily x:Key="IkonovePismo">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
@@ -71,6 +72,50 @@
                         </StackPanel>
                     </StackPanel>
                 </Button>
+            </DataTemplate>
+
+            <!-- jedna úloha v zozname (časť Úlohy, dashboard, karta položky; DataContext zoznamu má príkaz PrepnutHotovo) -->
+            <DataTemplate x:Key="UlohaRiadok">
+                <DockPanel Margin="0,2">
+                    <CheckBox DockPanel.Dock="Left" IsChecked="{Binding Hotovo, Mode=OneWay}" VerticalAlignment="Center" MinWidth="0" Margin="0,0,4,0"
+                              Command="{Binding DataContext.PrepnutHotovoCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                              CommandParameter="{Binding}" ToolTip="Označiť ako hotovú alebo znova otvoriť" />
+                    <Border x:Name="Termin" DockPanel.Dock="Right" CornerRadius="9" Padding="8,1" Margin="6,0,0,0" VerticalAlignment="Center"
+                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                            Visibility="{Binding TerminText, Converter={StaticResource NieJePrazdne}}">
+                        <TextBlock x:Name="TerminText" Text="{Binding TerminText}" FontSize="11.5" />
+                    </Border>
+                    <TextBlock x:Name="Priorita" DockPanel.Dock="Left" Text="!" FontWeight="Bold" Width="10" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}" Visibility="Hidden" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="Text" Text="{Binding Text}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding PolozkaText}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Visibility="{Binding PolozkaText, Converter={StaticResource NieJePrazdne}}" />
+                    </StackPanel>
+                </DockPanel>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Vysoka}" Value="True">
+                        <Setter TargetName="Priorita" Property="Visibility" Value="Visible" />
+                        <Setter TargetName="Text" Property="FontWeight" Value="SemiBold" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Nizka}" Value="True">
+                        <Setter TargetName="Text" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Dnes}" Value="True">
+                        <Setter TargetName="Termin" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                        <Setter TargetName="TerminText" Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding PoTermine}" Value="True">
+                        <Setter TargetName="Termin" Property="Background" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}" />
+                        <Setter TargetName="TerminText" Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                        <Setter TargetName="TerminText" Property="FontWeight" Value="SemiBold" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Hotovo}" Value="True">
+                        <Setter TargetName="Text" Property="TextDecorations" Value="Strikethrough" />
+                        <Setter TargetName="Text" Property="Opacity" Value="0.55" />
+                        <Setter TargetName="Termin" Property="Opacity" Value="0.55" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
             </DataTemplate>
 
             <Style x:Key="Stitok" TargetType="TextBlock">

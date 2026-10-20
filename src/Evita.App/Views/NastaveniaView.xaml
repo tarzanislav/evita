@@ -1,0 +1,168 @@
+<UserControl x:Class="Evita.Views.NastaveniaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Nastavenia" Style="{StaticResource Nadpis}" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="0,0,12,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <!-- jazyk -->
+                    <Border Style="{StaticResource Karta}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource Ikona}" Text="&#xE774;" Margin="0,0,10,0" />
+                                <TextBlock Text="Jazyk programu" Style="{StaticResource Podnadpis}" Margin="0" />
+                                <TextBlock Text="· Language" Style="{StaticResource Podnadpis}" Margin="6,0,0,0"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontWeight="Normal" />
+                            </StackPanel>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Language reset" Padding="12,5" Margin="8,0,0,0"
+                                        Command="{Binding ResetJazykaCommand}"
+                                        ToolTip="Language reset – English (default language)" />
+                                <Button DockPanel.Dock="Right" Content="Použiť" Padding="14,5" Margin="8,0,0,0"
+                                        Style="{DynamicResource AccentButtonStyle}" Command="{Binding PouzitJazykCommand}" />
+                                <ComboBox ItemsSource="{Binding Jazyky}" DisplayMemberPath="Nazov" SelectedItem="{Binding VybranyJazyk}" />
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0"
+                                       Text="Zmena jazyka sa prejaví po reštarte programu. Tlačidlo Language reset nastaví predvolený jazyk – angličtinu. Dáta evidencie (názvy položiek, kategórií, miestností…) sa neprekladajú." />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- konfigurácia -->
+                    <Border Style="{StaticResource Karta}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource Ikona}" Text="&#xE713;" Margin="0,0,10,0" />
+                                <TextBlock Text="Konfigurácia programu" Style="{StaticResource Podnadpis}" Margin="0" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Popis}" FontSize="13"
+                                       Text="Uloží nastavenia programu do súboru – jazyk, panely dashboardu, miesto pre počasie, meny, nastavenia kalendára a typy udalostí, pravidelné zálohy, názov a logo organizácie, tlač a export. Dáta evidencie sa do súboru neukladajú. Konfiguráciu môžete načítať na inom počítači alebo po novej inštalácii." />
+                            <WrapPanel Margin="0,12,0,0">
+                                <Button Padding="14,6" Margin="0,0,8,0" Command="{Binding ExportovatKonfiguraciuCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xEDE1;" FontSize="13" Margin="0,0,8,0" />
+                                        <TextBlock Text="Exportovať konfiguráciu…" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Padding="14,6" Command="{Binding ImportovatKonfiguraciuCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE8B5;" FontSize="13" Margin="0,0,8,0" />
+                                        <TextBlock Text="Importovať konfiguráciu…" />
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
+                            <TextBlock Text="{Binding KonfiguraciaText}" Style="{StaticResource Popis}" Margin="0,8,0,0"
+                                       Visibility="{Binding KonfiguraciaText, Converter={StaticResource NieJePrazdne}}" />
+                            <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0"
+                                       Text="Heslo automatických záloh sa z bezpečnostných dôvodov neprenáša – na novom počítači ho treba nastaviť znova." />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ďalšie nastavenia -->
+                    <Border Style="{StaticResource Karta}">
+                        <StackPanel>
+                            <TextBlock Text="Ďalšie nastavenia" Style="{StaticResource Podnadpis}" />
+                            <WrapPanel>
+                                <Button Content="Nastavenia kalendára…" Padding="12,5" Margin="0,0,8,8" Command="{Binding NastaveniaKalendaraCommand}" />
+                                <Button Content="Zálohy a servis…" Padding="12,5" Margin="0,0,8,8" Command="{Binding OtvorSekciuCommand}" CommandParameter="servis" />
+                                <Button Content="Názov a logo organizácie…" Padding="12,5" Margin="0,0,8,8" Command="{Binding OtvorSekciuCommand}" CommandParameter="tlac" />
+                                <Button Content="Panely dashboardu…" Padding="12,5" Margin="0,0,8,8" Command="{Binding OtvorSekciuCommand}" CommandParameter="dashboard" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <!-- počasie -->
+                    <Border Style="{StaticResource Karta}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource Ikona}" Text="&#xE753;" Margin="0,0,10,0" />
+                                <TextBlock Text="Počasie" Style="{StaticResource Podnadpis}" Margin="0" />
+                            </StackPanel>
+                            <TextBlock Text="Mesto alebo obec pre počasie na dashboarde" Style="{StaticResource Stitok}" Margin="0,0,0,2" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Zrušiť" Padding="10,3" Margin="8,0,0,0" Command="{Binding ZrusitMiestoCommand}"
+                                        Visibility="{Binding JeMiesto, Converter={StaticResource BoolNaViditelnost}}" />
+                                <TextBlock Text="{Binding AktualneMiesto}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" />
+                            </DockPanel>
+
+                            <TextBlock Text="Vyhľadať iné miesto" Style="{StaticResource Stitok}" Margin="0,14,0,4" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Padding="14,5" Margin="8,0,0,0" Command="{Binding HladatMiestoCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE721;" FontSize="13" Margin="0,0,8,0" />
+                                        <TextBlock Text="Hľadať" />
+                                    </StackPanel>
+                                </Button>
+                                <TextBox Text="{Binding HladaneMiesto, UpdateSourceTrigger=PropertyChanged}" ToolTip="Napríklad Pezinok, Nová Dubnica alebo Praha">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding HladatMiestoCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                            </DockPanel>
+                            <TextBlock Text="{Binding StavHladania}" Style="{StaticResource Popis}" Margin="0,6,0,0"
+                                       Visibility="{Binding StavHladania, Converter={StaticResource NieJePrazdne}}" />
+                            <ListBox ItemsSource="{Binding NajdeneMiesta}" SelectedItem="{Binding VybraneMiesto}" MaxHeight="230" Margin="0,6,0,0"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     Visibility="{Binding NajdeneMiesta.Count, Converter={StaticResource NulaNaViditelnost}, ConverterParameter=opacne}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Popis}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Suradnice}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button Content="Použiť vybrané miesto" Padding="14,5" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                    Style="{DynamicResource AccentButtonStyle}" Command="{Binding PouzitMiestoCommand}"
+                                    Visibility="{Binding NajdeneMiesta.Count, Converter={StaticResource NulaNaViditelnost}, ConverterParameter=opacne}" />
+                            <TextBlock Style="{StaticResource Popis}" Margin="0,10,0,0"
+                                       Text="Údaje o počasí poskytuje služba Open-Meteo.com (bezplatne, bez registrácie). Na stiahnutie je potrebné pripojenie k internetu." />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- kurzový lístok -->
+                    <Border Style="{StaticResource Karta}">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,8">
+                                <Button DockPanel.Dock="Right" Content="Predvolené meny" Padding="10,3" Command="{Binding PredvoleneMenyCommand}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE8C7;" Margin="0,0,10,0" />
+                                    <TextBlock Text="Kurzový lístok" Style="{StaticResource Podnadpis}" Margin="0" />
+                                </StackPanel>
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource Popis}" FontSize="13"
+                                       Text="Meny na dashboarde – referenčné kurzy Európskej centrálnej banky (1 euro = …), aktualizované v pracovné dni okolo 16:00." />
+                            <ItemsControl ItemsSource="{Binding Meny}" Margin="0,10,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding Zvolena}" Width="215" Margin="0,0,4,2" ToolTip="{Binding Nazov}">
+                                            <TextBlock TextTrimming="CharacterEllipsis">
+                                                <Run Text="{Binding Kod, Mode=OneWay}" FontWeight="SemiBold" />
+                                                <Run Text="{Binding Nazov, Mode=OneWay}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                            </TextBlock>
+                                        </CheckBox>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{Binding MenyText}" Style="{StaticResource Popis}" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

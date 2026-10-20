@@ -31,6 +31,15 @@
         <DataTemplate DataType="{x:Type vm:KalendarViewModel}">
             <v:KalendarView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UlohyViewModel}">
+            <v:UlohyView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PoznamkyViewModel}">
+            <v:PoznamkyView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:NastaveniaViewModel}">
+            <v:NastaveniaView />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -70,6 +79,18 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE787;" Margin="0,0,12,0" />
                             <TextBlock Text="Kalendár" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="ulohy">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE73A;" Margin="0,0,12,0" />
+                            <TextBlock Text="Úlohy" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="poznamky">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE70B;" Margin="0,0,12,0" />
+                            <TextBlock Text="Poznámky" />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem Tag="tlac">
@@ -122,6 +143,12 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE90F;" Margin="0,0,12,0" />
                             <TextBlock Text="Servis" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="nastavenia">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE713;" Margin="0,0,12,0" />
+                            <TextBlock Text="Nastavenia" />
                         </StackPanel>
                     </ListBoxItem>
                 </ListBox>

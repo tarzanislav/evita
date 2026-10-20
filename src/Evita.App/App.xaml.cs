@@ -15,10 +15,13 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        NastavSlovencinu();
+        var samotest = e.Args.Contains("--samotest", StringComparer.OrdinalIgnoreCase);
+
+        // jazyk programu (samotest overuje texty v slovenčine, preklady kontroluje zvlášť)
+        NastavJazyk(samotest ? "sk" : Preklad.JazykZDatabazy());
         DispatcherUnhandledException += NeosetrenaChyba;
 
-        if (e.Args.Contains("--samotest", StringComparer.OrdinalIgnoreCase))
+        if (samotest)
         {
             Dialogy.TichyRezim = true;
             Shutdown(Samotest.Spusti(this));
@@ -237,16 +240,14 @@ public partial class App : Application
         }
     }
 
-    private static void NastavSlovencinu()
+    /// <summary>Jazyk textov, formát dátumov a čísel pre celý program; preklad textov zapísaných v XAML.</summary>
+    private static void NastavJazyk(string kod)
     {
-        var kultura = Sk.Kultura;
-        CultureInfo.DefaultThreadCurrentCulture = kultura;
-        CultureInfo.DefaultThreadCurrentUICulture = kultura;
-        Thread.CurrentThread.CurrentCulture = kultura;
-        Thread.CurrentThread.CurrentUICulture = kultura;
+        Preklad.Nastav(kod);
         FrameworkElement.LanguageProperty.OverrideMetadata(
             typeof(FrameworkElement),
-            new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(kultura.IetfLanguageTag)));
+            new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(Preklad.Kultura.IetfLanguageTag)));
+        PrekladacXaml.Zapni();
     }
 
     private void NeosetrenaChyba(object sender, DispatcherUnhandledExceptionEventArgs e)

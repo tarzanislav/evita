@@ -201,6 +201,71 @@
                     </DataGrid>
                 </DockPanel>
             </TabItem>
+
+            <TabItem Header="Poznámky a úlohy"
+                     Visibility="{Binding JeNova, Converter={StaticResource InverzBoolNaViditelnost}}">
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <Button DockPanel.Dock="Right" Content="Nová poznámka…" Padding="12,4" Command="{Binding NovaPoznamkaCommand}" />
+                            <TextBlock Text="Poznámky k položke" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <Grid>
+                            <TextBlock Text="K položke zatiaľ nie sú poznámky." Style="{StaticResource Popis}"
+                                       Visibility="{Binding Poznamky.Count, Converter={StaticResource NulaNaViditelnost}}" />
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding Poznamky}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Cursor="Hand" Margin="0,0,0,6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                    Command="{Binding DataContext.OtvorPoznamkuCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <ContentPresenter />
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                                <Border CornerRadius="5" Padding="10,6" Background="{Binding Farba, Converter={StaticResource FarbaNaStetec}}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Nazov}" FontWeight="SemiBold" Foreground="#1B1B1B" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding Nahlad}" Foreground="#3A3A3A" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding ZmeneneText}" Foreground="#5A5A5A" FontSize="11" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </DockPanel>
+
+                    <DockPanel Grid.Column="2">
+                        <TextBlock DockPanel.Dock="Top" Text="Úlohy k položke" FontWeight="SemiBold" Margin="0,4,0,8" />
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <TextBox Text="{Binding NovaUloha, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding PridatUlohuCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <TextBlock Text="Nová úloha – napíšte a stlačte Enter" Margin="12,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                       Visibility="{Binding NovaUloha, Converter={StaticResource NieJePrazdne}, ConverterParameter=opacne}" />
+                        </Grid>
+                        <TextBlock DockPanel.Dock="Top" Text="K položke zatiaľ nie sú úlohy." Style="{StaticResource Popis}"
+                                   Visibility="{Binding UlohyPolozky.Count, Converter={StaticResource NulaNaViditelnost}}" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding UlohyPolozky}" ItemTemplate="{StaticResource UlohaRiadok}" />
+                        </ScrollViewer>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
         </TabControl>
     </DockPanel>
 </Window>

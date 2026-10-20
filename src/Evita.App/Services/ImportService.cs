@@ -609,6 +609,83 @@ public sealed class ImportService
         return pocet;
     }
 
+    /// <summary>Prenesie úlohy a poznámky z úplného exportu. Udalosti už musia byť uložené (poznámky sa na ne viažu podľa identifikátora).</summary>
+    private static (int Ulohy, int Poznamky) PrenesUlohyAPoznamky(EvitaDbContext db, BalikEviTA balik, List<Polozka> polozky, DateTime teraz)
+    {
+        if (balik.Ulohy is null && balik.Poznamky is null)
+        {
+            return (0, 0);
+        }
+
+        var podlaGuid = polozky.ToDictionary(p => p.Guid);
+        var podlaCisla = polozky.ToDictionary(p => p.PrirastkoveCislo);
+        Polozka? Najdi(string? guid, int? cislo) =>
+            Guid.TryParse(guid, out var g) && podlaGuid.TryGetValue(g, out var p1) ? p1
+            : cislo is int c && podlaCisla.TryGetValue(c, out var p2) ? p2
+            : null;
+
+        var ulohy = 0;
+        var pouzite = db.Ulohy.Select(u => u.Guid).ToHashSet();
+        var poradie = 0;
+        foreach (var u in balik.Ulohy ?? new List<UlohaPrenos>())
+        {
+            if (string.IsNullOrWhiteSpace(u.Text))
+            {
+                continue;
+            }
+
+            Prevod.SkusDatum(u.Termin, out var termin);
+            Prevod.SkusDatum(u.DatumHotovo, out var hotovo);
+            Prevod.SkusDatum(u.Vytvorene, out var vytvorene);
+            db.Ulohy.Add(new Uloha
+            {
+                Guid = Guid.TryParse(u.Guid, out var g) && pouzite.Add(g) ? g : Guid.NewGuid(),
+                Text = u.Text.Trim(),
+                Popis = u.Popis,
+                Termin = termin?.Date,
+                Priorita = Enum.TryParse<PrioritaUlohy>(u.Priorita, true, out var priorita) ? priorita : PrioritaUlohy.Normalna,
+                Hotovo = u.Hotovo,
+                DatumHotovo = u.Hotovo ? hotovo ?? teraz : null,
+                Vytvorene = vytvorene ?? teraz,
+                Poradie = poradie++,
+                Polozka = Najdi(u.PolozkaGuid, u.PolozkaCislo),
+            });
+            ulohy++;
+        }
+
+        var udalosti = db.Udalosti.ToDictionary(x => x.Guid);
+        var poznamky = 0;
+        pouzite = db.Poznamky.Select(p => p.Guid).ToHashSet();
+        foreach (var p in balik.Poznamky ?? new List<PoznamkaPrenos>())
+        {
+            if (string.IsNullOrWhiteSpace(p.Nazov) && string.IsNullOrWhiteSpace(p.Text))
+            {
+                continue;
+            }
+
+            Prevod.SkusDatum(p.Vytvorene, out var vytvorene);
+            Prevod.SkusDatum(p.Zmenene, out var zmenene);
+            Prevod.SkusDatum(p.Datum, out var datum);
+            db.Poznamky.Add(new Poznamka
+            {
+                Guid = Guid.TryParse(p.Guid, out var g) && pouzite.Add(g) ? g : Guid.NewGuid(),
+                Nazov = string.IsNullOrWhiteSpace(p.Nazov) ? PoznamkyService.NazovZTextu(p.Text) : p.Nazov.Trim(),
+                Text = p.Text ?? "",
+                Farba = PoznamkyService.JePlatnaFarba(p.Farba) ? p.Farba : PoznamkyService.Farby[0],
+                Pripnuta = p.Pripnuta,
+                Vytvorene = vytvorene ?? teraz,
+                Zmenene = zmenene ?? vytvorene ?? teraz,
+                Datum = datum?.Date,
+                Polozka = Najdi(p.PolozkaGuid, p.PolozkaCislo),
+                Udalost = Guid.TryParse(p.UdalostGuid, out var ug) && udalosti.TryGetValue(ug, out var udalost) ? udalost : null,
+            });
+            poznamky++;
+        }
+
+        db.SaveChanges();
+        return (ulohy, poznamky);
+    }
+
     /// <summary>Meno osoby bez nadbytočných medzier.</summary>
     public static string UpravMeno(string meno) =>
         string.Join(' ', meno.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
@@ -864,9 +941,11 @@ public sealed class ImportService
 
         // pri prenose celej databázy aj pracovný kalendár
         var preneseneUdalosti = 0;
+        int preneseneUlohy = 0, prenesenePoznamky = 0;
         if (druh == DruhImportu.CelaDatabaza && zdroj.Balik is { } balikKalendara)
         {
             preneseneUdalosti = PrenesKalendar(db, balikKalendara, nove.Select(x => x.Polozka).ToList(), miestnosti, osoby, teraz);
+            (preneseneUlohy, prenesenePoznamky) = PrenesUlohyAPoznamky(db, balikKalendara, nove.Select(x => x.Polozka).ToList(), teraz);
         }
 
         foreach (var (riadok, polozka, povodne) in nove)
@@ -931,6 +1010,16 @@ public sealed class ImportService
         if (preneseneUdalosti > 0)
         {
             sb.AppendLine($"Udalosti kalendára:  {preneseneUdalosti}");
+        }
+
+        if (preneseneUlohy > 0)
+        {
+            sb.AppendLine($"Úlohy:               {preneseneUlohy}");
+        }
+
+        if (prenesenePoznamky > 0)
+        {
+            sb.AppendLine($"Poznámky:            {prenesenePoznamky}");
         }
 
         foreach (var upozornenie in zdroj.Upozornenia)

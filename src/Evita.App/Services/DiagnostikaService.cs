@@ -20,7 +20,7 @@ public sealed class DiagnostikaService
     /// <summary>Tabuľky v poradí, v akom sa kopírujú pri záchrane (najprv tie, na ktoré sa odkazuje).</summary>
     private static readonly string[] Tabulky =
     {
-        "Nastavenia", "Kategorie", "Miestnosti", "Osoby", "Polozky", "HistoriaZmien", "ZaznamyZaloh", "TypyUdalosti", "Udalosti",
+        "Nastavenia", "Kategorie", "Miestnosti", "Osoby", "Polozky", "HistoriaZmien", "ZaznamyZaloh", "TypyUdalosti", "Udalosti", "Ulohy", "Poznamky",
     };
 
     public VysledokKontroly RychlaKontrola() => Kontrola("PRAGMA quick_check;", "Rýchla kontrola");

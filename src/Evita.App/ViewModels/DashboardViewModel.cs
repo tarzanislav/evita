@@ -60,8 +60,50 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private bool _ukazNaposledy = true;
     [ObservableProperty] private bool _ukazDatabazu = true;
     [ObservableProperty] private bool _ukazKalendar = true;
+    [ObservableProperty] private bool _ukazUlohy = true;
+    [ObservableProperty] private bool _ukazPocasie = true;
+    [ObservableProperty] private bool _ukazKurzy = true;
+    [ObservableProperty] private bool _ukazPoznamky = true;
 
     partial void OnUkazKalendarChanged(bool value) => UlozPanely();
+    partial void OnUkazUlohyChanged(bool value) => UlozPanely();
+    partial void OnUkazPocasieChanged(bool value) => UlozPanely();
+    partial void OnUkazKurzyChanged(bool value) => UlozPanely();
+    partial void OnUkazPoznamkyChanged(bool value) => UlozPanely();
+
+    // úlohy (To Do)
+    [ObservableProperty] private List<UlohaRiadok> _ulohy = new();
+    [ObservableProperty] private string _ulohySuhrn = "";
+    [ObservableProperty] private string _novaUloha = "";
+    [ObservableProperty] private string _dalsieUlohy = "";
+    private const int UlohNaPaneli = 7;
+
+    // poznámky
+    [ObservableProperty] private List<PoznamkaRiadok> _pripnutePoznamky = new();
+
+    // počasie
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(JePocasie), nameof(PocasieAktualizovane))]
+    private Pocasie? _pocasie;
+
+    [ObservableProperty] private bool _jeMiestoPocasia;
+    [ObservableProperty] private string _pocasieStav = "";
+    public bool JePocasie => Pocasie is not null;
+    public string PocasieAktualizovane => Pocasie is null ? "" : Preklad.F($"{PocasieService.Zdroj} · aktualizované {Sk.Cas(Pocasie.Stiahnute)}");
+
+    // kurzy
+    [ObservableProperty] private List<KurzMeny> _kurzy = new();
+    [ObservableProperty] private string _kurzyDatum = "";
+    [ObservableProperty] private string _kurzyStav = "";
+    [ObservableProperty] private string _sumaPrepoctu = "100";
+    [ObservableProperty] private string _menaZ = "EUR";
+    [ObservableProperty] private string _menaNa = "USD";
+    [ObservableProperty] private string _vysledokPrepoctu = "";
+    public List<string> MenyPrepoctu { get; } = new[] { "EUR" }.Concat(KurzyService.VsetkyMeny).ToList();
+
+    partial void OnSumaPrepoctuChanged(string value) => Prepocitaj();
+    partial void OnMenaZChanged(string value) => Prepocitaj();
+    partial void OnMenaNaChanged(string value) => Prepocitaj();
 
     // kalendár
     [ObservableProperty] private List<MiniDen> _miniKalendar = new();
@@ -130,6 +172,9 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         ZiadneUpozornenia = BezMiestnosti == 0 && ZarukyDo30 == 0 && RevizieDo30 == 0 && VOprave == 0 && !ZalohaVarovanie;
 
         AktualizujKalendar();
+        AktualizujUlohy();
+        AktualizujPoznamky();
+        PosledneNacitanieZoSiete = NacitajZoSieteAsync(vynutit: false);
 
         var riadky = new PolozkaService().NacitajRiadky();
         NaposledyPridane = riadky.OrderByDescending(r => r.DatumPridania).ThenByDescending(r => r.PrirastkoveCislo).Take(5).ToList();
@@ -221,6 +266,203 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
             KalendarSuhrn = $"Kalendár sa nepodarilo načítať: {ex.GetBaseException().Message}";
         }
     }
+
+    // ------------------------------------------------------------------ úlohy
+
+    private void AktualizujUlohy()
+    {
+        try
+        {
+            var sluzba = new UlohyService();
+            var otvorene = sluzba.Nacitaj(ajHotove: false);
+            Ulohy = otvorene.Take(UlohNaPaneli).ToList();
+            var poTermine = otvorene.Count(u => u.PoTermine);
+            UlohySuhrn = otvorene.Count == 0
+                ? Preklad.T("Žiadne otvorené úlohy.")
+                : Preklad.Pocet(otvorene.Count, "{0} otvorená úloha", "{0} otvorené úlohy", "{0} otvorených úloh")
+                  + (poTermine > 0 ? " · " + Preklad.F($"po termíne: {poTermine}") : "");
+            DalsieUlohy = otvorene.Count > UlohNaPaneli ? Preklad.F($"a ďalšie ({otvorene.Count - UlohNaPaneli})…") : "";
+        }
+        catch (Exception ex)
+        {
+            UlohySuhrn = Preklad.F($"Úlohy sa nepodarilo načítať: {ex.GetBaseException().Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void PridatUlohu()
+    {
+        if (string.IsNullOrWhiteSpace(NovaUloha))
+        {
+            return;
+        }
+
+        try
+        {
+            new UlohyService().Pridaj(NovaUloha);
+            NovaUloha = "";
+            AktualizujUlohy();
+        }
+        catch (EvitaException ex)
+        {
+            Pomocne.Dialogy.Upozornenie(ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private void PrepnutHotovo(UlohaRiadok? uloha)
+    {
+        if (uloha is null)
+        {
+            return;
+        }
+
+        new UlohyService().NastavHotovo(uloha.Id, !uloha.Hotovo);
+        AktualizujUlohy();
+    }
+
+    [RelayCommand]
+    private void OtvorUlohy() => _hlavne.PrejdiNaSekciu("ulohy");
+
+    // ------------------------------------------------------------------ poznámky
+
+    private void AktualizujPoznamky()
+    {
+        try
+        {
+            PripnutePoznamky = new PoznamkyService().Pripnute(6);
+        }
+        catch (Exception)
+        {
+            PripnutePoznamky = new List<PoznamkaRiadok>();
+        }
+    }
+
+    [RelayCommand]
+    private void OtvorPoznamku(PoznamkaRiadok? poznamka)
+    {
+        _hlavne.PrejdiNaSekciu("poznamky");
+        if (poznamka is not null)
+        {
+            _hlavne.Poznamky.Vyber(poznamka.Id);
+        }
+    }
+
+    [RelayCommand]
+    private void NovaPoznamka()
+    {
+        _hlavne.PrejdiNaSekciu("poznamky");
+        _hlavne.Poznamky.NovaPoznamkaCommand.Execute(null);
+    }
+
+    // ------------------------------------------------------------------ počasie a kurzy (internet)
+
+    /// <summary>Posledné načítanie počasia a kurzov (kvôli automatickému testu).</summary>
+    public Task PosledneNacitanieZoSiete { get; private set; } = Task.CompletedTask;
+
+    private bool _nacitavamZoSiete;
+
+    /// <summary>Ukáže počasie a kurzy z vyrovnávacej pamäte a ak sú staré, stiahne nové (na pozadí, bez čakania).</summary>
+    public async Task NacitajZoSieteAsync(bool vynutit)
+    {
+        var pocasieSluzba = new PocasieService();
+        var kurzySluzba = new KurzyService();
+        var miesto = pocasieSluzba.NacitajMiesto();
+        JeMiestoPocasia = miesto is not null;
+        Pocasie = miesto is null ? null : pocasieSluzba.ZVyrovnavacejPamate();
+        PocasieStav = miesto is null ? Preklad.T("Nastavte mesto alebo obec, pre ktorú sa má zobrazovať počasie.") : Pocasie is null ? Preklad.T("Načítavam počasie…") : "";
+        var listok = kurzySluzba.ZVyrovnavacejPamate();
+        ZobrazKurzy(listok);
+        if (listok is null)
+        {
+            KurzyStav = Preklad.T("Načítavam kurzy…");
+        }
+
+        if (_nacitavamZoSiete)
+        {
+            return;
+        }
+
+        _nacitavamZoSiete = true;
+        try
+        {
+            if (miesto is not null && UkazPocasie && (vynutit || pocasieSluzba.TrebaObnovit(Pocasie)))
+            {
+                try
+                {
+                    Pocasie = await pocasieSluzba.StiahniAsync(miesto);
+                    PocasieStav = "";
+                }
+                catch (Exception ex)
+                {
+                    PocasieStav = Pocasie is null ? Chyba(ex) : Preklad.T("Zobrazené sú posledné stiahnuté údaje – nové sa nepodarilo stiahnuť.");
+                }
+            }
+
+            if (UkazKurzy && (vynutit || kurzySluzba.TrebaObnovit(listok)))
+            {
+                try
+                {
+                    ZobrazKurzy(await kurzySluzba.StiahniAsync());
+                }
+                catch (Exception ex)
+                {
+                    KurzyStav = listok is null ? Chyba(ex) : Preklad.T("Zobrazené sú posledné stiahnuté kurzy – nové sa nepodarilo stiahnuť.");
+                }
+            }
+        }
+        finally
+        {
+            _nacitavamZoSiete = false;
+        }
+    }
+
+    private static string Chyba(Exception ex) => ex is EvitaException ? ex.Message : ex.GetBaseException().Message;
+
+    private void ZobrazKurzy(KurzovyListok? listok)
+    {
+        Kurzy = listok?.Meny ?? new List<KurzMeny>();
+        KurzyDatum = listok is null ? "" : Preklad.F($"ECB · kurzy z {Sk.Datum(listok.Datum)}");
+        KurzyStav = listok is not null && listok.Meny.Count == 0 ? Preklad.T("Nie je zvolená žiadna mena – vyberte ich v Nastaveniach.") : "";
+        Prepocitaj();
+    }
+
+    private void Prepocitaj()
+    {
+        if (!Sk.SkusPrecitatSumu(SumaPrepoctu, out var suma) || suma is null)
+        {
+            VysledokPrepoctu = "";
+            return;
+        }
+
+        var vysledok = KurzyService.Prepocitaj(suma.Value, MenaZ, MenaNa, new KurzyService().PosledneKurzy());
+        VysledokPrepoctu = vysledok is { } v ? $"{v.ToString(v >= 1000 ? "N2" : "N4", Sk.Kultura)} {MenaNa}" : "";
+    }
+
+    [RelayCommand]
+    private void VymenitMeny() => (MenaZ, MenaNa) = (MenaNa, MenaZ);
+
+    [RelayCommand]
+    private async Task ObnovitZoSiete() => await NacitajZoSieteAsync(vynutit: true);
+
+    /// <summary>Po zmene miesta v nastaveniach.</summary>
+    public void ObnovPocasie() => PosledneNacitanieZoSiete = NacitajZoSieteAsync(vynutit: true);
+
+    /// <summary>Po zmene mien v nastaveniach (stačí prepočítať z vyrovnávacej pamäte).</summary>
+    public void ObnovKurzy(bool stiahnut)
+    {
+        if (stiahnut)
+        {
+            PosledneNacitanieZoSiete = NacitajZoSieteAsync(vynutit: true);
+        }
+        else
+        {
+            ZobrazKurzy(new KurzyService().ZVyrovnavacejPamate());
+        }
+    }
+
+    [RelayCommand]
+    private void OtvorNastavenia() => _hlavne.PrejdiNaSekciu("nastavenia");
 
     [RelayCommand]
     private void OtvorKategoriu(StlpecGrafu? stlpec)
@@ -327,7 +569,8 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         }
     }
 
-    private void NacitajPanely()
+    /// <summary>Načíta, ktoré panely sú zobrazené (aj po importe konfigurácie).</summary>
+    public void NacitajPanely()
     {
         _nacitavamPanely = true;
         try
@@ -341,6 +584,10 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
             UkazNaposledy = !skryte.Contains("naposledy");
             UkazDatabazu = !skryte.Contains("databaza");
             UkazKalendar = !skryte.Contains("kalendar");
+            UkazUlohy = !skryte.Contains("ulohy");
+            UkazPocasie = !skryte.Contains("pocasie");
+            UkazKurzy = !skryte.Contains("kurzy");
+            UkazPoznamky = !skryte.Contains("poznamky");
         }
         catch (Exception)
         {
@@ -367,6 +614,10 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         if (!UkazNaposledy) skryte.Add("naposledy");
         if (!UkazDatabazu) skryte.Add("databaza");
         if (!UkazKalendar) skryte.Add("kalendar");
+        if (!UkazUlohy) skryte.Add("ulohy");
+        if (!UkazPocasie) skryte.Add("pocasie");
+        if (!UkazKurzy) skryte.Add("kurzy");
+        if (!UkazPoznamky) skryte.Add("poznamky");
 
         using var db = Databaza.Otvor();
         Databaza.Zapis(db, "Dashboard.Skryte", string.Join(',', skryte));

@@ -56,6 +56,87 @@ public partial class PolozkaEditViewModel : ObservableObject
         }
     }
 
+    // ------------------------------------------------------------------ poznámky a úlohy k položke
+
+    [ObservableProperty] private List<PoznamkaRiadok> _poznamky = new();
+    [ObservableProperty] private List<UlohaRiadok> _ulohyPolozky = new();
+    [ObservableProperty] private string _novaUloha = "";
+
+    private void NacitajPoznamkyAUlohy()
+    {
+        try
+        {
+            Poznamky = new PoznamkyService().PrePolozku(_id);
+            UlohyPolozky = new UlohyService().Nacitaj(ajHotove: true, polozkaId: _id);
+        }
+        catch (Exception)
+        {
+            Poznamky = new List<PoznamkaRiadok>();
+            UlohyPolozky = new List<UlohaRiadok>();
+        }
+    }
+
+    [RelayCommand]
+    private void NovaPoznamka()
+    {
+        if (Views.PoznamkaWindow.Otvor(new PoznamkaEditViewModel(null, polozkaId: _id)))
+        {
+            NacitajPoznamkyAUlohy();
+        }
+    }
+
+    [RelayCommand]
+    private void OtvorPoznamku(PoznamkaRiadok? poznamka)
+    {
+        if (poznamka is null)
+        {
+            return;
+        }
+
+        try
+        {
+            Views.PoznamkaWindow.Otvor(new PoznamkaEditViewModel(poznamka.Id));
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+        }
+
+        NacitajPoznamkyAUlohy();
+    }
+
+    [RelayCommand]
+    private void PridatUlohu()
+    {
+        if (string.IsNullOrWhiteSpace(NovaUloha))
+        {
+            return;
+        }
+
+        try
+        {
+            new UlohyService().Pridaj(NovaUloha, polozkaId: _id);
+            NovaUloha = "";
+            NacitajPoznamkyAUlohy();
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private void PrepnutHotovo(UlohaRiadok? uloha)
+    {
+        if (uloha is null)
+        {
+            return;
+        }
+
+        new UlohyService().NastavHotovo(uloha.Id, !uloha.Hotovo);
+        NacitajPoznamkyAUlohy();
+    }
+
     /// <param name="id">Id upravovanej položky, alebo null pre novú.</param>
     /// <param name="kopiaZ">Id položky, ktorá sa má skopírovať do novej.</param>
     public PolozkaEditViewModel(int? id, int? kopiaZ)
@@ -72,6 +153,7 @@ public partial class PolozkaEditViewModel : ObservableObject
             DatumZmenyText = Sk.DatumCas(zdroj.DatumZmeny);
             Historia = _sluzba.Historia(zdroj.Id);
             NacitajUdalosti();
+            NacitajPoznamkyAUlohy();
         }
         else
         {

@@ -120,6 +120,15 @@ public partial class MainWindow : Window
     {
         try
         {
+            _model.Poznamky.UlozAkTreba();
+        }
+        catch (Exception)
+        {
+            // poznámka sa neuloží – program sa aj tak zatvorí
+        }
+
+        try
+        {
             var zalohy = new ZalohaService();
             if (zalohy.JeCasNaZalohu(zalohy.NacitajNastavenia()))
             {

@@ -74,8 +74,14 @@ public sealed class PdfZostava
 
     private static readonly Dictionary<string, string> _pisma = new();
 
+    static PdfZostava() => PismaPdf.Zaregistruj();
+
+    /// <summary>Chyby pri výbere písma (pre samotest).</summary>
+    public static List<string> ChybyPisma { get; } = new();
+
     /// <summary>
-    /// Písmo zostáv: Segoe UI, pre čínštinu prvé nainštalované písmo s čínskymi znakmi, ktoré PDFsharp dokáže použiť.
+    /// Písmo zostáv: Segoe UI; pre čínštinu písmo s čínskymi znakmi – zo súborov Windows (Microsoft YaHei …),
+    /// inak prvé nainštalované, ktoré PDFsharp dokáže použiť.
     /// </summary>
     public static string Pismo
     {
@@ -92,15 +98,18 @@ public sealed class PdfZostava
                 var nazov = "Segoe UI";
                 if (kod == "zh")
                 {
+                    var kandidati = new List<string>();
+                    if (PismaPdf.NajdiSubory() is not null)
+                    {
+                        kandidati.Add(PismaPdf.NazovCinskeho);
+                    }
+
                     var nainstalovane = System.Windows.Media.Fonts.SystemFontFamilies
                         .Select(f => f.Source).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                    foreach (var kandidat in new[] { "Microsoft YaHei", "Microsoft YaHei UI", "DengXian", "SimHei", "SimSun", "NSimSun", "Microsoft JhengHei", "Malgun Gothic", "Yu Gothic", "MS Gothic" })
+                    kandidati.AddRange(new[] { "Microsoft YaHei", "Microsoft YaHei UI", "DengXian", "SimHei", "SimSun", "Microsoft JhengHei" }
+                        .Where(nainstalovane.Contains));
+                    foreach (var kandidat in kandidati)
                     {
-                        if (!nainstalovane.Contains(kandidat))
-                        {
-                            continue;
-                        }
-
                         try
                         {
                             _ = new PdfSharp.Drawing.XFont(kandidat, 10);
@@ -108,9 +117,10 @@ public sealed class PdfZostava
                             nazov = kandidat;
                             break;
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
                             // písmo PDFsharp nevie načítať – skúsi sa ďalšie
+                            ChybyPisma.Add($"{kandidat}: {ex.Message}");
                         }
                     }
                 }

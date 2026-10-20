@@ -1159,7 +1159,7 @@ internal static class Samotest
                 }
 
                 // zostavy a exporty v jazyku
-                Krok($"jazyk {jazyk.Kod}: písmo PDF {PdfZostava.Pismo}");
+                Krok($"jazyk {jazyk.Kod}: písmo PDF {PdfZostava.Pismo} ({PismaPdf.NajdiSubory()?.Normalne}) {string.Join("; ", PdfZostava.ChybyPisma)}");
                 zostavy.UlozPdf(new MoznostiZostavy
                 {
                     Druh = DruhZostavy.PoMiestnostiach, Podpis = true,

@@ -97,6 +97,34 @@ public partial class ImportViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(JeCiselnik), nameof(JePolozky))]
     private bool _druhCiselnik;
 
+    // voľby druhu importu sa vylučujú (aj keď ich nastaví kód, nielen prepínač v okne)
+    partial void OnDruhZlucenieChanged(bool value)
+    {
+        if (value)
+        {
+            DruhCela = false;
+            DruhCiselnik = false;
+        }
+    }
+
+    partial void OnDruhCelaChanged(bool value)
+    {
+        if (value)
+        {
+            DruhZlucenie = false;
+            DruhCiselnik = false;
+        }
+    }
+
+    partial void OnDruhCiselnikChanged(bool value)
+    {
+        if (value)
+        {
+            DruhZlucenie = false;
+            DruhCela = false;
+        }
+    }
+
     public bool JeCiselnik => DruhCiselnik;
     public bool JePolozky => !DruhCiselnik;
 

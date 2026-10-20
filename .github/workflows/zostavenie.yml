@@ -78,7 +78,7 @@ jobs:
             Where-Object FullName -match 'Hostx64\\x64' | Select-Object -First 1
           $importy = & $dumpbin.FullName /nologo /imports $dll.FullName
           $kniznice = $importy | ForEach-Object { if ($_ -match '^\s+(\S+\.dll)\s*$') { $Matches[1].ToLowerInvariant() } } | Sort-Object -Unique
-          Write-Host "Importované knižnice: $($kniznice -join ', ')"
+          Write-Host "::notice::ZXing.dll používa len tieto knižnice Windows: $($kniznice -join ', ')"
           $povolene = '^(kernel32\.dll|vcruntime140(_1)?\.dll|msvcp140\.dll|api-ms-win-crt-[a-z0-9-]+\.dll)$'
           $zakazane = $kniznice | Where-Object { $_ -notmatch $povolene }
           if ($zakazane) {

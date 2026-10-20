@@ -70,17 +70,16 @@ public static class VzoryService
             navod.Cell(1, 1).Value = "Ako vyplniť súbor na import do EviTA";
             navod.Cell(1, 1).Style.Font.Bold = true;
             navod.Cell(1, 1).Style.Font.FontSize = 14;
-            navod.Cell(2, 1).Value = "Na hárku Položky je jedna položka v každom riadku. Povinný je len názov. Ukážkové riadky prepíšte vlastnými údajmi. " +
-                                     "Stĺpce, ktoré nepotrebujete, môžete vymazať; názvy stĺpcov nemeňte. Dátumy píšte ako 20.10.2026.";
-            navod.Range(2, 1, 2, 4).Merge().Style.Alignment.WrapText = true;
-            navod.Row(2).Height = 45;
+            navod.Cell(2, 1).Value = "Na hárku Položky je jedna položka v každom riadku. Povinný je len názov.";
+            navod.Cell(3, 1).Value = "Ukážkové riadky prepíšte vlastnými údajmi. Stĺpce, ktoré nepotrebujete, môžete vymazať; názvy stĺpcov nemeňte.";
+            navod.Cell(4, 1).Value = "Dátumy píšte ako 20.10.2026, ceny ako 1089,00. Kategóriu a stav vyberiete zo zoznamu v bunke.";
             string[] hlavicka = { "Stĺpec", "Povinný", "Popis", "Príklad" };
             for (var c = 0; c < hlavicka.Length; c++)
             {
-                navod.Cell(4, c + 1).Value = hlavicka[c];
+                navod.Cell(6, c + 1).Value = hlavicka[c];
             }
 
-            var riadok = 5;
+            var riadok = 7;
             foreach (var s in StlpcePrenosu.Vsetky)
             {
                 navod.Cell(riadok, 1).Value = s.Nazov;
@@ -90,14 +89,14 @@ public static class VzoryService
                 riadok++;
             }
 
-            var hl = navod.Range(4, 1, 4, 4);
+            var hl = navod.Range(6, 1, 6, 4);
             hl.Style.Font.Bold = true;
             hl.Style.Fill.BackgroundColor = XLColor.FromHtml("#DCE6F1");
             navod.Column(1).Width = 22;
             navod.Column(2).Width = 9;
             navod.Column(3).Width = 90;
             navod.Column(4).Width = 26;
-            navod.Range(5, 3, riadok, 3).Style.Alignment.WrapText = true;
+            navod.Range(7, 3, riadok, 3).Style.Alignment.WrapText = true;
             zosit.Worksheet("Položky").SetTabActive();
             zosit.SaveAs(Path.Combine(priecinok, Excel));
         }

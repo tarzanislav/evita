@@ -440,6 +440,11 @@ internal static class Samotest
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
+                if (sekcia is "import" or "evidencia")
+                {
+                    Snimka(okno, "okno_" + sekcia);
+                }
+
                 PrejdiZalozky(okno);
                 Krok($"obrazovka: {sekcia}");
             }
@@ -503,6 +508,7 @@ internal static class Samotest
             exportModel.Formaty.First(f => f.Popis.Format == FormatExportu.Pdf).Vybrany = true;
             Pumpuj();
             Over(exportModel.Format == FormatExportu.Pdf && exportModel.UkazStlpce && exportModel.RozsahOznacene, "okno exportu: formát a rozsah");
+            Snimka(oknoExportu, "okno_export");
             exportModel.ExportovatCommand.Execute(null);
             Pumpuj();
             Over(File.Exists(exportModel.CestaBezDialogu), "export z okna");
@@ -519,15 +525,20 @@ internal static class Samotest
             var oknoImportu = new ImportWindow(sprievodca);
             oknoImportu.Show();
             Pumpuj();
+            Snimka(oknoImportu, "import_1");
             sprievodca.DalejCommand.Execute(null);
             Pumpuj();
+            Snimka(oknoImportu, "import_2");
             Over(sprievodca.Krok == 2 && sprievodca.Priradenia.Count >= 15, $"sprievodca: priradenie stĺpcov (krok {sprievodca.Krok})");
             sprievodca.DalejCommand.Execute(null);
             Pumpuj();
             Over(sprievodca.Krok == 3 && sprievodca.Riadky.Count == 5, $"sprievodca: kontrola (krok {sprievodca.Krok})");
             sprievodca.Riadky[0].Nazov = "";
+            sprievodca.Riadky[2].Cena = "lacné";
             Pumpuj();
+            Snimka(oknoImportu, "import_3");
             Over(sprievodca.Riadky[0].Vysledok == StavRiadku.Chyba, "sprievodca: zmena v tabuľke sa hneď skontroluje");
+            sprievodca.Riadky[2].Cena = "459,00";
             sprievodca.Riadky[0].Nazov = "Notebook zo sprievodcu";
             Pumpuj();
             Over(sprievodca.Riadky[0].MozeImportovat, "sprievodca: opravený riadok");
@@ -538,10 +549,12 @@ internal static class Samotest
             sprievodca.DalejCommand.Execute(null);
             Pumpuj();
             Over(sprievodca.Krok == 4 && sprievodca.NahladPridat.Contains("5 položiek"), $"sprievodca: náhľad ({sprievodca.NahladPridat})");
+            Snimka(oknoImportu, "import_4");
             sprievodca.ImportovatCommand.Execute(null);
             Pumpuj();
             Over(sprievodca.Krok == 5 && sprievodca.Vysledok?.Pridane == 5 && sluzba.NacitajRiadky().Count == predSprievodcom + 5, "sprievodca: import");
             Over(sprievodca.Protokol.Contains("Notebook zo sprievodcu"), "sprievodca: protokol");
+            Snimka(oknoImportu, "import_5");
             sprievodca.VytlacitProtokolCommand.Execute(null);
             sprievodca.VratitImportCommand.Execute(null);
             Pumpuj();
@@ -649,6 +662,41 @@ internal static class Samotest
             {
                 yield return vnoreny;
             }
+        }
+    }
+
+    /// <summary>Uloží obrázok okna do priečinka Export (na kontrolu vzhľadu z vývojových zostavení).</summary>
+    private static void Snimka(Window okno, string nazov)
+    {
+        try
+        {
+            if (okno.Content is not FrameworkElement obsah || obsah.ActualWidth < 1 || obsah.ActualHeight < 1)
+            {
+                return;
+            }
+
+            var sirka = (int)Math.Ceiling(obsah.ActualWidth);
+            var vyska = (int)Math.Ceiling(obsah.ActualHeight);
+            var kresba = new System.Windows.Media.DrawingVisual();
+            using (var kontext = kresba.RenderOpen())
+            {
+                var oblast = new Rect(0, 0, sirka, vyska);
+                kontext.DrawRectangle(okno.Background ?? System.Windows.Media.Brushes.White, null, oblast);
+                kontext.DrawRectangle(new System.Windows.Media.VisualBrush(obsah), null, oblast);
+            }
+
+            var obrazok = new System.Windows.Media.Imaging.RenderTargetBitmap(sirka, vyska, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+            obrazok.Render(kresba);
+            var kodovac = new System.Windows.Media.Imaging.PngBitmapEncoder();
+            kodovac.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(obrazok));
+            var priecinok = Path.Combine(Databaza.Priecinok, "Export");
+            Directory.CreateDirectory(priecinok);
+            using var subor = File.Create(Path.Combine(priecinok, nazov + ".png"));
+            kodovac.Save(subor);
+        }
+        catch (Exception ex)
+        {
+            Krok($"snímka {nazov}: {ex.Message}");
         }
     }
 

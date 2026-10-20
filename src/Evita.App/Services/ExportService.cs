@@ -250,7 +250,7 @@ public sealed class ExportService
         for (var c = 0; c < stlpce.Count; c++)
         {
             var stlpec = harok.Column(c + 1);
-            stlpec.Width = Math.Clamp(stlpce[c].Sirka * 6.5, 10, 60);
+            stlpec.Width = Math.Clamp(Math.Max(stlpce[c].Nazov.Length + 3, stlpce[c].Sirka * 6.5), 10, 60);
             var format = stlpce[c].Typ switch
             {
                 TypStlpca.Datum => "d.m.yyyy",

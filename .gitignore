@@ -15,3 +15,6 @@ installer/Output/
 *.db
 *.db-wal
 *.db-shm
+
+## Natívna čítačka kódov (zostavuje sa pri zostavení programu zo zdrojového kódu zxing-cpp)
+src/Evita.App/Native/

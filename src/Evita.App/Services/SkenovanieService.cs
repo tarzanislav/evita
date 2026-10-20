@@ -106,6 +106,30 @@ public sealed class SkenovanieService
 
     public VysledokSkenu Najdi(string kod) => Najdi(Sken.Z(kod, ZdrojSkenu.Klavesnica));
 
+    /// <summary>
+    /// Z viacerých kódov na jednej fotke (EAN, sériové číslo, QR s odkazom na web …) vyberie ten, ktorý sa hodí:
+    /// najprv kód položky v evidencii, potom EAN výrobku, potom iný kód než webová adresa.
+    /// </summary>
+    public string? VyberKod(IReadOnlyList<string> kody)
+    {
+        if (kody.Count <= 1)
+        {
+            return kody.FirstOrDefault();
+        }
+
+        foreach (var kod in kody)
+        {
+            if (Najdi(Sken.Z(kod, ZdrojSkenu.Kamera)).Najdene)
+            {
+                return kod;
+            }
+        }
+
+        return kody.FirstOrDefault(k => Sken.Z(k, ZdrojSkenu.Kamera).Varianty.Any(v => KodyEvita.NormalizujEan(v) is not null))
+               ?? kody.FirstOrDefault(k => !KodyEvita.JeAdresa(k))
+               ?? kody[0];
+    }
+
     private static (DruhZhody? Druh, List<int> Idcka) NajdiId(EvitaDbContext db, string kod)
     {
         var polozky = db.Polozky.AsNoTracking();

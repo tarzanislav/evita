@@ -43,6 +43,54 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::Niektoré texty nemajú preklad (nastroje/preklady.py kontrola)" }
           exit 0
 
+      - name: Čítačka kódov zxing-cpp zo zdrojového kódu (overená verzia)
+        # natívna knižnica sa nepreberá hotová, ale skompiluje sa tu z pevne určeného commitu a skontroluje sa,
+        # že nevolá sieť, registre ani iné programy (smie používať len jadro Windows a knižnice C/C++)
+        shell: pwsh
+        run: |
+          $verzia = "v3.1.1"
+          $overenyCommit = "287c85df6f961c8efbfb5ffd736cd9457b8b890e"
+          $zdroj = Join-Path $env:RUNNER_TEMP "zxing-cpp"
+          git clone --quiet --depth 1 --branch $verzia https://github.com/zxing-cpp/zxing-cpp $zdroj
+          $commit = (git -C $zdroj rev-parse HEAD).Trim()
+          if ($commit -ne $overenyCommit) {
+            Write-Host "::error::zxing-cpp $verzia má commit $commit, overený je $overenyCommit"
+            exit 1
+          }
+
+          # čítanie aj tvorba kódov (pôvodný kódovač zxing-cpp, bez knižnice zint); nič ďalšie sa nesťahuje
+          # (ZXING_DEPENDENCIES=LOCAL, prázdny priečinok namiesto knižnice stb pre testovací program, ktorý sa nezostavuje)
+          $zostava = Join-Path $env:RUNNER_TEMP "zxing-cpp-build"
+          $prazdny = Join-Path $env:RUNNER_TEMP "zxing-cpp-bez-stb"
+          New-Item -ItemType Directory -Force $prazdny | Out-Null
+          cmake -S $zdroj -B $zostava -A x64 -DBUILD_SHARED_LIBS=ON -DZXING_READERS=ON -DZXING_WRITERS=OLD `
+            -DZXING_C_API=ON -DZXING_EXAMPLES=OFF -DZXING_BLACKBOX_TESTS=OFF -DZXING_UNIT_TESTS=OFF -DZXING_LINK_CPP_STATICALLY=ON `
+            -DZXING_DEPENDENCIES=LOCAL "-DSTB_IMAGE_INCLUDE_DIR=$prazdny"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build $zostava --config Release --target ZXing --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $dll = Get-ChildItem $zostava -Recurse -Filter ZXing.dll | Where-Object FullName -match '\\Release\\' | Select-Object -First 1
+          if (-not $dll) { Write-Host "::error::ZXing.dll sa nezostavila"; exit 1 }
+
+          # kontrola, z ktorých knižníc Windows natívna čítačka volá funkcie
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          $dumpbin = Get-ChildItem (Join-Path $vs "VC\Tools\MSVC") -Recurse -Filter dumpbin.exe |
+            Where-Object FullName -match 'Hostx64\\x64' | Select-Object -First 1
+          $importy = & $dumpbin.FullName /nologo /imports $dll.FullName
+          $kniznice = $importy | ForEach-Object { if ($_ -match '^\s+(\S+\.dll)\s*$') { $Matches[1].ToLowerInvariant() } } | Sort-Object -Unique
+          Write-Host "Importované knižnice: $($kniznice -join ', ')"
+          $povolene = '^(kernel32\.dll|vcruntime140(_1)?\.dll|msvcp140\.dll|api-ms-win-crt-[a-z0-9-]+\.dll)$'
+          $zakazane = $kniznice | Where-Object { $_ -notmatch $povolene }
+          if ($zakazane) {
+            Write-Host "::error::Čítačka kódov používa nepovolené knižnice: $($zakazane -join ', ')"
+            exit 1
+          }
+
+          $hash = (Get-FileHash $dll.FullName -Algorithm SHA256).Hash
+          Write-Host "::notice::ZXing.dll zo zxing-cpp $verzia ($commit), SHA-256 $hash"
+          New-Item -ItemType Directory -Force src/Evita.App/Native | Out-Null
+          Copy-Item $dll.FullName src/Evita.App/Native/ZXing.dll
+
       - name: Zostaviť program
         shell: pwsh
         run: >

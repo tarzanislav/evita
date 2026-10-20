@@ -180,17 +180,24 @@ public sealed class MobilnySkener : IDisposable
                     var text = KodyEvita.Ocisti(Encoding.UTF8.GetString(telo));
                     var vysledok = text.Length == 0
                         ? new VysledokSpracovania(false, Preklad.T("Prázdny kód."))
-                        : await SpracujAsync(text);
+                        : await DoplnZInternetuAsync(text, await SpracujAsync(text));
                     await OdpovedzJsonAsync(prud, text, vysledok);
                     break;
                 }
 
                 case ("POST", "/foto"):
                 {
-                    var text = await PrecitajFotkuAsync(telo);
+                    // na fotke býva viac kódov (EAN, sériové číslo, QR s odkazom) – spracuje sa ten najvhodnejší
+                    var kody = await PrecitajFotkuAsync(telo);
+                    var text = kody.Count == 0 ? null : await Task.Run(() => new SkenovanieService().VyberKod(kody));
                     var vysledok = text is null
                         ? new VysledokSpracovania(false, Preklad.T("Na fotke sa nenašiel žiadny kód. Odfoťte ho zblízka, ostro a bez odleskov."))
-                        : await SpracujAsync(text);
+                        : await DoplnZInternetuAsync(text, await SpracujAsync(text));
+                    if (kody.Count > 1)
+                    {
+                        vysledok = vysledok with { Text = vysledok.Text + " " + Preklad.F($"Na fotke: {string.Join(", ", kody)}.") };
+                    }
+
                     await OdpovedzJsonAsync(prud, text, vysledok);
                     break;
                 }
@@ -214,19 +221,44 @@ public sealed class MobilnySkener : IDisposable
             return vysledok;
         });
 
-    /// <summary>Fotka sa číta vo vlastnom vlákne (dekódovanie obrázka potrebuje vlákno STA).</summary>
-    private static Task<string?> PrecitajFotkuAsync(byte[] fotka)
+    /// <summary>Neznámy EAN: do odpovede pre mobil sa pridá názov výrobku z internetu (ak sa nájde).</summary>
+    private static async Task<VysledokSpracovania> DoplnZInternetuAsync(string text, VysledokSpracovania vysledok)
     {
-        var hotovo = new TaskCompletionSource<string?>();
+        if (vysledok.Uspech || Sken.Z(text, ZdrojSkenu.Mobil).Varianty.Select(KodyEvita.NormalizujEan).FirstOrDefault(e => e is not null) is not { } ean)
+        {
+            return vysledok;
+        }
+
+        try
+        {
+            using var limit = new CancellationTokenSource(TimeSpan.FromSeconds(12));
+            var najdene = await new EanService().HladajAsync(ean, null, limit.Token).ConfigureAwait(false);
+            if (najdene.Najdene.FirstOrDefault(n => n.Nazov is not null) is { } vyrobok)
+            {
+                return vysledok with { Text = vysledok.Text + " " + Preklad.F($"Na internete: {vyrobok.Nazov} ({vyrobok.Zdroj}). Pridajte ho v EviTA: Skenovanie → Nová položka.") };
+            }
+        }
+        catch (Exception)
+        {
+            // bez internetu – stačí základná odpoveď
+        }
+
+        return vysledok;
+    }
+
+    /// <summary>Fotka sa číta vo vlastnom vlákne (dekódovanie obrázka potrebuje vlákno STA).</summary>
+    private static Task<List<string>> PrecitajFotkuAsync(byte[] fotka)
+    {
+        var hotovo = new TaskCompletionSource<List<string>>();
         var vlakno = new Thread(() =>
         {
             try
             {
-                hotovo.SetResult(CiarovyKod.PrecitajZObrazka(fotka));
+                hotovo.SetResult(CiarovyKod.PrecitajVsetkyZObrazka(fotka));
             }
             catch (Exception)
             {
-                hotovo.SetResult(null);
+                hotovo.SetResult(new List<string>());
             }
         })
         {
@@ -398,11 +430,11 @@ public sealed class MobilnySkener : IDisposable
               return new Promise((hotovo, chyba) => {
                 const obr = new Image();
                 obr.onload = () => {
-                  const m = Math.min(1, 1600 / Math.max(obr.width, obr.height));
+                  const m = Math.min(1, 2400 / Math.max(obr.width, obr.height));
                   const c = document.createElement('canvas');
                   c.width = Math.round(obr.width * m); c.height = Math.round(obr.height * m);
                   c.getContext('2d').drawImage(obr, 0, 0, c.width, c.height);
-                  c.toBlob(b => b ? hotovo(b) : chyba(), 'image/jpeg', 0.9);
+                  c.toBlob(b => b ? hotovo(b) : chyba(), 'image/jpeg', 0.92);
                 };
                 obr.onerror = chyba;
                 obr.src = URL.createObjectURL(subor);

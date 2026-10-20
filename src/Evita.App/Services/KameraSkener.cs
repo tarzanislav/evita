@@ -169,7 +169,8 @@ public sealed class KameraSkener : IAsyncDisposable
             {
                 try
                 {
-                    if (CiarovyKod.Precitaj(snimka.Data, snimka.Sirka, snimka.Vyska) is { } text)
+                    var kody = CiarovyKod.PrecitajVsetky(snimka.Data, snimka.Sirka, snimka.Vyska);
+                    if (new SkenovanieService().VyberKod(kody) is { } text)
                     {
                         Kod?.Invoke(text);
                     }

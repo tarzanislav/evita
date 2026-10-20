@@ -1,10 +1,8 @@
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Media;
-using ZXing;
-using ZXing.Common;
-using ZXing.OneD;
-using ZXing.QrCode;
-using ZXing.QrCode.Internal;
+using System.Windows.Media.Imaging;
 
 namespace Evita.Services;
 
@@ -16,25 +14,27 @@ public enum DruhKodu
     Ziadny = 2,
 }
 
-/// <summary>Vytvorenie QR a čiarových kódov (Code 128) a ich čítanie z obrázka (kamera, fotka z mobilu).</summary>
+/// <summary>
+/// Vytvorenie QR a čiarových kódov (Code 128) a ich čítanie z obrázka (kamera, fotka z mobilu).
+/// Používa jedinú knižnicu – zxing-cpp (Apache-2.0). Jej natívnu časť ZXing.dll zostavuje GitHub Actions
+/// zo zdrojového kódu overenej verzie a pri každom zostavení kontroluje, že nepoužíva sieť, registre
+/// ani spúšťanie iných programov. Program kódy z obrázkov len číta – nič z nich nespúšťa ani neotvára.
+/// </summary>
 public static class CiarovyKod
 {
+    /// <summary>Najdlhší text kódu, ktorý program spracuje (dlhší je určite nezmysel alebo pokus o zneužitie).</summary>
+    public const int NajdlhsiKod = 512;
+
     /// <summary>Moduly QR kódu (true = čierny štvorček), bez okraja.</summary>
     public static bool[,] Qr(string text)
     {
-        var napovedy = new Dictionary<EncodeHintType, object>
+        var (data, sirka, vyska) = Vytvor(ZXingCpp.BarcodeFormat.QRCode, text, "ecLevel=3");
+        var moduly = new bool[sirka, vyska];
+        for (var y = 0; y < vyska; y++)
         {
-            [EncodeHintType.MARGIN] = 0,
-            [EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.M,
-            [EncodeHintType.CHARACTER_SET] = "UTF-8",
-        };
-        var matica = new QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, 0, 0, napovedy);
-        var moduly = new bool[matica.Width, matica.Height];
-        for (var x = 0; x < matica.Width; x++)
-        {
-            for (var y = 0; y < matica.Height; y++)
+            for (var x = 0; x < sirka; x++)
             {
-                moduly[x, y] = matica[x, y];
+                moduly[x, y] = data[y * sirka + x] < 128;
             }
         }
 
@@ -42,10 +42,41 @@ public static class CiarovyKod
     }
 
     /// <summary>Pruhy čiarového kódu Code 128 (true = čierny modul), bez okrajov.</summary>
-    public static bool[] Code128(string text) => new Code128Writer().encode(text);
+    public static bool[] Code128(string text)
+    {
+        var (data, sirka, _) = Vytvor(ZXingCpp.BarcodeFormat.Code128, text, null);
+        var pruhy = new bool[sirka];
+        for (var x = 0; x < sirka; x++)
+        {
+            pruhy[x] = data[x] < 128;
+        }
+
+        return pruhy;
+    }
 
     /// <summary>Text, ktorý sa dá zapísať do Code 128 (len znaky ASCII bez riadiacich).</summary>
     public static bool DaSaZapisatDoCode128(string text) => text.Length > 0 && text.All(z => z is >= ' ' and <= '~');
+
+    /// <summary>Kód ako obrázok v odtieňoch sivej, 1 bod na modul, bez okrajov a bez textu.</summary>
+    private static (byte[] Data, int Sirka, int Vyska) Vytvor(ZXingCpp.BarcodeFormat format, string text, string? moznosti)
+    {
+        try
+        {
+            using var nastavenia = new ZXingCpp.CreatorOptions(format, moznosti);
+
+            // text s diakritikou sa zapíše ako bajty UTF-8 (čítačky ich rozpoznajú)
+            using var kod = text.All(z => z < 128)
+                ? new ZXingCpp.Barcode(text, nastavenia)
+                : new ZXingCpp.Barcode(Encoding.UTF8.GetBytes(text), nastavenia);
+            using var zapis = new ZXingCpp.WriterOptions { Scale = 1, AddQuietZones = false, AddHRT = false };
+            using var obraz = kod.ToImage(zapis);
+            return (obraz.ToArray(), obraz.Width, obraz.Height);
+        }
+        catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
+        {
+            throw new EvitaException(Preklad.T("Knižnica na čiarové a QR kódy (ZXing.dll) chýba alebo je poškodená. Preinštalujte EviTA."), ex);
+        }
+    }
 
     /// <summary>QR kód ako obrázok pre okno (napr. adresa pre mobil). Rozmer je v jednotkách WPF vrátane okraja.</summary>
     public static ImageSource ObrazokQr(string text, double velkost = 220)
@@ -75,79 +106,108 @@ public static class CiarovyKod
         return obrazok;
     }
 
-    private static readonly BarcodeFormat[] CitaneFormaty =
-    {
-        BarcodeFormat.QR_CODE, BarcodeFormat.CODE_128, BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A,
-        BarcodeFormat.UPC_E, BarcodeFormat.CODE_39, BarcodeFormat.DATA_MATRIX, BarcodeFormat.ITF,
-    };
+    // ------------------------------------------------------------------ čítanie
 
-    /// <summary>Prečíta kód z obrázka v pamäti (BGRA, 4 bajty na bod). Vráti text alebo null.</summary>
-    public static string? Precitaj(byte[] bgra, int sirka, int vyska, bool dokladne = true)
+    /// <summary>Všetky kódy v obrázku v pamäti (BGRA, 4 bajty na bod) – na fotke ich býva viac (EAN, sériové číslo, QR).</summary>
+    public static List<string> PrecitajVsetky(byte[] bgra, int sirka, int vyska, bool dokladne = true)
     {
-        var citac = new BarcodeReaderGeneric
+        var vysledok = new List<string>();
+        var pamat = GCHandle.Alloc(bgra, GCHandleType.Pinned);
+        try
         {
-            AutoRotate = dokladne,
-            Options = new DecodingOptions
+            var obraz = new ZXingCpp.ImageView(pamat.AddrOfPinnedObject(), sirka, vyska, ZXingCpp.ImageFormat.BGRA);
+            using var citac = new ZXingCpp.BarcodeReader
             {
                 TryHarder = dokladne,
-                TryInverted = dokladne,
-                PossibleFormats = CitaneFormaty,
-            },
-        };
-        var vysledok = citac.Decode(bgra, sirka, vyska, RGBLuminanceSource.BitmapFormat.BGRA32);
-        return string.IsNullOrWhiteSpace(vysledok?.Text) ? null : vysledok.Text.Trim();
+                TryRotate = true,
+                TryInvert = dokladne,
+                TryDownscale = true,
+                MaxNumberOfSymbols = 10,
+            };
+            foreach (var kod in citac.From(obraz))
+            {
+                using (kod)
+                {
+                    var text = kod.IsValid ? KodyEvita.Ocisti(kod.Text) : "";
+                    if (text.Length > 0 && text.Length <= NajdlhsiKod && !vysledok.Contains(text))
+                    {
+                        vysledok.Add(text);
+                    }
+                }
+            }
+
+            GC.KeepAlive(obraz);
+        }
+        catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
+        {
+            throw new EvitaException(Preklad.T("Knižnica na čiarové a QR kódy (ZXing.dll) chýba alebo je poškodená. Preinštalujte EviTA."), ex);
+        }
+        finally
+        {
+            pamat.Free();
+        }
+
+        return vysledok;
     }
 
-    /// <summary>Prečíta kód z obrázka v súbore (JPEG, PNG … – fotka z mobilu). Veľké fotky sa zmenšia.</summary>
-    public static string? PrecitajZObrazka(byte[] subor)
+    /// <summary>Prvý kód v obrázku (BGRA), alebo null.</summary>
+    public static string? Precitaj(byte[] bgra, int sirka, int vyska, bool dokladne = true) =>
+        PrecitajVsetky(bgra, sirka, vyska, dokladne).FirstOrDefault();
+
+    /// <summary>Všetky kódy z obrázka v súbore (JPEG, PNG … – fotka z mobilu). Číta sa vo vysokom rozlíšení.</summary>
+    public static List<string> PrecitajVsetkyZObrazka(byte[] subor)
     {
         using var prud = new System.IO.MemoryStream(subor);
-        var dekoder = System.Windows.Media.Imaging.BitmapDecoder.Create(prud,
-            System.Windows.Media.Imaging.BitmapCreateOptions.PreservePixelFormat | System.Windows.Media.Imaging.BitmapCreateOptions.IgnoreColorProfile,
-            System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
-        System.Windows.Media.Imaging.BitmapSource snimka = dekoder.Frames[0];
+        var dekoder = BitmapDecoder.Create(prud, BitmapCreateOptions.PreservePixelFormat | BitmapCreateOptions.IgnoreColorProfile,
+            BitmapCacheOption.OnLoad);
+        BitmapSource snimka = dekoder.Frames[0];
 
         // orientácia z EXIF (mobil ukladá fotku otočenú a informáciu o otočení zapíše zvlášť)
         var otocenie = OtocenieZExif(dekoder.Frames[0]);
         if (otocenie != 0)
         {
-            snimka = new System.Windows.Media.Imaging.TransformedBitmap(snimka, new RotateTransform(otocenie));
+            snimka = new TransformedBitmap(snimka, new RotateTransform(otocenie));
         }
 
-        foreach (var najvacsia in new[] { 1600, 2400, 1000 })
+        var vysledok = new List<string>();
+        foreach (var najvacsia in new[] { 3200, 1600 })
         {
             var zdroj = snimka;
             var vacsia = Math.Max(zdroj.PixelWidth, zdroj.PixelHeight);
             if (vacsia > najvacsia)
             {
                 var mierka = (double)najvacsia / vacsia;
-                zdroj = new System.Windows.Media.Imaging.TransformedBitmap(zdroj, new ScaleTransform(mierka, mierka));
+                zdroj = new TransformedBitmap(zdroj, new ScaleTransform(mierka, mierka));
             }
 
-            var bgra = new System.Windows.Media.Imaging.FormatConvertedBitmap(zdroj, PixelFormats.Bgra32, null, 0);
-            var sirka = bgra.PixelWidth;
-            var vyska = bgra.PixelHeight;
-            var data = new byte[sirka * vyska * 4];
-            bgra.CopyPixels(data, sirka * 4, 0);
-            if (Precitaj(data, sirka, vyska) is { } text)
+            var bgra = new FormatConvertedBitmap(zdroj, PixelFormats.Bgra32, null, 0);
+            var data = new byte[bgra.PixelWidth * bgra.PixelHeight * 4];
+            bgra.CopyPixels(data, bgra.PixelWidth * 4, 0);
+            foreach (var kod in PrecitajVsetky(data, bgra.PixelWidth, bgra.PixelHeight))
             {
-                return text;
+                if (!vysledok.Contains(kod))
+                {
+                    vysledok.Add(kod);
+                }
             }
 
-            if (vacsia <= najvacsia)
+            if (vysledok.Count > 0 || vacsia <= najvacsia)
             {
                 break;
             }
         }
 
-        return null;
+        return vysledok;
     }
 
-    private static double OtocenieZExif(System.Windows.Media.Imaging.BitmapFrame snimka)
+    /// <summary>Prvý kód z obrázka v súbore, alebo null.</summary>
+    public static string? PrecitajZObrazka(byte[] subor) => PrecitajVsetkyZObrazka(subor).FirstOrDefault();
+
+    private static double OtocenieZExif(BitmapFrame snimka)
     {
         try
         {
-            if (snimka.Metadata is System.Windows.Media.Imaging.BitmapMetadata metadata
+            if (snimka.Metadata is BitmapMetadata metadata
                 && metadata.ContainsQuery("System.Photo.Orientation")
                 && metadata.GetQuery("System.Photo.Orientation") is ushort orientacia)
             {

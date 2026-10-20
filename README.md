@@ -162,7 +162,22 @@ Odinštalovanie programu databázu ani zálohy nemaže.
 
 - C# / .NET 10 (LTS), WPF s Fluent vzhľadom Windows 11
 - SQLite cez Entity Framework Core
-- Čiarové a QR kódy: ZXing.Net; kamera cez Windows.Media.Capture
+- Čiarové a QR kódy: [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) v3.1.1 (Apache-2.0); kamera cez Windows.Media.Capture
+
+### Bezpečnosť čítačky kódov
+
+- Knižnica na kódy sa **nepreberá ako hotový súbor**. Pri každom zostavení ju GitHub Actions skompiluje zo zdrojového
+  kódu pevne určenej verzie (v3.1.1, commit `287c85df6f961c8efbfb5ffd736cd9457b8b890e` – iný commit zostavenie
+  odmietne), bez sťahovania ďalších závislostí. Do záznamu zostavenia sa zapíše kontrolný súčet SHA-256 knižnice.
+- Zostavenie skontroluje, z ktorých knižníc Windows `ZXing.dll` volá funkcie. Povolené je len jadro systému a knižnice
+  C/C++ – ak by knižnica používala sieť, registre, prehliadač, kryptografiu či spúšťanie programov, zostavenie zlyhá.
+- Zdrojový kód zxing-cpp bol preverený: neobsahuje sieťovú komunikáciu, spúšťanie programov ani prístup k registrom;
+  zápis súborov je len v ladiacom režime, ktorý sa do programu nekompiluje. .NET obal (`ZXingCpp.cs`) je prevzatý
+  bez zmien z tej istej verzie.
+- Naskenovaný kód je pre EviTA len text na vyhľadanie v evidencii (parametrický dopyt do databázy): nikdy sa nespúšťa,
+  odkazy z QR kódov sa neotvárajú a dlhý text sa skráti na 512 znakov.
+- Čítačka sa pripája ako klávesnica (USB/Bluetooth HID) – **nepotrebuje žiadny ovládač ani program od výrobcu**.
+  Kupujte čítačky renomovaných značiek a neinštalujte k nim softvér z neznámych zdrojov.
 - Inštalátor: Inno Setup, zostavuje sa automaticky cez GitHub Actions pri každej zmene vetvy `main`
 
 Štruktúra:

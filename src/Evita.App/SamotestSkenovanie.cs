@@ -45,6 +45,9 @@ internal static partial class Samotest
             "EAN-13, EAN-8, UPC-A a kontrolná číslica");
 
         // --------------------------------------------------------------- QR a čiarový kód tam a späť
+        var nativna = Path.Combine(AppContext.BaseDirectory, "ZXing.dll");
+        Over(File.Exists(nativna), "čítačka kódov zxing-cpp (ZXing.dll zostavená zo zdrojového kódu) je pri programe");
+        Krok($"ZXing.dll: {new FileInfo(nativna).Length} B, SHA-256 {Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(nativna)))}");
         var qr = CiarovyKod.Qr("EVITA-5");
         Over(qr.GetLength(0) == 21 && qr.GetLength(1) == 21, $"QR kód krátkeho textu má 21 × 21 modulov (má {qr.GetLength(0)})");
         var (qrData, qrSirka, qrVyska) = ObrazokQr("EVITA-5", 6);
@@ -55,6 +58,19 @@ internal static partial class Samotest
         File.WriteAllBytes(Path.Combine(exportPriecinok, "sken_qr.png"), png);
         Over(CiarovyKod.PrecitajZObrazka(png) == "EVITA-5", "QR kód z obrázka PNG (fotka z mobilu)");
         Over(CiarovyKod.Precitaj(new byte[100 * 100 * 4], 100, 100) is null, "prázdny obrázok – žiadny kód");
+        var qrSDiakritikou = ObrazokQr("INV-2026/0123 žltý", 5);
+        Over(CiarovyKod.Precitaj(qrSDiakritikou.Data, qrSDiakritikou.Sirka, qrSDiakritikou.Vyska) == "INV-2026/0123 žltý", "QR kód s diakritikou");
+
+        // kódy GS1 a viac kódov na jednej fotke (krabica: EAN, sériové číslo, QR s odkazom na web)
+        Over(KodyEvita.GtinZGs1("(01)04006381333931(10)ABC") == "4006381333931" && KodyEvita.GtinZGs1("0104006381333931") == "4006381333931"
+             && KodyEvita.GtinZGs1("https://id.gs1.org/01/04006381333931/21/123") == "4006381333931" && KodyEvita.GtinZGs1("http://eaton.eu/3SMini") is null,
+            "GTIN z kódu GS1 a z odkazu GS1 Digital Link");
+        Over(KodyEvita.Varianty("https://example.com/01/04006381333931").Contains("4006381333931"), "GTIN z odkazu je medzi podobami kódu");
+        var (dveData, dveSirka, dveVyska) = DvaKody("http://eaton.eu/3SMini", "EVITA-5");
+        var dva = CiarovyKod.PrecitajVsetky(dveData, dveSirka, dveVyska);
+        Over(dva.Count == 2 && dva.Contains("http://eaton.eu/3SMini") && dva.Contains("EVITA-5"), $"dva kódy na jednom obrázku ({string.Join(", ", dva)})");
+        var dvaPng = Png(dveData, dveSirka, dveVyska);
+        File.WriteAllBytes(Path.Combine(exportPriecinok, "sken_dva_kody.png"), dvaPng);
 
         // --------------------------------------------------------------- vyhľadanie položky podľa kódu
         var sluzba = new PolozkaService();
@@ -77,6 +93,10 @@ internal static partial class Samotest
         Over(podlaCisla.Polozky.Any(p => p.Id == riadky[3].Id), "prírastkové číslo napísané ručne");
         var neznamy = skenovanie.Najdi("NEZNAMY-KOD-XYZ");
         Over(!neznamy.Najdene && neznamy.Ean is null, "neznámy kód");
+        Over(skenovanie.VyberKod(new[] { "http://eaton.eu/3SMini", KodyEvita.KodPolozky(prva.PrirastkoveCislo) }) == KodyEvita.KodPolozky(prva.PrirastkoveCislo)
+             && skenovanie.VyberKod(new[] { "http://eaton.eu/3SMini", "C9507R", "6972470564259" }) == "6972470564259"
+             && skenovanie.VyberKod(new[] { "http://eaton.eu/3SMini", "C9507R" }) == "C9507R",
+            "výber kódu z fotky: položka v evidencii, potom EAN, webová adresa až nakoniec");
         var neexistujuci = skenovanie.Najdi("EVITA-999999");
         Over(!neexistujuci.Najdene && neexistujuci.JeStitokEviTA, "štítok EviTA neexistujúcej položky");
 
@@ -187,6 +207,12 @@ internal static partial class Samotest
             var foto = Cakaj(http.PostAsync($"{zaklad}/foto?k={server.Kluc}", new ByteArrayContent(png)));
             var fotoJson = Cakaj(foto.Content.ReadAsStringAsync());
             Over(fotoJson.Contains("\"ok\":true") && prijimac.Prijate.LastOrDefault() == "EVITA-5", $"mobil: kód z fotky ({fotoJson})");
+            var dveFoto = Cakaj(http.PostAsync($"{zaklad}/foto?k={server.Kluc}", new ByteArrayContent(dvaPng)));
+            var dveJson = Cakaj(dveFoto.Content.ReadAsStringAsync());
+            Over(dveJson.Contains("\"ok\":true") && prijimac.Prijate.LastOrDefault() == "EVITA-5", $"mobil: z fotky s dvoma kódmi sa spracuje kód položky ({dveJson})");
+            var dlhy = Cakaj(http.PostAsync($"{zaklad}/kod?k={server.Kluc}", new StringContent(new string('A', 5000), Encoding.UTF8)));
+            Cakaj(dlhy.Content.ReadAsStringAsync());
+            Over(prijimac.Prijate.LastOrDefault()?.Length <= KodyEvita.NajdlhsiKod, "mobil: príliš dlhý kód sa skráti");
             Krok($"mobil: adresy počítača {string.Join(", ", MobilnySkener.AdresyPocitaca())}, port {server.Port}");
         }
         finally
@@ -391,6 +417,30 @@ internal static partial class Samotest
         }
 
         return (data, strana, strana);
+    }
+
+    /// <summary>Dva QR kódy vedľa seba (ako na krabici výrobku).</summary>
+    private static (byte[] Data, int Sirka, int Vyska) DvaKody(string prvy, string druhy)
+    {
+        var a = ObrazokQr(prvy, 5);
+        var b = ObrazokQr(druhy, 5);
+        var vyska = Math.Max(a.Vyska, b.Vyska);
+        var sirka = a.Sirka + b.Sirka;
+        var data = Biely(sirka, vyska);
+        for (var y = 0; y < vyska; y++)
+        {
+            if (y < a.Vyska)
+            {
+                Array.Copy(a.Data, y * a.Sirka * 4, data, y * sirka * 4, a.Sirka * 4);
+            }
+
+            if (y < b.Vyska)
+            {
+                Array.Copy(b.Data, y * b.Sirka * 4, data, (y * sirka + a.Sirka) * 4, b.Sirka * 4);
+            }
+        }
+
+        return (data, sirka, vyska);
     }
 
     /// <summary>Čiarový kód Code 128 ako obrázok BGRA.</summary>

@@ -96,6 +96,9 @@
                                                     <TextBlock Text="{Binding Detail}" FontSize="12" TextTrimming="CharacterEllipsis"
                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                                Visibility="{Binding Detail, Converter={StaticResource NieJePrazdne}}" />
+                                                    <TextBlock Text="{Binding NaInternete}" FontSize="12" TextTrimming="CharacterEllipsis"
+                                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                               Visibility="{Binding NaInternete, Converter={StaticResource NieJePrazdne}}" />
                                                     <TextBlock FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}">
                                                         <Run Text="{Binding Cas, Mode=OneWay}" /> · <Run Text="{Binding Zdroj, Mode=OneWay}" /> · <Run Text="{Binding Kod, Mode=OneWay}" />
                                                     </TextBlock>

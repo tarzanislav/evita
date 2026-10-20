@@ -11,8 +11,11 @@ using Evita.Views;
 namespace Evita.ViewModels;
 
 /// <summary>Jeden naskenovaný kód v zozname posledných skenov.</summary>
-public sealed class SkenRiadok
+public sealed partial class SkenRiadok : ObservableObject
 {
+    /// <summary>Výrobok nájdený na internete podľa neznámeho EAN (dopĺňa sa na pozadí).</summary>
+    [ObservableProperty] private string _naInternete = "";
+
     public SkenRiadok(VysledokSkenu vysledok)
     {
         Vysledok = vysledok;
@@ -128,7 +131,13 @@ public partial class SkenovanieViewModel : ObservableObject, IObnovitelny, IPrij
     public VysledokSkenu Vyhladaj(Sken sken)
     {
         var vysledok = _sluzba.Najdi(sken);
-        Posledne.Insert(0, new SkenRiadok(vysledok));
+        var riadok = new SkenRiadok(vysledok);
+        Posledne.Insert(0, riadok);
+        if (!vysledok.Najdene && vysledok.Ean is { } ean && !Dialogy.TichyRezim)
+        {
+            _ = HladajNaInternete(riadok, ean);
+        }
+
         while (Posledne.Count > 50)
         {
             Posledne.RemoveAt(Posledne.Count - 1);
@@ -136,6 +145,23 @@ public partial class SkenovanieViewModel : ObservableObject, IObnovitelny, IPrij
 
         OnPropertyChanged(nameof(MaPosledne));
         return vysledok;
+    }
+
+    /// <summary>Neznámy EAN: názov výrobku z internetu sa ukáže v zozname posledných skenov.</summary>
+    private static async Task HladajNaInternete(SkenRiadok riadok, string ean)
+    {
+        riadok.NaInternete = Preklad.T("Hľadám výrobok na internete…");
+        try
+        {
+            var najdene = await new EanService().HladajAsync(ean);
+            riadok.NaInternete = najdene.Najdene.FirstOrDefault(n => n.Nazov is not null) is { } vyrobok
+                ? Preklad.F($"Na internete: {vyrobok.Nazov} ({vyrobok.Zdroj})")
+                : Preklad.T("Výrobok sa na internete nenašiel.");
+        }
+        catch (Exception)
+        {
+            riadok.NaInternete = "";
+        }
     }
 
     /// <summary>Je otvorené iné okno než hlavné (karta položky, dialóg …) – vtedy sa ďalšie okno neotvára.</summary>

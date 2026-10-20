@@ -75,8 +75,17 @@ public static partial class KodyEvita
             Pridaj(VymenYZ(zdroj));
         }
 
+        // GTIN (EAN) ukrytý v kóde GS1: „(01)05901234123457(10)…“ alebo webová adresa „…/01/05901234123457/…“
+        foreach (var kod in vysledok.ToList())
+        {
+            Pridaj(GtinZGs1(kod));
+        }
+
         return vysledok;
     }
+
+    /// <summary>Najdlhší spracovaný kód – dlhší text sa skráti (ochrana pred zneužitím čítačky alebo mobilu).</summary>
+    public const int NajdlhsiKod = 512;
 
     /// <summary>Odstráni neviditeľné znaky (Tab, prefix GS1, koniec riadka) a medzery na začiatku a konci.</summary>
     public static string Ocisti(string? text)
@@ -84,6 +93,11 @@ public static partial class KodyEvita
         if (string.IsNullOrEmpty(text))
         {
             return "";
+        }
+
+        if (text.Length > NajdlhsiKod)
+        {
+            text = text[..NajdlhsiKod];
         }
 
         var sb = new StringBuilder(text.Length);
@@ -136,6 +150,45 @@ public static partial class KodyEvita
 
         return new string(znaky);
     }
+
+    /// <summary>GTIN z kódu GS1-128, GS1 DataMatrix/QR alebo z webovej adresy GS1 Digital Link (ako EAN-13), inak null.</summary>
+    public static string? GtinZGs1(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return null;
+        }
+
+        var zhoda = Gs1Gtin().Match(text);
+        if (!zhoda.Success)
+        {
+            zhoda = Gs1Adresa().Match(text);
+        }
+
+        if (!zhoda.Success)
+        {
+            return null;
+        }
+
+        var gtin = zhoda.Groups[1].Value;
+        if (gtin.Length == 14 && gtin[0] == '0')
+        {
+            gtin = gtin[1..];
+        }
+
+        return NormalizujEan(gtin);
+    }
+
+    [GeneratedRegex(@"^(?:\][A-Za-z][0-9])?\(?01\)?([0-9]{14})", RegexOptions.CultureInvariant)]
+    private static partial Regex Gs1Gtin();
+
+    [GeneratedRegex(@"^https?://[^ ]*?/01/([0-9]{8,14})(?:[/?#]|$)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex Gs1Adresa();
+
+    /// <summary>Text je webová adresa (QR kód na krabici často obsahuje len odkaz na stránku výrobcu).</summary>
+    public static bool JeAdresa(string? text) =>
+        text is not null && (text.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || text.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                             || text.StartsWith("www.", StringComparison.OrdinalIgnoreCase));
 
     // ------------------------------------------------------------------ EAN
 

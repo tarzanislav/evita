@@ -277,7 +277,7 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         if (UkazAutomaticke)
         {
             legenda.Add(new PolozkaLegendy("koniec záruky", KalendarService.FarbaZaruky));
-            legenda.Add(new PolozkaLegendy("záloha", KalendarService.FarbaZaloh));
+            legenda.Add(new PolozkaLegendy("záloha", KalendarService.FarbaZalohy));
         }
 
         Legenda = legenda;

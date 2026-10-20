@@ -72,6 +72,55 @@ public sealed class PdfZostava
     private const double Okraj = 1.2;
     private readonly int _velkostPisma;
 
+    private static readonly Dictionary<string, string> _pisma = new();
+
+    /// <summary>
+    /// Písmo zostáv: Segoe UI, pre čínštinu prvé nainštalované písmo s čínskymi znakmi, ktoré PDFsharp dokáže použiť.
+    /// </summary>
+    public static string Pismo
+    {
+        get
+        {
+            var kod = Preklad.Aktualny.Kod;
+            lock (_pisma)
+            {
+                if (_pisma.TryGetValue(kod, out var znameNazov))
+                {
+                    return znameNazov;
+                }
+
+                var nazov = "Segoe UI";
+                if (kod == "zh")
+                {
+                    var nainstalovane = System.Windows.Media.Fonts.SystemFontFamilies
+                        .Select(f => f.Source).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    foreach (var kandidat in new[] { "Microsoft YaHei", "Microsoft YaHei UI", "DengXian", "SimHei", "SimSun", "NSimSun", "Microsoft JhengHei", "Malgun Gothic", "Yu Gothic", "MS Gothic" })
+                    {
+                        if (!nainstalovane.Contains(kandidat))
+                        {
+                            continue;
+                        }
+
+                        try
+                        {
+                            _ = new PdfSharp.Drawing.XFont(kandidat, 10);
+                            _ = new PdfSharp.Drawing.XFont(kandidat, 10, PdfSharp.Drawing.XFontStyleEx.Bold);
+                            nazov = kandidat;
+                            break;
+                        }
+                        catch (Exception)
+                        {
+                            // písmo PDFsharp nevie načítať – skúsi sa ďalšie
+                        }
+                    }
+                }
+
+                _pisma[kod] = nazov;
+                return nazov;
+            }
+        }
+    }
+
     public PdfZostava(string titulok, string? podtitulok, bool naSirku, int velkostPisma = 8)
     {
         Titulok = titulok;
@@ -84,8 +133,7 @@ public sealed class PdfZostava
         Dokument.Info.Title = titulok;
         Dokument.Info.Author = "EviTA";
         var normal = Dokument.Styles[StyleNames.Normal]!;
-        // Segoe UI nemá čínske znaky – pre čínštinu písmo Microsoft YaHei (súčasť Windows)
-        normal.Font.Name = Preklad.Aktualny.Kod == "zh" ? "Microsoft YaHei" : "Segoe UI";
+        normal.Font.Name = Pismo;
         normal.Font.Size = velkostPisma;
 
         Sekcia = Dokument.AddSection();

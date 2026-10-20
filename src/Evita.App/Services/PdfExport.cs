@@ -1,3 +1,4 @@
+using System.Globalization;
 using Evita.Models;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
@@ -10,8 +11,22 @@ internal static class PdfExport
 {
     public static void Zapis(string cesta, string titulok, string popis, IReadOnlyList<StlpecPrenosu> stlpce, IReadOnlyList<Polozka> polozky)
     {
-        var naSirku = stlpce.Count > 5;
-        var velkostPisma = stlpce.Count > 10 ? 7 : 8;
+        var texty = polozky.Select(p => stlpce.Select(s => Text(StlpcePrenosu.Hodnota(p, s.Kluc), s.Typ)).ToArray()).ToList();
+
+        // šírky stĺpcov podľa obsahu: najdlhšie slovo (nezalomí sa) a typická dĺžka textu
+        var vahy = new double[stlpce.Count];
+        for (var i = 0; i < stlpce.Count; i++)
+        {
+            var hlavicka = Hlavicka(stlpce[i]).Split(' ').Max(w => w.Length);
+            var dlzky = texty.Select(t => t[i].Length).OrderBy(x => x).ToList();
+            var typicka = dlzky.Count == 0 ? 0 : dlzky[(int)Math.Floor((dlzky.Count - 1) * 0.9)];
+            var slovo = texty.Count == 0 ? 0 : texty.Max(t => t[i].Split(' ').Max(w => w.Length));
+            vahy[i] = Math.Max(hlavicka, Math.Max(Math.Min(slovo, 16), Math.Min(typicka, 30) * 0.7)) + 1.5;
+        }
+
+        var spolu = vahy.Sum();
+        var naSirku = spolu > 105 || stlpce.Count > 7;
+        var velkostPisma = spolu > 190 ? 7 : 8;
         const double okraj = 1.2;
         var sirkaStrany = naSirku ? 29.7 : 21.0;
         var sirkaTabulky = sirkaStrany - 2 * okraj;
@@ -50,10 +65,9 @@ internal static class PdfExport
         tabulka.TopPadding = Unit.FromPoint(1.5);
         tabulka.BottomPadding = Unit.FromPoint(1.5);
 
-        var spolu = stlpce.Sum(s => s.Sirka);
-        foreach (var s in stlpce)
+        foreach (var vaha in vahy)
         {
-            tabulka.AddColumn(Unit.FromCentimeter(sirkaTabulky * s.Sirka / spolu));
+            tabulka.AddColumn(Unit.FromCentimeter(sirkaTabulky * vaha / spolu));
         }
 
         var hlavicka = tabulka.AddRow();
@@ -62,12 +76,13 @@ internal static class PdfExport
         hlavicka.Shading.Color = new Color(220, 230, 241);
         for (var i = 0; i < stlpce.Count; i++)
         {
-            hlavicka.Cells[i].AddParagraph(stlpce[i].Nazov);
+            hlavicka.Cells[i].AddParagraph(Hlavicka(stlpce[i]));
         }
 
         var poradie = 0;
-        foreach (var p in polozky)
+        for (var index = 0; index < polozky.Count; index++)
         {
+            var p = polozky[index];
             var riadok = tabulka.AddRow();
             if (poradie++ % 2 == 1)
             {
@@ -81,9 +96,7 @@ internal static class PdfExport
 
             for (var i = 0; i < stlpce.Count; i++)
             {
-                var text = Prevod.TextZobrazenia(StlpcePrenosu.Hodnota(p, stlpce[i].Kluc), stlpce[i].Typ)
-                    .Replace("\r\n", " / ").Replace('\n', ' ').Replace('\r', ' ');
-                var odsek = riadok.Cells[i].AddParagraph(text);
+                var odsek = riadok.Cells[i].AddParagraph(texty[index][i]);
                 if (stlpce[i].Typ is TypStlpca.CeleCislo or TypStlpca.Suma)
                 {
                     odsek.Format.Alignment = ParagraphAlignment.Right;
@@ -103,5 +116,20 @@ internal static class PdfExport
         var vykreslenie = new PdfDocumentRenderer { Document = dokument };
         vykreslenie.RenderDocument();
         vykreslenie.PdfDocument.Save(cesta);
+    }
+
+    private static string Hlavicka(StlpecPrenosu stlpec) => stlpec.Kluc == StlpcePrenosu.Cislo ? "Č." : stlpec.Nazov;
+
+    /// <summary>Text bunky: kompaktné dátumy (20.10.2026), suma s nezalomiteľnou medzerou pred €, bez zalomení riadkov.</summary>
+    private static string Text(object? hodnota, TypStlpca typ)
+    {
+        var text = hodnota switch
+        {
+            DateTime d when typ == TypStlpca.DatumCas && d.TimeOfDay != TimeSpan.Zero => d.ToString("d.M.yyyy H:mm", CultureInfo.InvariantCulture),
+            DateTime d => d.ToString("d.M.yyyy", CultureInfo.InvariantCulture),
+            decimal s => s.ToString("N2", Sk.Kultura) + "\u00A0€",
+            _ => Prevod.TextZobrazenia(hodnota, typ),
+        };
+        return text.Replace("\r\n", " / ").Replace('\n', ' ').Replace('\r', ' ');
     }
 }

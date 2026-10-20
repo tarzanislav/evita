@@ -291,6 +291,14 @@ internal static class Samotest
             }
 
             Over(File.Exists(Path.Combine(exportPriecinok, XsdEviTA.NazovSuboru)), "pri exporte XML sa uloží evita.xsd");
+            var predvoleneStlpce = StlpcePrenosu.Vsetky.Where(s => s.PredvolenyExport).Select(s => s.Kluc).ToList();
+            foreach (var format in new[] { FormatExportu.Pdf, FormatExportu.Html })
+            {
+                var cesta = Path.Combine(exportPriecinok, "predvolene" + ExportService.Pripona(format));
+                Over(export.Exportuj(new MoznostiExportu(format, cesta, null, predvoleneStlpce, Popis: "celá evidencia")) == pocetPoloziek,
+                    $"export {format} s predvolenými stĺpcami");
+            }
+
             var tri = sluzba.NacitajRiadky().Take(3).Select(r => r.Id).ToList();
             Over(export.Exportuj(new MoznostiExportu(FormatExportu.Csv, Path.Combine(exportPriecinok, "oznacene.csv"), tri, vsetkyStlpce)) == 3,
                 "export označených položiek");

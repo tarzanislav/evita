@@ -31,6 +31,8 @@ public partial class MainViewModel : ObservableObject
     public CiselnikViewModel Osoby { get; }
     public ServisViewModel Servis { get; }
 
+    public string TitulokOkna => $"EviTA {AktualizaciaService.AktualnaVerzia} – evidencia IT techniky";
+
     public string VerziaText =>
         "Verzia " + (typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "0.1.0");
 

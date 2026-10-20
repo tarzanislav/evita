@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:Evita.ViewModels"
         xmlns:v="clr-namespace:Evita.Views"
-        Title="EviTA – evidencia IT techniky"
+        Title="{Binding TitulokOkna}"
         Width="1320" Height="840" MinWidth="1000" MinHeight="640"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>

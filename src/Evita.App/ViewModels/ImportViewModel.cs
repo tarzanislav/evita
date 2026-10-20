@@ -80,7 +80,11 @@ public partial class ImportViewModel : ObservableObject
 
     public IReadOnlyList<VzorovySubor> Vzory => VzoryService.Zoznam;
 
-    [ObservableProperty] private string _stiahnutyVzor = "";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StiahnutyText))]
+    private string _stiahnutyVzor = "";
+
+    public string StiahnutyText => StiahnutyVzor.Length > 0 ? Preklad.F($"Uložené: {StiahnutyVzor}") : "";
 
     public DruhImportu Druh => DruhCela ? DruhImportu.CelaDatabaza : DruhImportu.Zlucenie;
 

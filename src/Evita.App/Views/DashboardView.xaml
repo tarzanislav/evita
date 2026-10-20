@@ -362,7 +362,7 @@
                                             BorderBrush="{Binding Farba, Converter={StaticResource FarbaNaStetec}}"
                                             Background="{Binding Farba, Converter={StaticResource FarbaNaStetec}, ConverterParameter=18}">
                                         <TextBlock TextTrimming="CharacterEllipsis">
-                                            <Run Text="{Binding Zaciatok, Mode=OneWay, StringFormat='ddd d. M.', ConverterCulture=sk-SK}" FontWeight="SemiBold" />
+                                            <Run Text="{Binding Zaciatok, Mode=OneWay, StringFormat='ddd d. M.'}" FontWeight="SemiBold" />
                                             <Run Text="{Binding CasText, Mode=OneWay}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                             <Run Text="{Binding Nazov, Mode=OneWay}" />
                                         </TextBlock>

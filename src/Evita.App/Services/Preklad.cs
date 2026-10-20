@@ -34,6 +34,7 @@ public static class Preklad
     };
 
     private static Dictionary<string, string>? _slovnik;
+    private static HashSet<string> _preklady = new(StringComparer.Ordinal);
 
     /// <summary>Aktuálny jazyk (pred načítaním nastavení slovenčina – v nej sú zdrojové texty).</summary>
     public static Jazyk Aktualny { get; private set; } = Jazyky[1];
@@ -57,6 +58,7 @@ public static class Preklad
     {
         var jazyk = Najdi(kod);
         _slovnik = jazyk.Kod == "sk" ? null : NacitajSlovnik(jazyk.Kod);
+        _preklady = _slovnik is null ? new HashSet<string>(StringComparer.Ordinal) : new HashSet<string>(_slovnik.Values, StringComparer.Ordinal);
         Aktualny = jazyk;
         var kultura = new CultureInfo(jazyk.Kultura);
         Kultura = kultura;
@@ -94,7 +96,8 @@ public static class Preklad
             return preklad;
         }
 
-        if (ZbieratChybajuce && Potrebuje(text))
+        // už preložený text (napr. titulok okna nastavený v kóde) nie je chýbajúci preklad
+        if (ZbieratChybajuce && Potrebuje(text) && !_preklady.Contains(text))
         {
             Chybajuce.TryAdd(text, 0);
         }

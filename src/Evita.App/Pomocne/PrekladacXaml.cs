@@ -137,11 +137,18 @@ public static class PrekladacXaml
 
     private static void PrelozTextBlock(TextBlock text)
     {
-        var zdroj = DependencyPropertyHelper.GetValueSource(text, TextBlock.TextProperty);
-        if (zdroj.BaseValueSource == BaseValueSource.Default && !zdroj.IsExpression)
+        // väzba na celý text (Text="{Binding …}") – len formát
+        if (BindingOperations.GetBindingBase(text, TextBlock.TextProperty) is not null)
         {
-            // TextBlock s vloženými Run, Hyperlink …
-            PrelozInlines(text.Inlines);
+            PrelozVlastnost(text, TextBlock.TextProperty);
+            return;
+        }
+
+        // viac častí (Run, Hyperlink …) – každá zvlášť; jeden obyčajný Run = celý text
+        var inlines = text.Inlines;
+        if (inlines.Count > 1 || inlines.FirstInline is not Run || inlines.FirstInline is Run prvy && BindingOperations.IsDataBound(prvy, Run.TextProperty))
+        {
+            PrelozInlines(inlines);
             return;
         }
 

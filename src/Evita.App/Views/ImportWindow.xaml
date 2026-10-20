@@ -80,7 +80,7 @@
                             </ItemsControl>
                             <StackPanel Orientation="Horizontal"
                                         Visibility="{Binding StiahnutyVzor, Converter={StaticResource NieJePrazdne}}">
-                                <TextBlock Text="{Binding StiahnutyVzor, StringFormat=Uložené: {0}}" Style="{StaticResource Popis}"
+                                <TextBlock Text="{Binding StiahnutyText}" Style="{StaticResource Popis}"
                                            VerticalAlignment="Center" Margin="0,0,12,0" />
                                 <Button Content="Zobraziť v priečinku" Padding="10,3" Command="{Binding ZobrazitStiahnutyCommand}" />
                                 <Button Content="Importovať tento súbor" Padding="10,3" Margin="6,0,0,0" Command="{Binding PouzitStiahnutyCommand}" />

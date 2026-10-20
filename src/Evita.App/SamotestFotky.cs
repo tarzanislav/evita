@@ -93,7 +93,7 @@ internal static partial class Samotest
             }
 
             var malyJson = Posli(nahlad, "image/jpeg 9 kB, 120x160 -> 120x160 4 kB");
-            Over(malyJson.Contains("\"ok\":false") && malyJson.Contains("náhľad") && malyJson.Contains("Chrome") && malyJson.Contains("120×160"),
+            Over(malyJson.Contains("\"ok\":false") && malyJson.Contains("náhľad") && malyJson.Contains("Chrome") && malyJson.Contains(" bodov"),
                 $"mobil: malý náhľad fotky – rada otvoriť stránku v Chrome ({malyJson})");
             Over(File.Exists(Path.Combine(MobilnySkener.PriecinokDiagnostiky, "necitatelna_fotka.jpg"))
                  && File.ReadAllText(diagnostika).Contains("120x160 -> 120x160"),

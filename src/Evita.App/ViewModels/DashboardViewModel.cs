@@ -9,6 +9,12 @@ using Kalendarium;
 
 namespace Evita.ViewModels;
 
+/// <summary>Deň v malom kalendári na dashboarde.</summary>
+public sealed record MiniDen(DateTime Datum, bool MimoMesiaca, bool Dnes, bool Vikend, bool Volno, bool MaUdalost)
+{
+    public int Cislo => Datum.Day;
+}
+
 /// <summary>Jeden stĺpec grafu „položky podľa kategórií“.</summary>
 public sealed record StlpecGrafu(int KategoriaId, string Nazov, int Pocet, int Maximum);
 
@@ -53,6 +59,16 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private bool _ukazUpozornenia = true;
     [ObservableProperty] private bool _ukazNaposledy = true;
     [ObservableProperty] private bool _ukazDatabazu = true;
+    [ObservableProperty] private bool _ukazKalendar = true;
+
+    partial void OnUkazKalendarChanged(bool value) => UlozPanely();
+
+    // kalendár
+    [ObservableProperty] private List<MiniDen> _miniKalendar = new();
+    [ObservableProperty] private string _nazovMesiaca = "";
+    [ObservableProperty] private List<VyskytUdalosti> _najblizsieUdalosti = new();
+    [ObservableProperty] private List<VyskytUdalosti> _ulohyPoTermine = new();
+    [ObservableProperty] private string _kalendarSuhrn = "";
 
     partial void OnUkazDnesChanged(bool value) => UlozPanely();
     partial void OnUkazPoctyChanged(bool value) => UlozPanely();
@@ -113,6 +129,8 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         AktualizujZalohy();
         ZiadneUpozornenia = BezMiestnosti == 0 && ZarukyDo30 == 0 && RevizieDo30 == 0 && VOprave == 0 && !ZalohaVarovanie;
 
+        AktualizujKalendar();
+
         var riadky = new PolozkaService().NacitajRiadky();
         NaposledyPridane = riadky.OrderByDescending(r => r.DatumPridania).ThenByDescending(r => r.PrirastkoveCislo).Take(5).ToList();
         NaposledyZmenene = riadky.Where(r => r.DatumZmeny > r.DatumPridania)
@@ -149,6 +167,60 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
 
     [RelayCommand]
     private void OtvorServis() => _hlavne.PrejdiNaSekciu("servis");
+
+    [RelayCommand]
+    private void OtvorKalendar() => _hlavne.PrejdiNaSekciu("kalendar");
+
+    /// <summary>Malý kalendár mesiaca, udalosti na dnes a 7 dní dopredu a úlohy po termíne.</summary>
+    private void AktualizujKalendar()
+    {
+        try
+        {
+            var dnes = DateTime.Today;
+            var prvy = new DateTime(dnes.Year, dnes.Month, 1);
+            var od = prvy.AddDays(-(((int)prvy.DayOfWeek + 6) % 7));
+            var sluzba = new KalendarService();
+            var vyskyty = sluzba.Vyskyty(od, od.AddDays(41));
+            var volne = new HashSet<DateOnly>();
+            try
+            {
+                foreach (var rok in new[] { od.Year, od.AddDays(41).Year }.Distinct())
+                {
+                    volne.UnionWith(KalendariumDb.Spolocna.Sviatky(rok).Where(s => s.DenPracovnehoPokoja).Select(s => s.Datum));
+                }
+            }
+            catch (Exception)
+            {
+                // bez sviatkov
+            }
+
+            MiniKalendar = Enumerable.Range(0, 42).Select(i =>
+            {
+                var d = od.AddDays(i);
+                return new MiniDen(d, d.Month != dnes.Month, d == dnes, d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday,
+                    volne.Contains(DateOnly.FromDateTime(d)),
+                    vyskyty.Any(v => v.Stav != StavUdalosti.Zrusene && v.Zaciatok.Date <= d && v.PoslednyDen >= d));
+            }).ToList();
+            var nazov = dnes.ToString("MMMM yyyy", Sk.Kultura);
+            NazovMesiaca = char.ToUpper(nazov[0], Sk.Kultura) + nazov[1..];
+
+            NajblizsieUdalosti = sluzba.Vyskyty(dnes, dnes.AddDays(7))
+                .Where(v => v.Stav == StavUdalosti.Naplanovane && v.PoslednyDen >= dnes)
+                .Take(8)
+                .ToList();
+            UlohyPoTermine = sluzba.Prehlad(dnes).PoTermine;
+            var pocet = sluzba.Vyskyty(dnes, dnes.AddDays(7)).Count(v => v.Stav == StavUdalosti.Naplanovane);
+            KalendarSuhrn = pocet switch
+            {
+                0 => "Na najbližších 7 dní nie je nič naplánované.",
+                _ => $"Na dnes a najbližších 7 dní: {pocet}" + (pocet > NajblizsieUdalosti.Count ? $" (zobrazených {NajblizsieUdalosti.Count})" : ""),
+            };
+        }
+        catch (Exception ex)
+        {
+            KalendarSuhrn = $"Kalendár sa nepodarilo načítať: {ex.GetBaseException().Message}";
+        }
+    }
 
     [RelayCommand]
     private void OtvorKategoriu(StlpecGrafu? stlpec)
@@ -268,6 +340,7 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
             UkazUpozornenia = !skryte.Contains("upozornenia");
             UkazNaposledy = !skryte.Contains("naposledy");
             UkazDatabazu = !skryte.Contains("databaza");
+            UkazKalendar = !skryte.Contains("kalendar");
         }
         catch (Exception)
         {
@@ -293,6 +366,7 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         if (!UkazUpozornenia) skryte.Add("upozornenia");
         if (!UkazNaposledy) skryte.Add("naposledy");
         if (!UkazDatabazu) skryte.Add("databaza");
+        if (!UkazKalendar) skryte.Add("kalendar");
 
         using var db = Databaza.Otvor();
         Databaza.Zapis(db, "Dashboard.Skryte", string.Join(',', skryte));

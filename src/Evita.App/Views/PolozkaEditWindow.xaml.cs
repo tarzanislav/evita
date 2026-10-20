@@ -24,4 +24,12 @@ public partial class PolozkaEditWindow : Window
     }
 
     public PolozkaEditViewModel Model { get; }
+
+    private void TabulkaUdalosti_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (TabulkaUdalosti.SelectedItem is Services.VyskytUdalosti vyskyt)
+        {
+            Model.OtvorUdalostCommand.Execute(vyskyt);
+        }
+    }
 }

@@ -28,6 +28,9 @@
         <DataTemplate DataType="{x:Type vm:TlacViewModel}">
             <v:TlacView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:KalendarViewModel}">
+            <v:KalendarView />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -63,9 +66,8 @@
                             <TextBlock Text="Evidencia" />
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem Tag="kalendar" IsEnabled="False" ToolTipService.ShowOnDisabled="True"
-                                 ToolTip="Pripravuje sa (etapa 6)">
-                        <StackPanel Orientation="Horizontal" Opacity="0.5">
+                    <ListBoxItem Tag="kalendar">
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE787;" Margin="0,0,12,0" />
                             <TextBlock Text="Kalendár" />
                         </StackPanel>

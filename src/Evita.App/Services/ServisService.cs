@@ -62,6 +62,7 @@ public sealed class ServisService
         using (var db = Databaza.Otvor())
         using (var transakcia = db.Database.BeginTransaction())
         {
+            db.Udalosti.ExecuteDelete();
             db.Historia.ExecuteDelete();
             db.Polozky.ExecuteDelete();
             if (!ponechatMiestnosti)

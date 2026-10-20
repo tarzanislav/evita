@@ -551,6 +551,30 @@ public static class CitacSuborov
                 NovaHodnota = A(e, "novaHodnota"),
             })
             .ToList();
+        balik.TypyUdalosti = koren.Element("TypyUdalosti")?.Elements("TypUdalosti")
+            .Select(e => new TypUdalostiPrenos { Nazov = A(e, "nazov") ?? "", Farba = A(e, "farba") ?? "#7F8C8D", Aktivny = A(e, "aktivny") is not "false" and not "0" })
+            .ToList();
+        balik.Udalosti = koren.Element("Udalosti")?.Elements("Udalost")
+            .Select(e => new UdalostPrenos
+            {
+                Guid = A(e, "guid"),
+                Nazov = A(e, "nazov") ?? "",
+                Popis = e.Element("Popis")?.Value,
+                Typ = A(e, "typ") ?? "",
+                Druh = A(e, "druh") ?? "Udalost",
+                Zaciatok = A(e, "zaciatok") ?? "",
+                Koniec = A(e, "koniec"),
+                CelyDen = A(e, "celyDen") is "true" or "1",
+                Opakovanie = A(e, "opakovanie") ?? "Ziadne",
+                OpakovanieDo = A(e, "opakovanieDo"),
+                Pripomienka = A(e, "pripomienka") ?? "Ziadna",
+                PolozkaGuid = A(e, "polozkaGuid"),
+                PolozkaCislo = int.TryParse(A(e, "polozkaCislo"), out var pc) ? pc : null,
+                Miestnost = A(e, "miestnost"),
+                Osoba = A(e, "osoba"),
+                Stav = A(e, "stav") ?? "Naplanovane",
+            })
+            .ToList();
         return balik;
     }
 

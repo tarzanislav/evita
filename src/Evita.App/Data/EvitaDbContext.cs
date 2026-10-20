@@ -23,6 +23,8 @@ public sealed class EvitaDbContext : DbContext
     public DbSet<HistoriaZmeny> Historia => Set<HistoriaZmeny>();
     public DbSet<Nastavenie> Nastavenia => Set<Nastavenie>();
     public DbSet<ZaznamZalohy> ZaznamyZaloh => Set<ZaznamZalohy>();
+    public DbSet<TypUdalosti> TypyUdalosti => Set<TypUdalosti>();
+    public DbSet<Udalost> Udalosti => Set<Udalost>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -76,6 +78,25 @@ public sealed class EvitaDbContext : DbContext
         {
             e.ToTable("Nastavenia");
             e.HasKey(x => x.Kluc);
+        });
+
+        model.Entity<TypUdalosti>(e =>
+        {
+            e.ToTable("TypyUdalosti");
+            e.Property(x => x.Nazov).IsRequired();
+            e.Property(x => x.Farba).IsRequired();
+        });
+
+        model.Entity<Udalost>(e =>
+        {
+            e.ToTable("Udalosti");
+            e.HasIndex(x => x.Zaciatok);
+            e.HasIndex(x => x.Guid).IsUnique();
+            e.Property(x => x.Nazov).IsRequired();
+            e.HasOne(x => x.TypUdalosti).WithMany().HasForeignKey(x => x.TypUdalostiId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Polozka).WithMany().HasForeignKey(x => x.PolozkaId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne(x => x.Miestnost).WithMany().HasForeignKey(x => x.MiestnostId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne(x => x.Osoba).WithMany().HasForeignKey(x => x.OsobaId).OnDelete(DeleteBehavior.SetNull);
         });
 
         model.Entity<ZaznamZalohy>(e =>

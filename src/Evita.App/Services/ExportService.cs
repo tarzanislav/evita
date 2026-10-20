@@ -344,6 +344,37 @@ public sealed class ExportService
             Polozky = polozky.Select(PolozkaPrenos.Z).ToList(),
         };
 
+        // pracovný kalendár ide len s celou evidenciou (prenos na iný počítač)
+        if (celaEvidencia)
+        {
+            var typy = db.TypyUdalosti.AsNoTracking().OrderBy(t => t.Poradie).ThenBy(t => t.Id).ToList();
+            var nazvyTypov = typy.ToDictionary(t => t.Id, t => t.Nazov);
+            balik.TypyUdalosti = typy.Select(t => new TypUdalostiPrenos { Nazov = t.Nazov, Farba = t.Farba, Aktivny = t.Aktivny }).ToList();
+            balik.Udalosti = db.Udalosti.AsNoTracking()
+                .Include(u => u.Polozka).Include(u => u.Miestnost).Include(u => u.Osoba)
+                .OrderBy(u => u.Zaciatok).ToList()
+                .Select(u => new UdalostPrenos
+                {
+                    Guid = u.Guid.ToString(),
+                    Nazov = u.Nazov,
+                    Popis = u.Popis,
+                    Typ = nazvyTypov.TryGetValue(u.TypUdalostiId, out var typ) ? typ : "",
+                    Druh = u.Druh.ToString(),
+                    Zaciatok = Prevod.TextIso(u.Zaciatok, true)!,
+                    Koniec = Prevod.TextIso(u.Koniec, true),
+                    CelyDen = u.CelyDen,
+                    Opakovanie = u.Opakovanie.ToString(),
+                    OpakovanieDo = Prevod.TextIso(u.OpakovanieDo, false),
+                    Pripomienka = u.Pripomienka.ToString(),
+                    PolozkaGuid = u.Polozka?.Guid.ToString(),
+                    PolozkaCislo = u.Polozka?.PrirastkoveCislo,
+                    Miestnost = u.Miestnost?.Nazov,
+                    Osoba = u.Osoba?.CeleMeno,
+                    Stav = u.Stav.ToString(),
+                })
+                .ToList();
+        }
+
         if (sHistoriou)
         {
             var guidy = db.Polozky.AsNoTracking().Select(p => new { p.Id, p.Guid }).ToDictionary(x => x.Id, x => x.Guid);
@@ -482,6 +513,49 @@ public sealed class ExportService
                     Atribut(w, "pole", h.Pole);
                     Atribut(w, "staraHodnota", h.StaraHodnota);
                     Atribut(w, "novaHodnota", h.NovaHodnota);
+                    w.WriteEndElement();
+                }
+
+                w.WriteEndElement();
+            }
+
+            if (balik.TypyUdalosti is not null)
+            {
+                w.WriteStartElement("TypyUdalosti");
+                foreach (var t in balik.TypyUdalosti)
+                {
+                    w.WriteStartElement("TypUdalosti");
+                    w.WriteAttributeString("nazov", t.Nazov);
+                    w.WriteAttributeString("farba", t.Farba);
+                    w.WriteAttributeString("aktivny", t.Aktivny ? "true" : "false");
+                    w.WriteEndElement();
+                }
+
+                w.WriteEndElement();
+            }
+
+            if (balik.Udalosti is not null)
+            {
+                w.WriteStartElement("Udalosti");
+                foreach (var u in balik.Udalosti)
+                {
+                    w.WriteStartElement("Udalost");
+                    Atribut(w, "guid", u.Guid);
+                    w.WriteAttributeString("nazov", u.Nazov);
+                    Atribut(w, "typ", u.Typ);
+                    Atribut(w, "druh", u.Druh);
+                    w.WriteAttributeString("zaciatok", u.Zaciatok);
+                    Atribut(w, "koniec", u.Koniec);
+                    w.WriteAttributeString("celyDen", u.CelyDen ? "true" : "false");
+                    Atribut(w, "opakovanie", u.Opakovanie);
+                    Atribut(w, "opakovanieDo", u.OpakovanieDo);
+                    Atribut(w, "pripomienka", u.Pripomienka);
+                    Atribut(w, "polozkaGuid", u.PolozkaGuid);
+                    Atribut(w, "polozkaCislo", u.PolozkaCislo?.ToString(CultureInfo.InvariantCulture));
+                    Atribut(w, "miestnost", u.Miestnost);
+                    Atribut(w, "osoba", u.Osoba);
+                    Atribut(w, "stav", u.Stav);
+                    Prvok(w, "Popis", u.Popis);
                     w.WriteEndElement();
                 }
 

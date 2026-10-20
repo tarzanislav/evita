@@ -96,6 +96,11 @@ internal static class Samotest
             Over(ciselniky.Nacitaj(TypCiselnika.Miestnosti).Count == 25, "25 miestností");
             Over(ciselniky.Nacitaj(TypCiselnika.Kategorie).Count == 15, "15 kategórií");
             Over(Databaza.SuUkazkoveData(), "príznak ukážkových dát");
+            using (var db = Databaza.Otvor())
+            {
+                Over(db.TypyUdalosti.Count() == Databaza.PociatocneTypyUdalosti.Length, "počiatočné typy udalostí");
+                Over(db.Udalosti.Count() == 20, $"ukážkové udalosti kalendára: 20 (je {db.Udalosti.Count()})");
+            }
 
             // pridanie, úprava, história
             var vzor = sluzba.Nacitaj(riadky.First(r => !r.Vyradena && r.MiestnostId is not null).Id)!;
@@ -150,9 +155,76 @@ internal static class Samotest
             Over(duplicita, "duplicitný názov kategórie je zachytený");
             Krok("služby v poriadku");
 
+            // ------------------------------------------------------------ pracovný kalendár
+            var kalendarSluzba = new KalendarService();
+            var dnesK = DateTime.Today;
+            var typyK = kalendarSluzba.Typy();
+            var iny = typyK.First(t => t.Nazov == "iné");
+            var porada = kalendarSluzba.Vyskyty(dnesK.AddDays(-14), dnesK.AddDays(13), automaticke: false).Count(v => v.Nazov == "Porada IT");
+            Over(porada == 4, $"týždenná porada sa za 4 týždne zobrazí 4-krát (je {porada})");
+            var mesacna = kalendarSluzba.Uloz(new Udalost
+            {
+                Nazov = "Test mesačne 31.", TypUdalostiId = iny.Id, Zaciatok = new DateTime(2027, 1, 31, 9, 0, 0),
+                Koniec = new DateTime(2027, 1, 31, 10, 0, 0), Opakovanie = OpakovanieUdalosti.Mesacne, OpakovanieDo = new DateTime(2027, 6, 30),
+            });
+            var vyskytyMesacne = kalendarSluzba.Vyskyty(new DateTime(2027, 1, 1), new DateTime(2027, 12, 31), automaticke: false)
+                .Where(v => v.UdalostId == mesacna).ToList();
+            Over(vyskytyMesacne.Count == 6 && vyskytyMesacne[1].Zaciatok == new DateTime(2027, 2, 28, 9, 0, 0),
+                $"mesačné opakovanie od 31. 1.: 6 výskytov, vo februári 28. ({vyskytyMesacne.Count})");
+            var viacDni = kalendarSluzba.Uloz(new Udalost
+            {
+                Nazov = "Test obdobie", TypUdalostiId = iny.Id, Zaciatok = new DateTime(2027, 3, 29), Koniec = new DateTime(2027, 4, 2), CelyDen = true,
+            });
+            Over(kalendarSluzba.Vyskyty(new DateTime(2027, 4, 1), new DateTime(2027, 4, 1), automaticke: false).Any(v => v.UdalostId == viacDni && v.ViacDni),
+                "udalosť cez viac dní je vidieť aj v jej strede");
+            Over(Ocakavaj<EvitaException>(() => kalendarSluzba.Uloz(new Udalost
+            {
+                Nazov = "zlá", TypUdalostiId = iny.Id, Zaciatok = new DateTime(2027, 3, 2, 10, 0, 0), Koniec = new DateTime(2027, 3, 2, 9, 0, 0),
+            })), "koniec pred začiatkom je odmietnutý");
+            kalendarSluzba.Vymaz(mesacna);
+            kalendarSluzba.Vymaz(viacDni);
+            Over(kalendarSluzba.Vyskyty(new DateTime(2027, 1, 1), new DateTime(2027, 12, 31), automaticke: false).All(v => v.UdalostId != mesacna),
+                "vymazanie udalosti");
+
+            var automaticke = kalendarSluzba.Vyskyty(dnesK, dnesK.AddDays(365));
+            Over(automaticke.Any(v => v.Zdroj == "záruka") && automaticke.Any(v => v.Zdroj == "revízia"), "automatické termíny záruk a revízií");
+            Over(automaticke.Any(v => v.Zdroj == "inventúra") && automaticke.Any(v => v.Zdroj == "záloha"), "automatické termíny inventúry a záloh");
+            var nastaveniaK = kalendarSluzba.NacitajNastavenia();
+            kalendarSluzba.UlozNastavenia(nastaveniaK with { Zaruky = false });
+            Over(kalendarSluzba.Vyskyty(dnesK, dnesK.AddDays(365)).All(v => v.Zdroj != "záruka"), "automatický termín sa dá vypnúť");
+            kalendarSluzba.UlozNastavenia(nastaveniaK);
+
+            var prehladK = kalendarSluzba.Prehlad(dnesK);
+            Over(prehladK.PoTermine.Any(v => v.Nazov.StartsWith("Nákup tonerov")), "úloha po termíne v prehľade dňa");
+            Over(prehladK.Dnes.Any(v => v.Nazov == "Porada vedenia"), "dnešná udalosť v prehľade dňa");
+            Over(prehladK.Pripomienky.Any(v => v.Nazov.StartsWith("Školenie")), "pripomienka týždeň vopred v prehľade dňa");
+            var tonery = prehladK.PoTermine.First(v => v.Nazov.StartsWith("Nákup tonerov"));
+            kalendarSluzba.NastavStav(tonery.UdalostId!.Value, StavUdalosti.Hotovo);
+            Over(!kalendarSluzba.Prehlad(dnesK).PoTermine.Any(v => v.Nazov.StartsWith("Nákup tonerov")), "hotová úloha už nie je po termíne");
+            kalendarSluzba.NastavStav(tonery.UdalostId!.Value, StavUdalosti.Naplanovane);
+
+            var ics = kalendarSluzba.Ics(dnesK.AddDays(-30), dnesK.AddDays(365), true);
+            Over(ics.StartsWith("BEGIN:VCALENDAR\r\n", StringComparison.Ordinal) && ics.Contains("RRULE:FREQ=WEEKLY") && ics.Contains("DTSTART;VALUE=DATE:")
+                 && ics.TrimEnd().EndsWith("END:VCALENDAR", StringComparison.Ordinal), "export .ics");
+            Over(ics.Split("\r\n").All(r => System.Text.Encoding.UTF8.GetByteCount(r) <= 75), "riadky .ics majú najviac 75 bajtov");
+
+            var novyTyp = kalendarSluzba.UlozTyp(0, "testovací typ", "#123456");
+            Over(Ocakavaj<EvitaException>(() => kalendarSluzba.UlozTyp(0, "Servis", "#000000")), "duplicitný typ udalosti je odmietnutý");
+            Over(kalendarSluzba.VymazTyp(novyTyp), "nepoužitý typ sa vymaže");
+            Over(!kalendarSluzba.VymazTyp(typyK.First(t => t.Nazov == "porada").Id) && kalendarSluzba.Typy(true).All(t => t.Nazov != "porada"),
+                "používaný typ sa len skryje");
+            kalendarSluzba.UlozTyp(typyK.First(t => t.Nazov == "porada").Id, "porada", typyK.First(t => t.Nazov == "porada").Farba);
+            Krok("pracovný kalendár v poriadku");
+
             // aktualizácia štruktúry zo staršej verzie (simulácia databázy z verzie 0.1)
-            Vykonaj("DROP TABLE \"ZaznamyZaloh\"; UPDATE \"Nastavenia\" SET \"Hodnota\" = '1' WHERE \"Kluc\" = 'Schema.Verzia';");
+            Vykonaj("CREATE TABLE \"ZalohaUdalosti\" AS SELECT * FROM \"Udalosti\"; DROP TABLE \"Udalosti\"; DROP TABLE \"TypyUdalosti\"; DROP TABLE \"ZaznamyZaloh\"; UPDATE \"Nastavenia\" SET \"Hodnota\" = '1' WHERE \"Kluc\" = 'Schema.Verzia';");
             Databaza.Inicializuj();
+            Vykonaj("INSERT INTO \"Udalosti\" (\"Id\", \"Guid\", \"Nazov\", \"Popis\", \"TypUdalostiId\", \"Druh\", \"Zaciatok\", \"Koniec\", \"CelyDen\", \"Opakovanie\", \"OpakovanieDo\", \"Pripomienka\", \"PolozkaId\", \"MiestnostId\", \"OsobaId\", \"Stav\", \"Vytvorene\", \"Zmenene\") SELECT \"Id\", \"Guid\", \"Nazov\", \"Popis\", \"TypUdalostiId\", \"Druh\", \"Zaciatok\", \"Koniec\", \"CelyDen\", \"Opakovanie\", \"OpakovanieDo\", \"Pripomienka\", \"PolozkaId\", \"MiestnostId\", \"OsobaId\", \"Stav\", \"Vytvorene\", \"Zmenene\" FROM \"ZalohaUdalosti\"; DROP TABLE \"ZalohaUdalosti\";");
+            using (var db = Databaza.Otvor())
+            {
+                Over(db.TypyUdalosti.Count() == Databaza.PociatocneTypyUdalosti.Length && db.Udalosti.Count() == 20, "aktualizácia štruktúry vytvorí tabuľky kalendára");
+            }
+
             Over(Databaza.VerziaVDatabaze() == Databaza.VerziaSchemy, "aktualizácia štruktúry z verzie 1");
             Over(Directory.GetFiles(Databaza.PriecinokZaloh, "*_EviTA_pred_upravou_struktury_*.db").Length == 1, "záloha pred aktualizáciou štruktúry");
 
@@ -270,9 +342,19 @@ internal static class Samotest
             }
 
             var pocetPredZachranou = sluzba.NacitajRiadky().Count;
+            int udalostiPredZachranou;
+            using (var db = Databaza.Otvor())
+            {
+                udalostiPredZachranou = db.Udalosti.Count();
+            }
+
             var zachrana = diagnostika.Zachran();
             Over(zachrana.Ok, $"záchrana dát: {string.Join(" | ", zachrana.Riadky)}");
             Over(sluzba.NacitajRiadky().Count == pocetPredZachranou, "záchrana dát zachovala všetky položky");
+            using (var db = Databaza.Otvor())
+            {
+                Over(db.Udalosti.Count() == udalostiPredZachranou, "záchrana dát zachovala udalosti kalendára");
+            }
             Over(diagnostika.UplnaKontrola().Ok, "databáza po záchrane je v poriadku");
             Krok("kontrola a oprava v poriadku");
 
@@ -401,9 +483,10 @@ internal static class Samotest
                 var celySubor = Path.Combine(exportPriecinok, "cela" + ExportService.Pripona(format));
                 export.Exportuj(new MoznostiExportu(format, celySubor, null, vsetkyStlpce, SHistoriou: true));
                 var povodne = sluzba.NacitajRiadky();
-                int historiaPred, dalsieCisloPred, osobyPred;
+                int historiaPred, dalsieCisloPred, osobyPred, udalostiPred;
                 using (var db = Databaza.Otvor())
                 {
+                    udalostiPred = db.Udalosti.Count();
                     historiaPred = db.Historia.Count();
                     dalsieCisloPred = Databaza.DalsiePrirastkoveCislo(db);
                     osobyPred = db.Osoby.Count();
@@ -432,6 +515,8 @@ internal static class Samotest
                     Over(db.Historia.Count() >= historiaPred, $"{format}: prenesená história zmien ({db.Historia.Count()} z {historiaPred})");
                     Over(Databaza.DalsiePrirastkoveCislo(db) == dalsieCisloPred, $"{format}: ďalšie prírastkové číslo zostalo {dalsieCisloPred}");
                     Over(db.Osoby.Count() == osobyPred, $"{format}: prenesené osoby ({db.Osoby.Count()} z {osobyPred})");
+                    Over(db.Udalosti.Count() == udalostiPred && udalostiPred > 0, $"{format}: prenesené udalosti kalendára ({db.Udalosti.Count()} z {udalostiPred})");
+                    Over(db.Udalosti.Any(u => u.PolozkaId != null), $"{format}: udalosti zostali naviazané na položky");
                 }
             }
 
@@ -471,7 +556,12 @@ internal static class Samotest
                     $"zostava {popisZostavy.Nazov}: {stranyZostavy} strán");
             }
 
-            Over(Ocakavaj<EvitaException>(() => zostavy.Vytvor(new MoznostiZostavy { Druh = DruhZostavy.Kalendar })), "zostava Kalendár zatiaľ nie je dostupná");
+            zostavy.UlozPdf(new MoznostiZostavy
+            {
+                Druh = DruhZostavy.Kalendar, KalendarZoznam = true, NaSirku = true, Od = dnesTest.AddDays(-7), Do = dnesTest.AddDays(60),
+            }, Path.Combine(exportPriecinok, "zostava_Kalendar_zoznam.pdf"));
+            Over(Ocakavaj<EvitaException>(() => zostavy.Vytvor(new MoznostiZostavy { Druh = DruhZostavy.Kalendar, Od = dnesTest, Do = dnesTest.AddDays(-1) })),
+                "kalendár s obráteným obdobím je odmietnutý");
             var miestnostSPolozkami = riadky.First(r => r.MiestnostId is not null).MiestnostId;
             zostavy.UlozPdf(new MoznostiZostavy { Druh = DruhZostavy.Historia, NaSirku = true, MiestnostId = miestnostSPolozkami },
                 Path.Combine(exportPriecinok, "zostava_Historia_miestnost.pdf"));
@@ -492,7 +582,7 @@ internal static class Samotest
             okno.Show();
             Pumpuj();
             var model = (MainViewModel)okno.DataContext;
-            foreach (var sekcia in new[] { "dashboard", "evidencia", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "dashboard" })
+            foreach (var sekcia in new[] { "dashboard", "kalendar", "evidencia", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "dashboard" })
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
@@ -503,7 +593,7 @@ internal static class Samotest
                     Over(model.ImportExport.StiahnutyVzor.EndsWith(".xlsx", StringComparison.Ordinal), "obrazovka Import a export: stiahnutie vzoru");
                 }
 
-                if (sekcia is "import" or "evidencia" or "tlac")
+                if (sekcia is "import" or "evidencia" or "tlac" or "kalendar" or "dashboard")
                 {
                     Snimka(okno, "okno_" + sekcia);
                 }
@@ -592,6 +682,61 @@ internal static class Samotest
             nahladEvidencie.Close();
             Pumpuj();
             Krok("okno: náhľad tlače");
+
+            // kalendár: týždeň, zoznam, udalosť, typy, nastavenia, prehľad dňa, upozornenie
+            okno.OznacSekciu("kalendar");
+            Pumpuj();
+            model.Kalendar.Rezim = RezimKalendara.Tyzden;
+            Pumpuj();
+            Over(model.Kalendar.DniTyzdna.Count == 7 && model.Kalendar.DniTyzdna.Any(d => d.Dnes), "kalendár: týždeň");
+            Snimka(okno, "okno_kalendar_tyzden");
+            model.Kalendar.Rezim = RezimKalendara.Zoznam;
+            Pumpuj();
+            Over(model.Kalendar.DniZoznamu.Count > 0, "kalendár: zoznam");
+            Snimka(okno, "okno_kalendar_zoznam");
+            model.Kalendar.Rezim = RezimKalendara.Mesiac;
+            model.Kalendar.NasledujuceCommand.Execute(null);
+            model.Kalendar.PredchadzajuceCommand.Execute(null);
+            model.Kalendar.DnesCommand.Execute(null);
+            Pumpuj();
+            Over(model.Kalendar.Tyzdne.Count == 6 && model.Kalendar.Tyzdne.SelectMany(t => t.Dni).Any(d => d.Dnes && d.Udalosti.Count > 0),
+                "kalendár: mesiac s dnešnými udalosťami");
+            model.Kalendar.CestaIcsBezDialogu = Path.Combine(exportPriecinok, "kalendar.ics");
+            model.Kalendar.ExportIcsCommand.Execute(null);
+            Over(File.Exists(model.Kalendar.CestaIcsBezDialogu), "kalendár: export .ics z obrazovky");
+
+            var novaUdalost = new UdalostEditViewModel(null, DateTime.Today.AddDays(3), riadky[0].Id)
+            {
+                Nazov = "Test zo samotestu",
+                CasOd = "10.30",
+                CasDo = "11:15",
+                Pripomienka = PripomienkaUdalosti.DenVopred,
+            };
+            var oknoUdalosti = new UdalostWindow(novaUdalost);
+            oknoUdalosti.Show();
+            Pumpuj();
+            Snimka(oknoUdalosti, "okno_udalost");
+            Over(novaUdalost.PolozkaText == riadky[0].Nazov, "udalosť: naviazanie na položku podľa čísla");
+            novaUdalost.UlozitCommand.Execute(null);
+            Pumpuj();
+            var ulozena = kalendarSluzba.Nacitaj(novaUdalost.UlozeneId);
+            Over(ulozena is { PolozkaId: not null } && ulozena.Zaciatok == DateTime.Today.AddDays(3).AddHours(10.5) && ulozena.Koniec!.Value.Minute == 15,
+                "udalosť: uloženie s časom a položkou");
+            var polozkaSUdalostou = new PolozkaEditViewModel(riadky[0].Id, null);
+            Over(polozkaSUdalostou.Udalosti.Any(v => v.UdalostId == novaUdalost.UlozeneId), "karta položky: záložka Udalosti");
+            kalendarSluzba.Vymaz(novaUdalost.UlozeneId);
+
+            OtvorAZatvor(new TypyUdalostiWindow(), "typy udalostí");
+            OtvorAZatvor(new NastaveniaKalendaraWindow(), "nastavenia kalendára");
+            var prehladOkno = new PrehladDnaWindow();
+            prehladOkno.Show();
+            Pumpuj();
+            Over(!prehladOkno.Prehlad.JePrazdny, "prehľad dňa pri spustení");
+            Snimka(prehladOkno, "okno_prehlad_dna");
+            prehladOkno.Close();
+            Pumpuj();
+            OtvorAZatvor(new UpozornenieWindow(prehladK.Dnes[0]), "upozornenie na udalosť");
+            Krok("okná kalendára v poriadku");
 
             // okno exportu
             var exportModel = new ExportViewModel(riadky.Take(10).Select(r => r.Id).ToList(), riadky.Take(2).Select(r => r.Id).ToList(), "test")

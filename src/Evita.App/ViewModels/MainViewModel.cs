@@ -25,6 +25,7 @@ public partial class MainViewModel : ObservableObject
         Sviatky = new SviatkyViewModel();
         ImportExport = new ImportExportViewModel(this);
         Tlac = new TlacViewModel(this);
+        Kalendar = new KalendarViewModel(this);
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -36,6 +37,7 @@ public partial class MainViewModel : ObservableObject
     public SviatkyViewModel Sviatky { get; }
     public ImportExportViewModel ImportExport { get; }
     public TlacViewModel Tlac { get; }
+    public KalendarViewModel Kalendar { get; }
 
     public string TitulokOkna => $"EviTA {AktualizaciaService.AktualnaVerzia} – evidencia IT techniky";
 
@@ -104,6 +106,7 @@ public partial class MainViewModel : ObservableObject
             "sviatky" => Sviatky,
             "import" => ImportExport,
             "tlac" => Tlac,
+            "kalendar" => Kalendar,
             _ => Dashboard,
         };
 

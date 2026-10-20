@@ -10,7 +10,7 @@ namespace Evita.Data;
 public static class Databaza
 {
     /// <summary>Aktuálna verzia dátovej štruktúry. Pri každej zmene štruktúry sa zvýši a pribudne krok v <see cref="Migracie"/>.</summary>
-    public const int VerziaSchemy = 2;
+    public const int VerziaSchemy = 3;
 
     /// <summary>
     /// Kroky, ktoré upravia staršiu databázu na novú verziu štruktúry. Každý príkaz musí byť bezpečný aj pri
@@ -23,11 +23,29 @@ public static class Databaza
             """CREATE TABLE IF NOT EXISTS "ZaznamyZaloh" ("Id" INTEGER NOT NULL CONSTRAINT "PK_ZaznamyZaloh" PRIMARY KEY AUTOINCREMENT, "Cas" TEXT NOT NULL, "Typ" TEXT NOT NULL, "Cesta" TEXT NULL, "Velkost" INTEGER NOT NULL, "Uspech" INTEGER NOT NULL, "Zasifrovana" INTEGER NOT NULL, "Chyba" TEXT NULL);""",
             """CREATE INDEX IF NOT EXISTS "IX_ZaznamyZaloh_Cas" ON "ZaznamyZaloh" ("Cas");""",
         }),
+        (3, "pracovný kalendár", new[]
+        {
+            """CREATE TABLE IF NOT EXISTS "TypyUdalosti" ("Id" INTEGER NOT NULL CONSTRAINT "PK_TypyUdalosti" PRIMARY KEY AUTOINCREMENT, "Nazov" TEXT NOT NULL, "Farba" TEXT NOT NULL, "Aktivny" INTEGER NOT NULL, "Poradie" INTEGER NOT NULL);""",
+            """CREATE TABLE IF NOT EXISTS "Udalosti" ("Id" INTEGER NOT NULL CONSTRAINT "PK_Udalosti" PRIMARY KEY AUTOINCREMENT, "Guid" TEXT NOT NULL, "Nazov" TEXT NOT NULL, "Popis" TEXT NULL, "TypUdalostiId" INTEGER NOT NULL, "Druh" INTEGER NOT NULL, "Zaciatok" TEXT NOT NULL, "Koniec" TEXT NULL, "CelyDen" INTEGER NOT NULL, "Opakovanie" INTEGER NOT NULL, "OpakovanieDo" TEXT NULL, "Pripomienka" INTEGER NOT NULL, "PolozkaId" INTEGER NULL, "MiestnostId" INTEGER NULL, "OsobaId" INTEGER NULL, "Stav" INTEGER NOT NULL, "Vytvorene" TEXT NOT NULL, "Zmenene" TEXT NOT NULL, CONSTRAINT "FK_Udalosti_TypyUdalosti_TypUdalostiId" FOREIGN KEY ("TypUdalostiId") REFERENCES "TypyUdalosti" ("Id") ON DELETE RESTRICT, CONSTRAINT "FK_Udalosti_Polozky_PolozkaId" FOREIGN KEY ("PolozkaId") REFERENCES "Polozky" ("Id") ON DELETE SET NULL, CONSTRAINT "FK_Udalosti_Miestnosti_MiestnostId" FOREIGN KEY ("MiestnostId") REFERENCES "Miestnosti" ("Id") ON DELETE SET NULL, CONSTRAINT "FK_Udalosti_Osoby_OsobaId" FOREIGN KEY ("OsobaId") REFERENCES "Osoby" ("Id") ON DELETE SET NULL);""",
+            """CREATE INDEX IF NOT EXISTS "IX_Udalosti_Zaciatok" ON "Udalosti" ("Zaciatok");""",
+            """CREATE UNIQUE INDEX IF NOT EXISTS "IX_Udalosti_Guid" ON "Udalosti" ("Guid");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Udalosti_TypUdalostiId" ON "Udalosti" ("TypUdalostiId");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Udalosti_PolozkaId" ON "Udalosti" ("PolozkaId");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Udalosti_MiestnostId" ON "Udalosti" ("MiestnostId");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Udalosti_OsobaId" ON "Udalosti" ("OsobaId");""",
+        }),
     };
 
     public const string KlucVerziaSchemy = "Schema.Verzia";
     public const string KlucPoslednePrirastkove = "PrirastkoveCislo.Posledne";
     public const string KlucUkazkoveData = "UkazkoveData";
+
+    /// <summary>Počiatočné typy udalostí kalendára s farbami (dajú sa upraviť a doplniť).</summary>
+    public static readonly (string Nazov, string Farba)[] PociatocneTypyUdalosti =
+    {
+        ("servis", "#E67E22"), ("revízia", "#C0392B"), ("nákup", "#27AE60"), ("inventúra", "#8E44AD"),
+        ("porada", "#2E86C1"), ("školenie", "#16A085"), ("obdobie", "#D4AC0D"), ("iné", "#7F8C8D"),
+    };
 
     /// <summary>Počiatočný zoznam kategórií (zobrazuje sa vždy abecedne).</summary>
     public static readonly string[] PociatocneKategorie =
@@ -101,6 +119,26 @@ public static class Databaza
         {
             Aktualizuj();
         }
+
+        DoplnTypyUdalosti();
+    }
+
+    /// <summary>Ak v databáze nie sú žiadne typy udalostí, doplní počiatočné.</summary>
+    public static void DoplnTypyUdalosti()
+    {
+        using var db = Otvor();
+        if (db.TypyUdalosti.Any())
+        {
+            return;
+        }
+
+        var poradie = 0;
+        foreach (var (nazov, farba) in PociatocneTypyUdalosti)
+        {
+            db.TypyUdalosti.Add(new TypUdalosti { Nazov = nazov, Farba = farba, Poradie = poradie++ });
+        }
+
+        db.SaveChanges();
     }
 
     /// <summary>Verzia štruktúry uložená v databáze (staršie databázy bez záznamu majú verziu 1).</summary>

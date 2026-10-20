@@ -102,6 +102,14 @@ public partial class App : Application
             });
         }
 
+        // prehľad dňa z kalendára a pripomienky udalostí počas behu programu
+        if (!spustitImport && !prveSpustenie)
+        {
+            okno.Dispatcher.InvokeAsync(okno.ZobrazPrehladDna, DispatcherPriority.ApplicationIdle);
+        }
+
+        okno.SpustiPripomienky();
+
         // vzorové súbory pre import (Dokumenty\EviTA\Vzory), ak ešte nie sú
         Task.Run(VzoryService.VytvorAkChybaju);
 

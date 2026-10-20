@@ -1,0 +1,30 @@
+<Window x:Class="Evita.Views.NastaveniaKalendaraWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nastavenia kalendára"
+        Width="560" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+    <StackPanel Margin="24,18,24,20">
+        <TextBlock Text="Nastavenia kalendára" Style="{StaticResource Podnadpis}" FontSize="18" />
+
+        <TextBlock Text="Automatické termíny z evidencie" FontWeight="SemiBold" Margin="0,8,0,6" />
+        <CheckBox x:Name="Zaruky" Content="Koniec záruky (z poľa Záruka do)" Margin="0,0,0,4" />
+        <CheckBox x:Name="Revizie" Content="Ďalšia revízia (z poľa Ďalšia revízia)" Margin="0,0,0,4" />
+        <CheckBox x:Name="Zalohy" Content="Naplánovaná pravidelná záloha" Margin="0,0,0,4" />
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+            <CheckBox x:Name="Inventura" Content="Ročná inventúra, každý rok dňa" VerticalAlignment="Center" />
+            <DatePicker x:Name="DatumInventury" Width="150" Margin="10,0,0,0" />
+        </StackPanel>
+        <TextBlock Style="{StaticResource Popis}" Margin="0,0,0,12" TextWrapping="Wrap"
+                   Text="Pri inventúre sa použije len deň a mesiac, termín sa opakuje každý rok." />
+
+        <TextBlock Text="Pripomínanie" FontWeight="SemiBold" Margin="0,8,0,6" />
+        <CheckBox x:Name="Prehlad" Content="Pri spustení programu zobraziť prehľad dňa (dnešné udalosti, pripomienky, úlohy po termíne)" Margin="0,0,0,4" />
+        <CheckBox x:Name="Upozornenia" Content="Upozorniť okienkom vpravo dole 15 minút pred udalosťou s časom, kým je program otvorený" Margin="0,0,0,4" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Uložiť" MinWidth="120" Style="{DynamicResource AccentButtonStyle}" Click="Ulozit_Click" IsDefault="True" />
+            <Button Content="Zrušiť" MinWidth="110" Margin="8,0,0,0" IsCancel="True" />
+        </StackPanel>
+    </StackPanel>
+</Window>

@@ -95,6 +95,80 @@ public class Nastavenie
     public string? Hodnota { get; set; }
 }
 
+public enum DruhUdalosti
+{
+    Udalost = 0,
+    Uloha = 1,
+}
+
+public enum OpakovanieUdalosti
+{
+    Ziadne = 0,
+    Denne = 1,
+    Tyzdenne = 2,
+    Mesacne = 3,
+    Rocne = 4,
+}
+
+public enum PripomienkaUdalosti
+{
+    Ziadna = 0,
+    VDen = 1,
+    DenVopred = 2,
+    TyzdenVopred = 3,
+}
+
+public enum StavUdalosti
+{
+    Naplanovane = 0,
+    Hotovo = 1,
+    Zrusene = 2,
+}
+
+/// <summary>Typ udalosti v kalendári (servis, revízia, nákup …) s farbou.</summary>
+public class TypUdalosti
+{
+    public int Id { get; set; }
+    public string Nazov { get; set; } = "";
+
+    /// <summary>Farba v tvare #RRGGBB.</summary>
+    public string Farba { get; set; } = "#7F8C8D";
+
+    public bool Aktivny { get; set; } = true;
+    public int Poradie { get; set; }
+}
+
+/// <summary>Udalosť alebo úloha v pracovnom kalendári, voliteľne naviazaná na položku, miestnosť alebo osobu.</summary>
+public class Udalost
+{
+    public int Id { get; set; }
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public string Nazov { get; set; } = "";
+    public string? Popis { get; set; }
+
+    public int TypUdalostiId { get; set; }
+    public TypUdalosti? TypUdalosti { get; set; }
+
+    public DruhUdalosti Druh { get; set; }
+    public DateTime Zaciatok { get; set; }
+    public DateTime? Koniec { get; set; }
+    public bool CelyDen { get; set; }
+    public OpakovanieUdalosti Opakovanie { get; set; }
+    public DateTime? OpakovanieDo { get; set; }
+    public PripomienkaUdalosti Pripomienka { get; set; }
+
+    public int? PolozkaId { get; set; }
+    public Polozka? Polozka { get; set; }
+    public int? MiestnostId { get; set; }
+    public Miestnost? Miestnost { get; set; }
+    public int? OsobaId { get; set; }
+    public Osoba? Osoba { get; set; }
+
+    public StavUdalosti Stav { get; set; }
+    public DateTime Vytvorene { get; set; }
+    public DateTime Zmenene { get; set; }
+}
+
 /// <summary>Jeden záznam o zálohe alebo obnove (aj neúspešnej).</summary>
 public class ZaznamZalohy
 {

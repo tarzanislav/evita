@@ -408,6 +408,80 @@ public static class UkazkoveData
             db.Historia.AddRange(zaznamy);
         }
 
+        // --- pracovný kalendár ----------------------------------------------------------
+        if (!db.TypyUdalosti.Any())
+        {
+            var por = 0;
+            foreach (var (nazovTypu, farba) in Databaza.PociatocneTypyUdalosti)
+            {
+                db.TypyUdalosti.Add(new TypUdalosti { Nazov = nazovTypu, Farba = farba, Poradie = por++ });
+            }
+
+            db.SaveChanges();
+        }
+
+        var typy = db.TypyUdalosti.ToList();
+        int Typ(string nazovTypu) => (typy.FirstOrDefault(t => t.Nazov == nazovTypu) ?? typy[0]).Id;
+        var vsetkyPolozky = poradie.Select(x => x.P).ToList();
+        var projektor = vsetkyPolozky.FirstOrDefault(p => p.Stav == StavPolozky.VOprave && p.Nazov.StartsWith("Projektor"))
+                        ?? vsetkyPolozky.FirstOrDefault(p => p.Nazov.StartsWith("Projektor"));
+        var tlaciaren = vsetkyPolozky.FirstOrDefault(p => p.Nazov.Contains("Tlačiareň") && p.Stav != StavPolozky.Vyradene);
+        var ups = vsetkyPolozky.FirstOrDefault(p => p.Nazov.Contains("UPS"));
+        var serverovna = miestnosti.FirstOrDefault(m => m.Nazov.Contains("Server")) ?? kancelarie[0];
+        var pondelok = dnes.AddDays(-(((int)dnes.DayOfWeek + 6) % 7));
+        var leto = new DateTime(dnes.Month > 7 ? dnes.Year + 1 : dnes.Year, 7, 1);
+
+        Udalost Nova(string nazov, string typ, DateTime zaciatok, DateTime? koniec = null, bool celyDen = false,
+            DruhUdalosti druh = DruhUdalosti.Udalost, StavUdalosti stav = StavUdalosti.Naplanovane,
+            OpakovanieUdalosti opakovanie = OpakovanieUdalosti.Ziadne, PripomienkaUdalosti pripomienka = PripomienkaUdalosti.Ziadna,
+            Polozka? polozka = null, Miestnost? miestnost = null, Osoba? osoba = null, string? popis = null) => new()
+        {
+            Nazov = nazov, Popis = popis, TypUdalostiId = Typ(typ), Zaciatok = zaciatok, Koniec = koniec, CelyDen = celyDen,
+            Druh = druh, Stav = stav, Opakovanie = opakovanie, Pripomienka = pripomienka,
+            PolozkaId = polozka?.Id, MiestnostId = miestnost?.Id, OsobaId = osoba?.Id, Vytvorene = teraz, Zmenene = teraz,
+        };
+
+        db.Udalosti.AddRange(new[]
+        {
+            Nova("Porada IT", "porada", pondelok.AddDays(-28).AddHours(8), pondelok.AddDays(-28).AddHours(8.5),
+                opakovanie: OpakovanieUdalosti.Tyzdenne, pripomienka: PripomienkaUdalosti.VDen, miestnost: kancelarie[0],
+                popis: "Pravidelná pondelková porada o stave techniky."),
+            Nova("Porada vedenia", "porada", dnes.AddHours(11), dnes.AddHours(12), miestnost: kancelarie[0], osoba: spravcaIt),
+            Nova("Výmena lampy v projektore", "servis", dnes.AddDays(2).AddHours(10), dnes.AddDays(2).AddHours(11),
+                druh: DruhUdalosti.Uloha, pripomienka: PripomienkaUdalosti.DenVopred, polozka: projektor, osoba: spravcaIt,
+                popis: "Lampa je objednaná, výmenu urobí servisný technik."),
+            Nova("Servis tlačiarne – výmena valca", "servis", dnes.AddDays(-5).AddHours(9), dnes.AddDays(-5).AddHours(10),
+                druh: DruhUdalosti.Uloha, stav: StavUdalosti.Hotovo, polozka: tlaciaren),
+            Nova("Nákup tonerov do tlačiarní", "nákup", dnes.AddDays(-3), celyDen: true, druh: DruhUdalosti.Uloha,
+                popis: "Čierny toner do všetkých laserových tlačiarní, 2 ks do rezervy."),
+            Nova("Zálohovanie dokumentov na NAS", "iné", dnes.AddDays(-1).AddHours(15), druh: DruhUdalosti.Uloha, stav: StavUdalosti.Hotovo),
+            Nova("Aktualizácia Windows na učebných PC", "iné", dnes.AddDays(1).AddHours(14), dnes.AddDays(1).AddHours(16),
+                opakovanie: OpakovanieUdalosti.Mesacne, pripomienka: PripomienkaUdalosti.DenVopred, miestnost: pcUcebne.FirstOrDefault()),
+            Nova("Kontrola záloh servera", "iné", new DateTime(dnes.Year, dnes.Month, 1).AddHours(7.5), druh: DruhUdalosti.Uloha,
+                opakovanie: OpakovanieUdalosti.Mesacne, miestnost: serverovna),
+            Nova("Prezentácia dodávateľa tabúľ", "porada", dnes.AddDays(3).AddHours(13), dnes.AddDays(3).AddHours(14),
+                stav: StavUdalosti.Zrusene),
+            Nova("Odovzdanie notebooku novej kolegyni", "iné", dnes.AddDays(4).AddHours(9), osoba: ucitelia.LastOrDefault(),
+                druh: DruhUdalosti.Uloha, pripomienka: PripomienkaUdalosti.DenVopred),
+            Nova("Školenie Microsoft 365 pre učiteľov", "školenie", dnes.AddDays(6).AddHours(13), dnes.AddDays(6).AddHours(15),
+                pripomienka: PripomienkaUdalosti.TyzdenVopred, miestnost: pcUcebne.FirstOrDefault()),
+            Nova("Jesenné prázdniny – údržba učební", "obdobie", dnes.AddDays(8), dnes.AddDays(10), celyDen: true,
+                popis: "Čistenie projektorov, kontrola káblov a aktualizácie."),
+            Nova("Objednávka interaktívnej tabule", "nákup", dnes.AddDays(14), celyDen: true, druh: DruhUdalosti.Uloha),
+            Nova("Revízia elektrospotrebičov", "revízia", dnes.AddDays(21), celyDen: true, druh: DruhUdalosti.Uloha,
+                pripomienka: PripomienkaUdalosti.TyzdenVopred, popis: "Revízny technik, všetky budovy."),
+            Nova("Inventúrny súpis kabinetov", "inventúra", dnes.AddDays(25), celyDen: true, druh: DruhUdalosti.Uloha),
+            Nova("Inventúra učební", "inventúra", dnes.AddDays(30), dnes.AddDays(34), celyDen: true,
+                pripomienka: PripomienkaUdalosti.TyzdenVopred),
+            Nova("Kontrola hasiacich prístrojov", "revízia", dnes.AddDays(45), celyDen: true),
+            Nova("Ročný servis klimatizácie v serverovni", "servis", dnes.AddDays(60).AddHours(8), dnes.AddDays(60).AddHours(12),
+                opakovanie: OpakovanieUdalosti.Rocne, miestnost: serverovna),
+            Nova("Výmena batérie UPS", "servis", dnes.AddDays(-12).AddHours(10), druh: DruhUdalosti.Uloha, stav: StavUdalosti.Hotovo,
+                polozka: ups),
+            Nova("Letná údržba učební", "obdobie", leto, leto.AddDays(14), celyDen: true),
+        });
+        Databaza.Zapis(db, "Kalendar.DatumInventury", "11-30");
+
         Databaza.Zapis(db, Databaza.KlucPoslednePrirastkove, poradie.Count.ToString());
         Databaza.Zapis(db, Databaza.KlucUkazkoveData, "1");
         db.SaveChanges();

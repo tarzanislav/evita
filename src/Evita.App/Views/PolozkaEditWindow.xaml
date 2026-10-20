@@ -171,6 +171,36 @@
                     </DataGrid>
                 </DockPanel>
             </TabItem>
+
+            <TabItem Header="Udalosti"
+                     Visibility="{Binding JeNova, Converter={StaticResource InverzBoolNaViditelnost}}">
+                <DockPanel Margin="0,8,0,0">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Button DockPanel.Dock="Right" Content="Nová udalosť k položke…" Padding="12,4" Command="{Binding NovaUdalostCommand}" />
+                        <TextBlock Style="{StaticResource Popis}" VerticalAlignment="Center" TextWrapping="Wrap"
+                                   Text="Servis, revízie a ďalšie udalosti kalendára naviazané na túto položku (rok dozadu a dva roky dopredu), aj koniec záruky a ďalšia revízia. Dvojklikom otvoríte udalosť." />
+                    </DockPanel>
+                    <DataGrid x:Name="TabulkaUdalosti" ItemsSource="{Binding Udalosti}" AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False" SelectionMode="Single"
+                              MouseDoubleClick="TabulkaUdalosti_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="" Width="12">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Width="6" Margin="0,2" CornerRadius="2"
+                                                Background="{Binding Farba, Converter={StaticResource FarbaNaStetec}}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Dátum" Binding="{Binding Zaciatok, Mode=OneWay, StringFormat='d. M. yyyy'}" Width="95" />
+                            <DataGridTextColumn Header="Čas" Binding="{Binding CasText, Mode=OneWay}" Width="110" />
+                            <DataGridTextColumn Header="Udalosť" Binding="{Binding Nazov, Mode=OneWay}" Width="*" />
+                            <DataGridTextColumn Header="Typ" Binding="{Binding Typ, Mode=OneWay}" Width="110" />
+                            <DataGridTextColumn Header="Stav" Binding="{Binding StavText, Mode=OneWay}" Width="100" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
         </TabControl>
     </DockPanel>
 </Window>

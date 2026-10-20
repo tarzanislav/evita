@@ -1,0 +1,77 @@
+<Window x:Class="Evita.Views.PrehladDnaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Prehľad dňa"
+        Width="640" SizeToContent="Height" MaxHeight="760"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize" ShowInTaskbar="False">
+    <Window.Resources>
+        <DataTemplate x:Key="Vyskyt">
+            <Border Margin="0,0,0,6" Padding="10,6" CornerRadius="4" BorderThickness="4,0,0,0"
+                    BorderBrush="{Binding Farba, Converter={StaticResource FarbaNaStetec}}"
+                    Background="{Binding Farba, Converter={StaticResource FarbaNaStetec}, ConverterParameter=22}">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Hotovo" Padding="10,2" VerticalAlignment="Center" Tag="{Binding}"
+                            Click="Hotovo_Click" ToolTip="Označiť úlohu ako hotovú">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Druh}" Value="Uloha" />
+                                            <Condition Binding="{Binding Automaticky}" Value="False" />
+                                            <Condition Binding="{Binding Stav}" Value="Naplanovane" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <StackPanel>
+                        <TextBlock FontWeight="SemiBold" TextWrapping="Wrap">
+                            <Run Text="{Binding Nazov, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap">
+                            <Run Text="{Binding Zaciatok, Mode=OneWay, StringFormat='d. M. yyyy'}" />
+                            <Run Text="·" />
+                            <Run Text="{Binding CasText, Mode=OneWay}" />
+                            <Run Text="·" />
+                            <Run Text="{Binding Typ, Mode=OneWay}" />
+                            <Run Text="{Binding Naviazanie, Mode=OneWay, StringFormat='· {0}'}" />
+                        </TextBlock>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel Margin="24,18,24,20">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock x:Name="Nadpis" Style="{StaticResource Podnadpis}" FontSize="20" />
+            <TextBlock x:Name="Meniny" Style="{StaticResource Popis}" FontSize="13" Margin="0,0,0,10" />
+        </StackPanel>
+
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+            <CheckBox x:Name="ZobrazovatPriSpusteni" Content="Zobrazovať pri spustení" VerticalAlignment="Center" IsChecked="True" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Otvoriť kalendár" MinWidth="130" Style="{DynamicResource AccentButtonStyle}" Click="Kalendar_Click" />
+                <Button Content="Zavrieť" MinWidth="110" Margin="8,0,0,0" IsCancel="True" Click="Zavriet_Click" />
+            </StackPanel>
+        </DockPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock x:Name="NadpisPoTermine" Text="Úlohy po termíne" FontWeight="SemiBold" Margin="0,4,0,6"
+                           Foreground="{DynamicResource SystemFillColorCriticalBrush}" />
+                <ItemsControl x:Name="PoTermine" ItemTemplate="{StaticResource Vyskyt}" />
+                <TextBlock x:Name="NadpisDnes" Text="Dnes" FontWeight="SemiBold" Margin="0,8,0,6" />
+                <ItemsControl x:Name="Dnes" ItemTemplate="{StaticResource Vyskyt}" />
+                <TextBlock x:Name="NadpisPripomienky" Text="Pripomienky – čo sa blíži" FontWeight="SemiBold" Margin="0,8,0,6" />
+                <ItemsControl x:Name="Pripomienky" ItemTemplate="{StaticResource Vyskyt}" />
+                <TextBlock x:Name="Nic" Text="Na dnes nie je nič naplánované a žiadna úloha nie je po termíne." Style="{StaticResource Popis}"
+                           FontSize="13" Margin="0,6,0,0" />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

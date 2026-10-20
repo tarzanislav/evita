@@ -15,6 +15,47 @@ public partial class PolozkaEditViewModel : ObservableObject
     private readonly int _id;
     private readonly int _verzia;
 
+    /// <summary>Udalosti kalendára naviazané na položku (rok dozadu, dva dopredu) vrátane záruky a revízie.</summary>
+    [ObservableProperty] private List<VyskytUdalosti> _udalosti = new();
+
+    private void NacitajUdalosti()
+    {
+        try
+        {
+            var dnes = DateTime.Today;
+            Udalosti = new KalendarService().Vyskyty(dnes.AddYears(-1), dnes.AddYears(2), _id);
+        }
+        catch (Exception)
+        {
+            Udalosti = new List<VyskytUdalosti>();
+        }
+    }
+
+    [RelayCommand]
+    private void NovaUdalost()
+    {
+        var okno = new Views.UdalostWindow(new UdalostEditViewModel(null, DateTime.Today, _id)) { Owner = Dialogy.Vlastnik };
+        if (okno.ShowDialog() == true)
+        {
+            NacitajUdalosti();
+        }
+    }
+
+    [RelayCommand]
+    private void OtvorUdalost(VyskytUdalosti? vyskyt)
+    {
+        if (vyskyt?.UdalostId is not int id)
+        {
+            return;
+        }
+
+        var okno = new Views.UdalostWindow(new UdalostEditViewModel(id, null, null)) { Owner = Dialogy.Vlastnik };
+        if (okno.ShowDialog() == true)
+        {
+            NacitajUdalosti();
+        }
+    }
+
     /// <param name="id">Id upravovanej položky, alebo null pre novú.</param>
     /// <param name="kopiaZ">Id položky, ktorá sa má skopírovať do novej.</param>
     public PolozkaEditViewModel(int? id, int? kopiaZ)
@@ -30,6 +71,7 @@ public partial class PolozkaEditViewModel : ObservableObject
             DatumPridaniaText = Sk.DatumCas(zdroj.DatumPridania);
             DatumZmenyText = Sk.DatumCas(zdroj.DatumZmeny);
             Historia = _sluzba.Historia(zdroj.Id);
+            NacitajUdalosti();
         }
         else
         {

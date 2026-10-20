@@ -41,3 +41,42 @@ public sealed class NulaNaViditelnost : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>Farba v tvare #RRGGBB → štetec (farby typov udalostí v kalendári).</summary>
+public sealed class FarbaNaStetec : IValueConverter
+{
+    private static readonly Dictionary<string, System.Windows.Media.SolidColorBrush> Vyrovnavacia = new();
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var text = value as string ?? "#7F8C8D";
+        if (parameter is string priehladnost && byte.TryParse(priehladnost, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var alfa))
+        {
+            text = "#" + alfa.ToString("X2") + text.TrimStart('#');
+        }
+
+        lock (Vyrovnavacia)
+        {
+            if (Vyrovnavacia.TryGetValue(text, out var stetec))
+            {
+                return stetec;
+            }
+
+            try
+            {
+                stetec = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(text));
+            }
+            catch (FormatException)
+            {
+                stetec = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray);
+            }
+
+            stetec.Freeze();
+            Vyrovnavacia[text] = stetec;
+            return stetec;
+        }
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}

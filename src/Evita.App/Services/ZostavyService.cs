@@ -67,6 +67,12 @@ public sealed class MoznostiZostavy
 
     /// <summary>História zmien len pre položku s týmto prírastkovým číslom.</summary>
     public int? PrirastkoveCislo { get; init; }
+
+    /// <summary>Kalendár ako zoznam udalostí namiesto mesačnej mriežky.</summary>
+    public bool KalendarZoznam { get; init; }
+
+    /// <summary>Kalendár vrátane automatických termínov (záruky, revízie, zálohy, inventúra).</summary>
+    public bool AutomatickeTerminy { get; init; } = true;
 }
 
 /// <summary>Tlačové zostavy. Každá sa vytvorí ako dokument, ktorý sa zobrazí v náhľade, vytlačí alebo uloží do PDF.</summary>
@@ -116,8 +122,8 @@ public sealed class ZostavyService
             "Zmeny za obdobie, voliteľne len pre jednu položku, miestnosť alebo osobu.",
             Array.Empty<string>(), MaObdobie: true, MaVyradene: false, MaVolbuStlpcov: false),
         new(DruhZostavy.Kalendar, "Kalendár",
-            "Mesačný kalendár alebo zoznam úloh za obdobie.",
-            Array.Empty<string>(), MaVyradene: false, MaVolbuStlpcov: false, Dostupna: false, Poznamka: "Pripravuje sa v etape 6 spolu s kalendárom."),
+            "Mesačný kalendár (každý mesiac na jednej strane) alebo zoznam udalostí a úloh za obdobie.",
+            Array.Empty<string>(), MaObdobie: true, MaVyradene: false, MaVolbuStlpcov: false),
     };
 
     public static PopisZostavy Popis(DruhZostavy druh) => Zoznam.First(z => z.Druh == druh);
@@ -130,7 +136,8 @@ public sealed class ZostavyService
     }
 
     /// <summary>Odporúčaná orientácia: na šírku pri viac ako 6 stĺpcoch a pri histórii zmien.</summary>
-    public static bool OdporucNaSirku(DruhZostavy druh, int pocetStlpcov) => druh == DruhZostavy.Historia || pocetStlpcov > 6;
+    public static bool OdporucNaSirku(DruhZostavy druh, int pocetStlpcov) =>
+        druh is DruhZostavy.Historia or DruhZostavy.Kalendar || pocetStlpcov > 6;
 
     // ------------------------------------------------------------------ vytvorenie
 
@@ -144,6 +151,11 @@ public sealed class ZostavyService
         if (m.Druh == DruhZostavy.Historia)
         {
             return Historia(m);
+        }
+
+        if (m.Druh == DruhZostavy.Kalendar)
+        {
+            return ZostavaKalendara.Vytvor(m);
         }
 
         var stlpce = m.Stlpce.Select(StlpcePrenosu.Podla).ToList();

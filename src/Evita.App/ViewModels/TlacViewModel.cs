@@ -42,7 +42,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(UkazObdobie), nameof(UkazVyradene), nameof(UkazPodpis), nameof(UkazNovuStranu),
         nameof(UkazStlpce), nameof(UkazZoskupenie), nameof(UkazMiestnost), nameof(UkazOsobu), nameof(UkazKategoriu),
-        nameof(UkazPolozku), nameof(Dostupna), nameof(Poznamka), nameof(TextPodpisu), nameof(PopisVyfiltrovanych))]
+        nameof(UkazPolozku), nameof(Dostupna), nameof(Poznamka), nameof(TextPodpisu), nameof(PopisVyfiltrovanych), nameof(UkazKalendar))]
     private PopisZostavy _vybrana;
 
     partial void OnVybranaChanged(PopisZostavy value) => NastavPodlaZostavy();
@@ -57,6 +57,18 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     public bool UkazOsobu => Vybrana.Druh is DruhZostavy.PodlaPridelenia or DruhZostavy.Historia;
     public bool UkazKategoriu => Vybrana.Druh == DruhZostavy.PoKategoriach;
     public bool UkazPolozku => Vybrana.Druh == DruhZostavy.Historia;
+    public bool UkazKalendar => Vybrana.Druh == DruhZostavy.Kalendar;
+
+    [ObservableProperty] private bool _kalendarZoznam;
+    [ObservableProperty] private bool _automatickeTerminy = true;
+
+    public bool KalendarMriezka
+    {
+        get => !KalendarZoznam;
+        set => KalendarZoznam = !value;
+    }
+
+    partial void OnKalendarZoznamChanged(bool value) => OnPropertyChanged(nameof(KalendarMriezka));
     public bool Dostupna => Vybrana.Dostupna;
     public string Poznamka => Vybrana.Poznamka ?? "";
 
@@ -150,6 +162,12 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
         }
 
         NaSirku = ZostavyService.OdporucNaSirku(Vybrana.Druh, Vybrana.PredvoleneStlpce.Length);
+        if (Vybrana.Druh == DruhZostavy.Kalendar)
+        {
+            var dnes = DateTime.Today;
+            Od = new DateTime(dnes.Year, dnes.Month, 1);
+            Do = Od.Value.AddMonths(1).AddDays(-1);
+        }
     }
 
     [RelayCommand(CanExecute = nameof(MozeHore))]
@@ -235,6 +253,8 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
             MiestnostId = UkazMiestnost ? MiestnostId : null,
             OsobaId = UkazOsobu ? OsobaId : null,
             PrirastkoveCislo = cislo,
+            KalendarZoznam = KalendarZoznam,
+            AutomatickeTerminy = AutomatickeTerminy,
         };
     }
 

@@ -102,6 +102,13 @@
                                           Visibility="{Binding UkazNovuStranu, Converter={StaticResource BoolNaViditelnost}}" />
                                 <CheckBox Content="{Binding TextPodpisu}" IsChecked="{Binding Podpis}" Margin="0,2,0,4"
                                           Visibility="{Binding UkazPodpis, Converter={StaticResource BoolNaViditelnost}}" />
+                                <StackPanel Visibility="{Binding UkazKalendar, Converter={StaticResource BoolNaViditelnost}}" Margin="0,2,0,4">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                        <RadioButton GroupName="kalendar" Content="mesačný kalendár (mesiac na strane)" IsChecked="{Binding KalendarMriezka}" />
+                                        <RadioButton GroupName="kalendar" Content="zoznam udalostí a úloh" IsChecked="{Binding KalendarZoznam}" Margin="14,0,0,0" />
+                                    </StackPanel>
+                                    <CheckBox Content="Vrátane automatických termínov (záruky, revízie, zálohy, inventúra)" IsChecked="{Binding AutomatickeTerminy}" />
+                                </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                     <TextBlock Text="Orientácia A4:" VerticalAlignment="Center" Margin="0,0,14,0" />
                                     <RadioButton GroupName="orientacia" Content="na výšku"

@@ -514,6 +514,101 @@ public sealed class ImportService
         return riadky;
     }
 
+    /// <summary>Prenesie typy udalostí a udalosti kalendára z úplného exportu. Vráti počet prenesených udalostí.</summary>
+    private static int PrenesKalendar(EvitaDbContext db, BalikEviTA balik, List<Polozka> polozky,
+        Dictionary<string, Miestnost> miestnosti, Dictionary<string, Osoba> osoby, DateTime teraz)
+    {
+        if (balik.TypyUdalosti is null && balik.Udalosti is null)
+        {
+            return 0;
+        }
+
+        var typy = new Dictionary<string, TypUdalosti>(Sk.Porovnanie);
+        foreach (var t in db.TypyUdalosti.ToList())
+        {
+            typy.TryAdd(t.Nazov, t);
+        }
+
+        var poradie = typy.Count == 0 ? 0 : typy.Values.Max(t => t.Poradie) + 1;
+        foreach (var t in balik.TypyUdalosti ?? new List<TypUdalostiPrenos>())
+        {
+            if (string.IsNullOrWhiteSpace(t.Nazov))
+            {
+                continue;
+            }
+
+            if (typy.TryGetValue(t.Nazov.Trim(), out var existujuci))
+            {
+                existujuci.Farba = t.Farba;
+                existujuci.Aktivny = t.Aktivny;
+            }
+            else
+            {
+                var novy = new TypUdalosti { Nazov = t.Nazov.Trim(), Farba = t.Farba, Aktivny = t.Aktivny, Poradie = poradie++ };
+                db.TypyUdalosti.Add(novy);
+                typy[novy.Nazov] = novy;
+            }
+        }
+
+        db.SaveChanges();
+        var podlaGuid = polozky.ToDictionary(p => p.Guid);
+        var podlaCisla = polozky.ToDictionary(p => p.PrirastkoveCislo);
+        var pouziteGuidy = db.Udalosti.Select(u => u.Guid).ToHashSet();
+        var pocet = 0;
+        foreach (var u in balik.Udalosti ?? new List<UdalostPrenos>())
+        {
+            if (string.IsNullOrWhiteSpace(u.Nazov) || !Prevod.SkusDatum(u.Zaciatok, out var zaciatok) || zaciatok is null)
+            {
+                continue;
+            }
+
+            if (!typy.TryGetValue(string.IsNullOrWhiteSpace(u.Typ) ? "iné" : u.Typ.Trim(), out var typ))
+            {
+                typ = new TypUdalosti { Nazov = string.IsNullOrWhiteSpace(u.Typ) ? "iné" : u.Typ.Trim(), Poradie = poradie++ };
+                db.TypyUdalosti.Add(typ);
+                typy[typ.Nazov] = typ;
+            }
+
+            Polozka? polozka = null;
+            if (Guid.TryParse(u.PolozkaGuid, out var gp) && podlaGuid.TryGetValue(gp, out var p1))
+            {
+                polozka = p1;
+            }
+            else if (u.PolozkaCislo is int c && podlaCisla.TryGetValue(c, out var p2))
+            {
+                polozka = p2;
+            }
+
+            Prevod.SkusDatum(u.Koniec, out var koniec);
+            Prevod.SkusDatum(u.OpakovanieDo, out var opakovanieDo);
+            var guid = Guid.TryParse(u.Guid, out var g) && pouziteGuidy.Add(g) ? g : Guid.NewGuid();
+            db.Udalosti.Add(new Udalost
+            {
+                Guid = guid,
+                Nazov = u.Nazov.Trim(),
+                Popis = u.Popis,
+                TypUdalosti = typ,
+                Druh = Enum.TryParse<DruhUdalosti>(u.Druh, true, out var druh) ? druh : DruhUdalosti.Udalost,
+                Zaciatok = zaciatok.Value,
+                Koniec = koniec,
+                CelyDen = u.CelyDen,
+                Opakovanie = Enum.TryParse<OpakovanieUdalosti>(u.Opakovanie, true, out var opak) ? opak : OpakovanieUdalosti.Ziadne,
+                OpakovanieDo = opakovanieDo,
+                Pripomienka = Enum.TryParse<PripomienkaUdalosti>(u.Pripomienka, true, out var prip) ? prip : PripomienkaUdalosti.Ziadna,
+                Polozka = polozka,
+                Miestnost = !string.IsNullOrWhiteSpace(u.Miestnost) && miestnosti.TryGetValue(u.Miestnost.Trim(), out var m) ? m : null,
+                Osoba = !string.IsNullOrWhiteSpace(u.Osoba) && osoby.TryGetValue(UpravMeno(u.Osoba), out var o) ? o : null,
+                Stav = Enum.TryParse<StavUdalosti>(u.Stav, true, out var stav) ? stav : StavUdalosti.Naplanovane,
+                Vytvorene = teraz,
+                Zmenene = teraz,
+            });
+            pocet++;
+        }
+
+        db.SaveChanges();
+        return pocet;
+    }
+
     /// <summary>Meno osoby bez nadbytočných medzier.</summary>
     public static string UpravMeno(string meno) =>
         string.Join(' ', meno.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
@@ -767,6 +862,13 @@ public sealed class ImportService
             }
         }
 
+        // pri prenose celej databázy aj pracovný kalendár
+        var preneseneUdalosti = 0;
+        if (druh == DruhImportu.CelaDatabaza && zdroj.Balik is { } balikKalendara)
+        {
+            preneseneUdalosti = PrenesKalendar(db, balikKalendara, nove.Select(x => x.Polozka).ToList(), miestnosti, osoby, teraz);
+        }
+
         foreach (var (riadok, polozka, povodne) in nove)
         {
             db.Historia.Add(new HistoriaZmeny
@@ -824,6 +926,11 @@ public sealed class ImportService
         if (prenesenaHistoria > 0)
         {
             sb.AppendLine($"Prenesená história:  {prenesenaHistoria} záznamov");
+        }
+
+        if (preneseneUdalosti > 0)
+        {
+            sb.AppendLine($"Udalosti kalendára:  {preneseneUdalosti}");
         }
 
         foreach (var upozornenie in zdroj.Upozornenia)

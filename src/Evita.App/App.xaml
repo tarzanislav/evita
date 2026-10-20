@@ -14,6 +14,7 @@
             <pom:InverzBool x:Key="InverzBool" />
             <pom:NieJePrazdne x:Key="NieJePrazdne" />
             <pom:NulaNaViditelnost x:Key="NulaNaViditelnost" />
+            <pom:FarbaNaStetec x:Key="FarbaNaStetec" />
 
             <FontFamily x:Key="IkonovePismo">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 

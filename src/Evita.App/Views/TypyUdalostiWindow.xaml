@@ -1,0 +1,75 @@
+<Window x:Class="Evita.Views.TypyUdalostiWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Typy udalostí"
+        Width="620" Height="520" MinWidth="520" MinHeight="420"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <DockPanel Margin="24,18,24,20">
+        <TextBlock DockPanel.Dock="Top" Text="Typy udalostí" Style="{StaticResource Podnadpis}" FontSize="18" />
+        <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,0,0,12" TextWrapping="Wrap"
+                   Text="Každý typ má svoju farbu, ktorou sa udalosti zobrazia v kalendári. Typ, ktorý už používa niektorá udalosť, sa pri vymazaní len skryje z ponuky." />
+        <Button DockPanel.Dock="Bottom" Content="Zavrieť" HorizontalAlignment="Right" MinWidth="110" Margin="0,14,0,0" IsCancel="True" Click="Zavriet_Click" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="230" />
+                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ListBox x:Name="Zoznam" SelectionChanged="Zoznam_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="14" Height="14" CornerRadius="3" Margin="0,0,10,0" VerticalAlignment="Center"
+                                    Background="{Binding Farba, Converter={StaticResource FarbaNaStetec}}" />
+                            <TextBlock Text="{Binding Nazov}" />
+                            <TextBlock Text=" (skrytý)" Foreground="Gray">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Aktivny}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Názov" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                <TextBox x:Name="PoleNazov" />
+                <TextBlock Text="Farba" Style="{StaticResource Stitok}" Margin="0,12,0,6" />
+                <ItemsControl x:Name="Paleta">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Width="34" Height="34" Margin="0,0,6,6" Padding="0" Click="Farba_Click" Tag="{Binding}"
+                                    ToolTip="{Binding}">
+                                <Border Width="24" Height="24" CornerRadius="4" Background="{Binding Converter={StaticResource FarbaNaStetec}}" />
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="Vybraná farba:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <Border x:Name="Vzorka" Width="60" Height="20" CornerRadius="4" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                    <Button Content="Uložiť" MinWidth="90" Style="{DynamicResource AccentButtonStyle}" Click="Ulozit_Click" />
+                    <Button Content="Nový typ" MinWidth="90" Margin="8,0,0,0" Click="Novy_Click" />
+                    <Button Content="Vymazať" MinWidth="90" Margin="8,0,0,0" Click="Vymazat_Click" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -47,6 +47,7 @@ internal static class Samotest
             }
 
             Databaza.Inicializuj();
+            Preklad.UlozJazyk("sk");
             Krok("databáza vytvorená");
 
             // Kalendárium: meniny a sviatky
@@ -100,6 +101,9 @@ internal static class Samotest
             {
                 Over(db.TypyUdalosti.Count() == Databaza.PociatocneTypyUdalosti.Length, "počiatočné typy udalostí");
                 Over(db.Udalosti.Count() == 20, $"ukážkové udalosti kalendára: 20 (je {db.Udalosti.Count()})");
+                Over(db.Ulohy.Count() == 7 && db.Ulohy.Count(u => u.Hotovo) == 1, $"ukážkové úlohy: 7 (je {db.Ulohy.Count()})");
+                Over(db.Poznamky.Count() == 5 && db.Poznamky.Count(p => p.Pripnuta) == 2 && db.Poznamky.Any(p => p.UdalostId != null && p.Datum != null)
+                     && db.Poznamky.Any(p => p.PolozkaId != null), "ukážkové poznámky s prepojeniami");
             }
 
             // pridanie, úprava, história
@@ -216,13 +220,146 @@ internal static class Samotest
             kalendarSluzba.UlozTyp(typyK.First(t => t.Nazov == "porada").Id, "porada", typyK.First(t => t.Nazov == "porada").Farba);
             Krok("pracovný kalendár v poriadku");
 
+            // ------------------------------------------------------------ úlohy, poznámky, kurzy, počasie, konfigurácia
+            var ulohySluzba = new UlohyService();
+            var otvoreneUlohy = ulohySluzba.Nacitaj(ajHotove: false);
+            Over(otvoreneUlohy.Count == 6 && otvoreneUlohy[0].Vysoka && otvoreneUlohy.Any(u => u.PoTermine), "úlohy: zoradenie (vysoká priorita hore) a po termíne");
+            var novaUlohaId = ulohySluzba.Pridaj("Test úlohy zo samotestu", DateTime.Today.AddDays(1), PrioritaUlohy.Nizka, riadky[0].Id);
+            Over(ulohySluzba.Nacitaj(ajHotove: false, polozkaId: riadky[0].Id).Any(u => u.Id == novaUlohaId && u.PolozkaCislo == riadky[0].PrirastkoveCislo),
+                "úloha naviazaná na položku");
+            ulohySluzba.NastavHotovo(novaUlohaId, true);
+            Over(ulohySluzba.Nacitaj(novaUlohaId) is { Hotovo: true, DatumHotovo: not null }, "úloha označená ako hotová");
+            Over(Ocakavaj<EvitaException>(() => ulohySluzba.Pridaj("   ")), "prázdna úloha je odmietnutá");
+            Over(ulohySluzba.VymazHotove() == 2 && ulohySluzba.Pocty().Hotove == 0, "vymazanie hotových úloh");
+            ulohySluzba.Pridaj("Vyčistiť filtre projektorov");
+            ulohySluzba.NastavHotovo(ulohySluzba.Nacitaj(ajHotove: false).First(u => u.Text == "Vyčistiť filtre projektorov").Id, true);
+
+            var poznamkySluzba = new PoznamkyService();
+            var novaPoznamka = poznamkySluzba.Uloz(new Poznamka { Text = "Prvý riadok je názov\nďalší text", Datum = DateTime.Today.AddDays(2), PolozkaId = riadky[1].Id });
+            var nacitanaPoznamka = poznamkySluzba.Nacitaj(novaPoznamka)!;
+            Over(nacitanaPoznamka.Nazov == "Prvý riadok je názov" && nacitanaPoznamka.Farba == PoznamkyService.Farby[0], "poznámka bez názvu dostane názov z prvého riadku");
+            Over(poznamkySluzba.Zoznam("ďalší TEXT").Any(p => p.Id == novaPoznamka) && poznamkySluzba.Zoznam("dalsi text").Any(p => p.Id == novaPoznamka),
+                "hľadanie v poznámkach bez ohľadu na diakritiku");
+            Over(poznamkySluzba.PreDni(DateTime.Today, DateTime.Today.AddDays(3)).Any(p => p.Id == novaPoznamka), "poznámka naviazaná na deň v kalendári");
+            Over(poznamkySluzba.PrePolozku(riadky[1].Id).Any(p => p.Id == novaPoznamka), "poznámka naviazaná na položku");
+            poznamkySluzba.NastavPripnutie(novaPoznamka, true);
+            Over(poznamkySluzba.Zoznam()[0].Pripnuta && poznamkySluzba.Pripnute(10).Any(p => p.Id == novaPoznamka), "pripnutá poznámka je hore");
+            Over(Ocakavaj<EvitaException>(() => poznamkySluzba.Uloz(new Poznamka { Nazov = " ", Text = "\n" })), "prázdna poznámka je odmietnutá");
+            var skolenieUdalost = kalendarSluzba.Vyskyty(dnesK, dnesK.AddDays(30), automaticke: false).First(v => v.Nazov.StartsWith("Školenie"));
+            Over(poznamkySluzba.PreUdalost(skolenieUdalost.UdalostId!.Value).Count == 1, "poznámka naviazaná na udalosť");
+            poznamkySluzba.Vymaz(novaPoznamka);
+            Over(poznamkySluzba.Nacitaj(novaPoznamka) is null, "vymazanie poznámky");
+
+            // kurzy ECB a počasie Open-Meteo – čítanie odpovedí (bez internetu)
+            const string ukazkaEcb = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <gesmes:Envelope xmlns:gesmes="http://www.gesmes.org/xml/2002-08-01" xmlns="http://www.ecb.int/vocabulary/2002-08-01/eurofxref">
+                  <gesmes:subject>Reference rates</gesmes:subject>
+                  <Cube>
+                    <Cube time="2026-10-16"><Cube currency="USD" rate="1.0800"/><Cube currency="CZK" rate="24.600"/></Cube>
+                    <Cube time="2026-10-19"><Cube currency="USD" rate="1.0850"/><Cube currency="CZK" rate="24.512"/><Cube currency="JPY" rate="162.31"/></Cube>
+                  </Cube>
+                </gesmes:Envelope>
+                """;
+            var dniEcb = KurzyService.Precitaj(ukazkaEcb);
+            Over(dniEcb.Count == 2 && dniEcb[0].Datum == new DateTime(2026, 10, 19) && dniEcb[0].Kurzy["USD"] == 1.0850m && dniEcb[0].Kurzy.Count == 3,
+                "kurzy ECB: čítanie XML (najnovší deň prvý)");
+            Over(KurzyService.Prepocitaj(100m, "EUR", "USD", dniEcb[0].Kurzy) == 108.5m
+                 && KurzyService.Prepocitaj(24.512m, "CZK", "EUR", dniEcb[0].Kurzy) == 1m
+                 && KurzyService.Prepocitaj(10m, "USD", "CZK", dniEcb[0].Kurzy) is > 225m and < 226m, "kurzy: prepočet cez euro");
+            Over(new KurzMeny("USD", 1.085m, 1.08m, new[] { 1.08m, 1.085m }).ZmenaPercent == 0.46m, "kurzy: zmena oproti predošlému dňu");
+            const string ukazkaMiesta = """{"results":[{"id":3058000,"name":"Pezinok","latitude":48.28986,"longitude":17.26664,"country_code":"SK","admin1":"Bratislavský kraj","admin2":"Okres Pezinok","country":"Slovensko"},{"id":1,"name":"bez súradníc"}],"generationtime_ms":1.2}""";
+            var miestaUkazka = PocasieService.PrecitajMiesta(ukazkaMiesta);
+            Over(miestaUkazka.Count == 1 && miestaUkazka[0].Popis == "Pezinok, Okres Pezinok, Bratislavský kraj, Slovensko", "počasie: čítanie vyhľadaných miest");
+            Over(PocasieService.PrecitajMiesta("""{"generationtime_ms":0.5}""").Count == 0, "počasie: nič sa nenašlo");
+            const string ukazkaPredpovede = """{"latitude":48.3,"longitude":17.26,"current":{"time":"2026-10-20T14:00","interval":900,"temperature_2m":12.4,"apparent_temperature":10.1,"relative_humidity_2m":71,"weather_code":3,"wind_speed_10m":11.2,"precipitation":0.0,"is_day":1},"daily":{"time":["2026-10-20","2026-10-21"],"weather_code":[3,61],"temperature_2m_max":[14.2,12.0],"temperature_2m_min":[6.1,null],"precipitation_probability_max":[10,80]}}""";
+            var predpoved = PocasieService.PrecitajPredpoved(ukazkaPredpovede, miestaUkazka[0], DateTime.Now);
+            Over(predpoved.Teplota == 12.4 && predpoved.Vlhkost == 71 && predpoved.Kod == 3 && predpoved.Den && predpoved.Dni.Count == 2
+                 && predpoved.Dni[1].Kod == 61 && predpoved.Dni[1].Min is null && predpoved.Dni[1].Zrazky == 80, "počasie: čítanie predpovede");
+            Over(predpoved.Popis == "zamračené" && predpoved.Dni[1].Popis == "slabý dážď" && predpoved.TeplotaText == "12 °C", "počasie: popis podľa kódu WMO");
+
+            // skutočné stiahnutie (na zostavovacom serveri je internet; bez neho sa len zapíše)
+            try
+            {
+                var miesta = new PocasieService().HladajAsync("Pezinok").GetAwaiter().GetResult();
+                Krok($"počasie: vyhľadanie Pezinok – {miesta.Count} miest, prvé {miesta.FirstOrDefault()?.Popis}");
+                if (miesta.Count > 0)
+                {
+                    new PocasieService().UlozMiesto(miesta[0]);
+                    var naozaj = new PocasieService().StiahniAsync(miesta[0]).GetAwaiter().GetResult();
+                    Krok($"počasie: {naozaj.TeplotaText}, {naozaj.Popis}, {naozaj.Dni.Count} dní predpovede");
+                    Over(new PocasieService().ZVyrovnavacejPamate() is { } ulozene && ulozene.Teplota == naozaj.Teplota, "počasie: vyrovnávacia pamäť");
+                }
+
+                var listok = new KurzyService().StiahniAsync().GetAwaiter().GetResult();
+                Krok($"kurzy: {Sk.Datum(listok.Datum)} – {string.Join(", ", listok.Meny.Select(m => $"{m.Kod} {m.KurzText} {m.ZmenaText}"))}");
+                Over(listok.Meny.Count == 8 && new KurzyService().ZVyrovnavacejPamate()?.Meny.Count == 8, "kurzy: stiahnutý kurzový lístok predvolených mien");
+            }
+            catch (EvitaException ex)
+            {
+                Krok("bez internetu: " + ex.Message + " – " + ex.InnerException?.Message);
+            }
+
+            // konfigurácia programu: export, zmena, import
+            var konfiguracia = Path.Combine(Databaza.Priecinok, "konfiguracia.json");
+            new KurzyService().UlozMeny(new[] { "GBP", "CHF" });
+            using (var db = Databaza.Otvor())
+            {
+                Databaza.Zapis(db, "Dashboard.Skryte", "graf");
+                db.SaveChanges();
+            }
+
+            var exportovane = KonfiguraciaService.Exportuj(konfiguracia);
+            var obsahKonfiguracie = File.ReadAllText(konfiguracia);
+            Over(exportovane > 5 && obsahKonfiguracie.Contains("\"Kurzy.Meny\": \"GBP,CHF\"") && obsahKonfiguracie.Contains("\"Program.Jazyk\"")
+                 && !obsahKonfiguracie.Contains("Schema.Verzia") && !obsahKonfiguracie.Contains("PrirastkoveCislo"), "konfigurácia: export len nastavení");
+            new KurzyService().UlozMeny(new[] { "USD" });
+            var typServis = typyK.First(t => t.Nazov == "servis");
+            kalendarSluzba.UlozTyp(typServis.Id, "servis", "#000000");
+            using (var db = Databaza.Otvor())
+            {
+                Databaza.Zapis(db, "Dashboard.Skryte", "");
+                db.SaveChanges();
+            }
+
+            var nacitanaKonfiguracia = KonfiguraciaService.Precitaj(konfiguracia);
+            Over(KonfiguraciaService.Obsah(nacitanaKonfiguracia).Count >= 4, "konfigurácia: popis obsahu");
+            var vysledokKonfiguracie = KonfiguraciaService.Importuj(nacitanaKonfiguracia);
+            Over(new KurzyService().ZvoleneMeny().SequenceEqual(new[] { "GBP", "CHF" }) && kalendarSluzba.Typy().First(t => t.Id == typServis.Id).Farba == typServis.Farba
+                 && !vysledokKonfiguracie.ZmenaJazyka, "konfigurácia: import obnovil nastavenia a farby typov");
+            using (var db = Databaza.Otvor())
+            {
+                Over(Databaza.Citaj(db, "Dashboard.Skryte") == "graf", "konfigurácia: panely dashboardu");
+                Databaza.Zapis(db, "Dashboard.Skryte", "");
+                db.SaveChanges();
+            }
+
+            new KurzyService().UlozMeny(KurzyService.PredvoleneMeny.Split(','));
+            File.WriteAllText(Path.Combine(Databaza.Priecinok, "zla_konfiguracia.json"), "{\"Format\":\"niečo iné\"}");
+            Over(Ocakavaj<EvitaException>(() => KonfiguraciaService.Precitaj(Path.Combine(Databaza.Priecinok, "zla_konfiguracia.json"))),
+                "konfigurácia: cudzí súbor je odmietnutý");
+
+            // preklad: tvary slov podľa počtu a jazyka
+            Over(Preklad.Pocet(1, "{0} položka", "{0} položky", "{0} položiek") == "1 položka"
+                 && Preklad.Pocet(3, "{0} položka", "{0} položky", "{0} položiek") == "3 položky"
+                 && Preklad.Pocet(12, "{0} položka", "{0} položky", "{0} položiek") == "12 položiek", "preklad: slovenské tvary podľa počtu");
+            Over(Sk.SkusPrecitatSumu("1,234.50", out var sumaEn) && sumaEn == 1234.5m && Sk.SkusPrecitatSumu("1 234,5 €", out var sumaSk) && sumaSk == 1234.5m
+                 && Sk.SkusPrecitatSumu("1.234,50", out var sumaDe) && sumaDe == 1234.5m && Sk.SkusPrecitatSumu("12.5", out var sumaBodka) && sumaBodka == 12.5m,
+                "suma s oddeľovačmi tisícov v rôznych jazykoch");
+            Krok("úlohy, poznámky, kurzy, počasie a konfigurácia v poriadku");
+
             // aktualizácia štruktúry zo staršej verzie (simulácia databázy z verzie 0.1)
+            const string stlpceUloh = "\"Id\", \"Guid\", \"Text\", \"Popis\", \"Termin\", \"Priorita\", \"Hotovo\", \"DatumHotovo\", \"Vytvorene\", \"Poradie\", \"PolozkaId\"";
+            const string stlpcePoznamok = "\"Id\", \"Guid\", \"Nazov\", \"Text\", \"Farba\", \"Pripnuta\", \"Vytvorene\", \"Zmenene\", \"Datum\", \"PolozkaId\", \"UdalostId\"";
+            Vykonaj($"CREATE TABLE \"ZalohaUloh\" AS SELECT {stlpceUloh} FROM \"Ulohy\"; CREATE TABLE \"ZalohaPoznamok\" AS SELECT {stlpcePoznamok} FROM \"Poznamky\"; DROP TABLE \"Poznamky\"; DROP TABLE \"Ulohy\";");
             Vykonaj("CREATE TABLE \"ZalohaUdalosti\" AS SELECT * FROM \"Udalosti\"; DROP TABLE \"Udalosti\"; DROP TABLE \"TypyUdalosti\"; DROP TABLE \"ZaznamyZaloh\"; UPDATE \"Nastavenia\" SET \"Hodnota\" = '1' WHERE \"Kluc\" = 'Schema.Verzia';");
             Databaza.Inicializuj();
             Vykonaj("INSERT INTO \"Udalosti\" (\"Id\", \"Guid\", \"Nazov\", \"Popis\", \"TypUdalostiId\", \"Druh\", \"Zaciatok\", \"Koniec\", \"CelyDen\", \"Opakovanie\", \"OpakovanieDo\", \"Pripomienka\", \"PolozkaId\", \"MiestnostId\", \"OsobaId\", \"Stav\", \"Vytvorene\", \"Zmenene\") SELECT \"Id\", \"Guid\", \"Nazov\", \"Popis\", \"TypUdalostiId\", \"Druh\", \"Zaciatok\", \"Koniec\", \"CelyDen\", \"Opakovanie\", \"OpakovanieDo\", \"Pripomienka\", \"PolozkaId\", \"MiestnostId\", \"OsobaId\", \"Stav\", \"Vytvorene\", \"Zmenene\" FROM \"ZalohaUdalosti\"; DROP TABLE \"ZalohaUdalosti\";");
+            Vykonaj($"INSERT INTO \"Ulohy\" ({stlpceUloh}) SELECT {stlpceUloh} FROM \"ZalohaUloh\"; DROP TABLE \"ZalohaUloh\"; INSERT INTO \"Poznamky\" ({stlpcePoznamok}) SELECT {stlpcePoznamok} FROM \"ZalohaPoznamok\"; DROP TABLE \"ZalohaPoznamok\";");
             using (var db = Databaza.Otvor())
             {
                 Over(db.TypyUdalosti.Count() == Databaza.PociatocneTypyUdalosti.Length && db.Udalosti.Count() == 20, "aktualizácia štruktúry vytvorí tabuľky kalendára");
+                Over(db.Ulohy.Count() == 7 && db.Poznamky.Count() == 5, "aktualizácia štruktúry vytvorí tabuľky úloh a poznámok");
             }
 
             Over(Databaza.VerziaVDatabaze() == Databaza.VerziaSchemy, "aktualizácia štruktúry z verzie 1");
@@ -342,10 +479,12 @@ internal static class Samotest
             }
 
             var pocetPredZachranou = sluzba.NacitajRiadky().Count;
-            int udalostiPredZachranou;
+            int udalostiPredZachranou, ulohyPredZachranou, poznamkyPredZachranou;
             using (var db = Databaza.Otvor())
             {
                 udalostiPredZachranou = db.Udalosti.Count();
+                ulohyPredZachranou = db.Ulohy.Count();
+                poznamkyPredZachranou = db.Poznamky.Count();
             }
 
             var zachrana = diagnostika.Zachran();
@@ -354,6 +493,8 @@ internal static class Samotest
             using (var db = Databaza.Otvor())
             {
                 Over(db.Udalosti.Count() == udalostiPredZachranou, "záchrana dát zachovala udalosti kalendára");
+                Over(db.Ulohy.Count() == ulohyPredZachranou && db.Poznamky.Count() == poznamkyPredZachranou && poznamkyPredZachranou > 0,
+                    "záchrana dát zachovala úlohy a poznámky");
             }
             Over(diagnostika.UplnaKontrola().Ok, "databáza po záchrane je v poriadku");
             Krok("kontrola a oprava v poriadku");
@@ -483,10 +624,12 @@ internal static class Samotest
                 var celySubor = Path.Combine(exportPriecinok, "cela" + ExportService.Pripona(format));
                 export.Exportuj(new MoznostiExportu(format, celySubor, null, vsetkyStlpce, SHistoriou: true));
                 var povodne = sluzba.NacitajRiadky();
-                int historiaPred, dalsieCisloPred, osobyPred, udalostiPred;
+                int historiaPred, dalsieCisloPred, osobyPred, udalostiPred, ulohyPred, poznamkyPred;
                 using (var db = Databaza.Otvor())
                 {
                     udalostiPred = db.Udalosti.Count();
+                    ulohyPred = db.Ulohy.Count();
+                    poznamkyPred = db.Poznamky.Count();
                     historiaPred = db.Historia.Count();
                     dalsieCisloPred = Databaza.DalsiePrirastkoveCislo(db);
                     osobyPred = db.Osoby.Count();
@@ -517,6 +660,10 @@ internal static class Samotest
                     Over(db.Osoby.Count() == osobyPred, $"{format}: prenesené osoby ({db.Osoby.Count()} z {osobyPred})");
                     Over(db.Udalosti.Count() == udalostiPred && udalostiPred > 0, $"{format}: prenesené udalosti kalendára ({db.Udalosti.Count()} z {udalostiPred})");
                     Over(db.Udalosti.Any(u => u.PolozkaId != null), $"{format}: udalosti zostali naviazané na položky");
+                    Over(db.Ulohy.Count() == ulohyPred && ulohyPred > 0 && db.Ulohy.Any(u => u.PolozkaId != null) && db.Ulohy.Any(u => u.Hotovo),
+                        $"{format}: prenesené úlohy ({db.Ulohy.Count()} z {ulohyPred})");
+                    Over(db.Poznamky.Count() == poznamkyPred && db.Poznamky.Any(p => p.UdalostId != null) && db.Poznamky.Any(p => p.PolozkaId != null)
+                         && db.Poznamky.Count(p => p.Pripnuta) == 2, $"{format}: prenesené poznámky s prepojeniami ({db.Poznamky.Count()} z {poznamkyPred})");
                 }
             }
 
@@ -584,7 +731,7 @@ internal static class Samotest
             okno.Show();
             Pumpuj();
             var model = (MainViewModel)okno.DataContext;
-            foreach (var sekcia in new[] { "dashboard", "kalendar", "evidencia", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "dashboard" })
+            foreach (var sekcia in new[] { "dashboard", "kalendar", "ulohy", "poznamky", "evidencia", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "nastavenia", "dashboard" })
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
@@ -595,7 +742,7 @@ internal static class Samotest
                     Over(model.ImportExport.StiahnutyVzor.EndsWith(".xlsx", StringComparison.Ordinal), "obrazovka Import a export: stiahnutie vzoru");
                 }
 
-                if (sekcia is "import" or "evidencia" or "tlac" or "kalendar" or "dashboard")
+                if (sekcia is "import" or "evidencia" or "tlac" or "kalendar" or "dashboard" or "ulohy" or "poznamky" or "nastavenia")
                 {
                     Snimka(okno, "okno_" + sekcia);
                 }
@@ -605,6 +752,89 @@ internal static class Samotest
             }
 
             Over(model.Dashboard.MeninyDnes.Length > 0 && model.Dashboard.MeninyDnes != "Kalendárium nie je dostupné", "dashboard: meniny");
+            Over(model.Dashboard.Ulohy.Count == 6 && model.Dashboard.PripnutePoznamky.Count == 2, "dashboard: úlohy a pripnuté poznámky");
+            model.Dashboard.NovaUloha = "Rýchla úloha z dashboardu";
+            model.Dashboard.PridatUlohuCommand.Execute(null);
+            Over(model.Dashboard.Ulohy.Any(u => u.Text == "Rýchla úloha z dashboardu") && model.Dashboard.NovaUloha.Length == 0, "dashboard: rýchle pridanie úlohy");
+            model.Dashboard.PrepnutHotovoCommand.Execute(model.Dashboard.Ulohy.First(u => u.Text == "Rýchla úloha z dashboardu"));
+            Over(model.Dashboard.Ulohy.All(u => u.Text != "Rýchla úloha z dashboardu"), "dashboard: hotová úloha zmizne zo zoznamu");
+            model.Dashboard.SumaPrepoctu = "100";
+            var cakanie = System.Diagnostics.Stopwatch.StartNew();
+            while (!model.Dashboard.PosledneNacitanieZoSiete.IsCompleted && cakanie.Elapsed < TimeSpan.FromSeconds(40))
+            {
+                Pumpuj();
+                Thread.Sleep(50);
+            }
+
+            Pumpuj();
+            Krok($"dashboard: počasie {(model.Dashboard.JePocasie ? model.Dashboard.Pocasie!.TeplotaText : model.Dashboard.PocasieStav)}, kurzy {model.Dashboard.Kurzy.Count} ({model.Dashboard.KurzyStav}), prepočet {model.Dashboard.VysledokPrepoctu}");
+            Snimka(okno, "okno_dashboard_pocasie_kurzy");
+
+            // úlohy a poznámky na obrazovkách
+            okno.OznacSekciu("ulohy");
+            Pumpuj();
+            model.Ulohy.NovyText = "Úloha z obrazovky Úlohy";
+            model.Ulohy.NovaPriorita = PrioritaUlohy.Vysoka;
+            model.Ulohy.PridatCommand.Execute(null);
+            Pumpuj();
+            Over(model.Ulohy.Vybrana is { Text: "Úloha z obrazovky Úlohy", Vysoka: true }, "obrazovka Úlohy: pridanie a výber");
+            model.Ulohy.Popis = "popis zo samotestu";
+            model.Ulohy.PolozkaCislo = riadky[0].PrirastkoveCislo.ToString();
+            model.Ulohy.UlozitCommand.Execute(null);
+            Pumpuj();
+            Over(model.Ulohy.Vybrana is { MaPopis: true } vybrataUloha && vybrataUloha.PolozkaId == riadky[0].Id, "obrazovka Úlohy: úprava s položkou");
+            Snimka(okno, "okno_ulohy");
+            model.Ulohy.JeVsetky = true;
+            Pumpuj();
+            Over(model.Ulohy.Zoznam.Any(u => u.Hotovo), "obrazovka Úlohy: všetky aj s hotovými");
+            model.Ulohy.JeOtvorene = true;
+
+            okno.OznacSekciu("poznamky");
+            Pumpuj();
+            Over(model.Poznamky.Editor is not null && model.Poznamky.Zoznam.Count == 5 && model.Poznamky.Zoznam[0].Pripnuta, "obrazovka Poznámky: zoznam a otvorená poznámka");
+            model.Poznamky.NovaPoznamkaCommand.Execute(null);
+            Pumpuj();
+            model.Poznamky.Editor!.Nazov = "Poznámka zo samotestu";
+            model.Poznamky.Editor.Text = "Text poznámky\ndruhý riadok";
+            model.Poznamky.Editor.PolozkaCislo = riadky[2].PrirastkoveCislo.ToString();
+            model.Poznamky.Editor.Datum = DateTime.Today;
+            model.Poznamky.Editor.Farba = PoznamkyService.Farby[4];
+            Pumpuj();
+            Over(model.Poznamky.Editor.Zmenena && model.Poznamky.Editor.PolozkaText == riadky[2].Nazov, "obrazovka Poznámky: úprava novej poznámky");
+            model.Poznamky.Vybrana = model.Poznamky.Zoznam[1];
+            Pumpuj();
+            Over(model.Poznamky.Zoznam.Any(p => p.Nazov == "Poznámka zo samotestu" && p.PolozkaId == riadky[2].Id && p.Datum == DateTime.Today),
+                "obrazovka Poznámky: rozpísaná poznámka sa pri prechode uloží");
+            model.Poznamky.Hladat = "zo samotestu";
+            Pumpuj();
+            Over(model.Poznamky.Zoznam.Count == 1, "obrazovka Poznámky: hľadanie");
+            model.Poznamky.Vybrana = model.Poznamky.Zoznam[0];
+            Pumpuj();
+            Snimka(okno, "okno_poznamky");
+            model.Poznamky.Hladat = "";
+            Pumpuj();
+
+            okno.OznacSekciu("nastavenia");
+            Pumpuj();
+            Over(model.Nastavenia.Meny.Count == KurzyService.VsetkyMeny.Length && model.Nastavenia.Meny.Count(m => m.Zvolena) == 8, "obrazovka Nastavenia: meny");
+            model.Nastavenia.Meny.First(m => m.Kod == "SEK").Zvolena = true;
+            Over(new KurzyService().ZvoleneMeny().Contains("SEK"), "obrazovka Nastavenia: zmena mien sa uloží");
+            model.Nastavenia.PredvoleneMenyCommand.Execute(null);
+            model.Nastavenia.CestaExportuBezDialogu = Path.Combine(exportPriecinok, "EviTA_konfiguracia.json");
+            model.Nastavenia.ExportovatKonfiguraciuCommand.Execute(null);
+            Over(File.Exists(model.Nastavenia.CestaExportuBezDialogu), "obrazovka Nastavenia: export konfigurácie");
+            model.Nastavenia.CestaImportuBezDialogu = model.Nastavenia.CestaExportuBezDialogu;
+            model.Nastavenia.BezRestartu = true;
+            model.Nastavenia.ImportovatKonfiguraciuCommand.Execute(null);
+            Over(model.Nastavenia.KonfiguraciaText.Length > 0, "obrazovka Nastavenia: import konfigurácie");
+            model.Nastavenia.VybranyJazyk = Preklad.Najdi("cs");
+            model.Nastavenia.PouzitJazykCommand.Execute(null);
+            Over(Preklad.JazykZDatabazy() == "cs", "obrazovka Nastavenia: uloženie jazyka");
+            model.Nastavenia.ResetJazykaCommand.Execute(null);
+            Over(Preklad.JazykZDatabazy() == "en" && model.Nastavenia.VybranyJazyk.Kod == "en", "Language reset nastaví angličtinu");
+            Preklad.UlozJazyk("sk");
+            Pumpuj();
+            Snimka(okno, "okno_nastavenia");
             Over(model.Dashboard.NajblizsiVolnyDen.Length > 0, "dashboard: najbližší deň pracovného pokoja");
             Over(model.Dashboard.Graf.Count > 0 && model.Dashboard.Graf.Sum(g => g.Pocet) == sluzba.NacitajRiadky().Count(r => !r.Vyradena),
                 "dashboard: graf kategórií sedí s počtom položiek");
@@ -738,6 +968,28 @@ internal static class Samotest
             prehladOkno.Close();
             Pumpuj();
             OtvorAZatvor(new UpozornenieWindow(prehladK.Dnes[0]), "upozornenie na udalosť");
+            var poznamkaKDnu = new PoznamkaEditViewModel(null, DateTime.Today.AddDays(1)) { Nazov = "Poznámka k zajtrajšku", Text = "z okna" };
+            var oknoPoznamky = new PoznamkaWindow(poznamkaKDnu);
+            oknoPoznamky.Show();
+            Pumpuj();
+            Snimka(oknoPoznamky, "okno_poznamka");
+            poznamkaKDnu.UlozitCommand.Execute(null);
+            Pumpuj();
+            model.Kalendar.Rezim = RezimKalendara.Tyzden;
+            model.Kalendar.AktualnyDatum = DateTime.Today.AddDays(1);
+            Pumpuj();
+            Over(model.Kalendar.DniTyzdna.Any(d => d.Poznamky.Any(p => p.Nazov == "Poznámka k zajtrajšku")), "kalendár: poznámka k dňu v týždni");
+            Snimka(okno, "okno_kalendar_tyzden_poznamka");
+            model.Kalendar.Rezim = RezimKalendara.Mesiac;
+            model.Kalendar.AktualnyDatum = DateTime.Today;
+            Pumpuj();
+            var skolenieTeraz = kalendarSluzba.Vyskyty(DateTime.Today, DateTime.Today.AddDays(30), automaticke: false).First(v => v.Nazov.StartsWith("Školenie"));
+            var udalostSPoznamkou = new UdalostEditViewModel(skolenieTeraz.UdalostId, null, null);
+            Over(udalostSPoznamkou.Poznamky.Count == 1, "okno udalosti: prepojené poznámky");
+            OtvorAZatvor(new UdalostWindow(udalostSPoznamkou), "udalosť s poznámkou");
+            var polozkaSPoznamkou = new PolozkaEditViewModel(riadky[2].Id, null);
+            Over(polozkaSPoznamkou.Poznamky.Any(p => p.Nazov == "Poznámka zo samotestu"), "karta položky: záložka Poznámky a úlohy");
+            OtvorAZatvor(new PolozkaEditWindow(polozkaSPoznamkou), "karta položky s poznámkami");
             Krok("okná kalendára v poriadku");
 
             // okno exportu

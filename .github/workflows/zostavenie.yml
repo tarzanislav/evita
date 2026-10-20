@@ -2,14 +2,14 @@ name: Zostavenie EviTA
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'vyvoj/**' ]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: zostavenie
+  group: zostavenie-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
         id: verzia
         shell: pwsh
         run: |
-          $v = "0.3.${{ github.run_number }}"
+          $v = "0.4.${{ github.run_number }}"
           "cislo=$v" >> $env:GITHUB_OUTPUT
           Write-Host "Verzia: $v"
 
@@ -78,6 +78,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Zverejniť novú verziu
+        # vývojové vetvy sa len zostavia a otestujú, verzia sa zverejní iba z vetvy main
+        if: github.ref == 'refs/heads/main'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

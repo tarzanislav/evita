@@ -6,7 +6,7 @@ namespace Evita.Services;
 /// <summary>
 /// Čínske písmo pre PDF. Písma Windows s čínskymi znakmi sú väčšinou kolekcie (.ttc), ktoré PDFsharp
 /// nevie načítať cez systém – tu sa z kolekcie vyberie prvé písmo a odovzdá sa ako samostatný súbor TTF.
-/// Ostatné písma rieši PDFsharp sám (návrat null).
+/// Ostatné písma sa hľadajú v systéme ako bez resolvera.
 /// </summary>
 public sealed class PismaPdf : IFontResolver
 {
@@ -77,7 +77,8 @@ public sealed class PismaPdf : IFontResolver
     {
         if (!string.Equals(familyName, NazovCinskeho, StringComparison.OrdinalIgnoreCase) || NajdiSubory() is not { } subory)
         {
-            return null;
+            // ostatné písma zo systému
+            return PlatformFontResolver.ResolveTypeface(familyName, isBold, isItalic);
         }
 
         var tucne = isBold && subory.Tucne is not null;

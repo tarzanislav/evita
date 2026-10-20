@@ -1224,7 +1224,8 @@ internal static class Samotest
             sprievodcaC.DalejCommand.Execute(null);
             Pumpuj();
             Over(sprievodcaC.Krok == 2 && sprievodcaC.Priradenia.Count == 4 && sprievodcaC.Priradenia.All(pr => pr.Kluc.Length > 0),
-                $"číselník: rozpoznanie stĺpcov miestností (krok {sprievodcaC.Krok})");
+                $"číselník: rozpoznanie stĺpcov miestností (krok {sprievodcaC.Krok}, jazyk {Preklad.Aktualny.Kod}, číselník {sprievodcaC.JeCiselnik}, " +
+                $"{string.Join(", ", sprievodcaC.Priradenia.Select(pr => pr.Hlavicka + "=" + pr.Kluc))}; {sprievodcaC.InfoOSubore})");
             Snimka(oknoC, "import_ciselnik_2");
             sprievodcaC.DalejCommand.Execute(null);
             Pumpuj();

@@ -223,7 +223,8 @@ public sealed class StitkyService
         }
     }
 
-    private sealed record RiadokTextu(string Text, double Vaha, bool Tucne, bool Sedy);
+    /// <summary>Riadok textu na štítku; pri nedostatku miesta sa vynechajú riadky s najnižšou prioritou.</summary>
+    private sealed record RiadokTextu(string Text, double Vaha, bool Tucne, bool Sedy, int Priorita);
 
     private static void KresliStitok(XGraphics g, XRect oblast, UdajeStitku u, MoznostiStitkov m, string? organizacia)
     {
@@ -270,32 +271,32 @@ public sealed class StitkyService
         var riadky = new List<RiadokTextu>();
         if (m.Organizacia && !string.IsNullOrWhiteSpace(organizacia))
         {
-            riadky.Add(new RiadokTextu(organizacia, 0.75, false, true));
+            riadky.Add(new RiadokTextu(organizacia, 0.75, false, true, 1));
         }
 
         if (m.Nazov)
         {
-            riadky.Add(new RiadokTextu(u.Nazov, 1.0, true, false));
+            riadky.Add(new RiadokTextu(u.Nazov, 1.0, true, false, 9));
         }
 
         if (m.Cislo)
         {
-            riadky.Add(new RiadokTextu(Preklad.F($"č. {u.PrirastkoveCislo}"), 1.2, true, false));
+            riadky.Add(new RiadokTextu(Preklad.F($"č. {u.PrirastkoveCislo}"), 1.2, true, false, 10));
         }
 
         if (m.Inventarne && !string.IsNullOrWhiteSpace(u.Inventarne))
         {
-            riadky.Add(new RiadokTextu(Preklad.F($"inv. č. {u.Inventarne}"), 0.85, false, false));
+            riadky.Add(new RiadokTextu(Preklad.F($"inv. č. {u.Inventarne}"), 0.85, false, false, 4));
         }
 
         if (m.Seriove && !string.IsNullOrWhiteSpace(u.Seriove))
         {
-            riadky.Add(new RiadokTextu(Preklad.F($"SN {u.Seriove}"), 0.85, false, false));
+            riadky.Add(new RiadokTextu(Preklad.F($"SN {u.Seriove}"), 0.85, false, false, 3));
         }
 
         if (m.Miestnost && !string.IsNullOrWhiteSpace(u.Miestnost))
         {
-            riadky.Add(new RiadokTextu(u.Miestnost, 0.85, false, false));
+            riadky.Add(new RiadokTextu(u.Miestnost, 0.85, false, false, 2));
         }
 
         KresliRiadky(g, text, riadky);
@@ -309,6 +310,15 @@ public sealed class StitkyService
         }
 
         const double Riadkovanie = 1.18;
+        const double NajmensiePismo = 4.5;
+
+        // málo miesta: vynechajú sa menej dôležité riadky (organizácia, miestnosť, sériové číslo …)
+        riadky = riadky.ToList();
+        while (riadky.Count > 1 && oblast.Height / (riadky.Sum(r => r.Vaha) * Riadkovanie) < NajmensiePismo)
+        {
+            riadky.Remove(riadky.MinBy(r => r.Priorita)!);
+        }
+
         var sucet = riadky.Sum(r => r.Vaha) * Riadkovanie;
         var zaklad = Math.Clamp(oblast.Height / sucet, 3.5, 11);
 

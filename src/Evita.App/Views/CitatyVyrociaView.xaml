@@ -39,14 +39,20 @@
                                 </Style>
                             </DataGrid.RowStyle>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Citát" Binding="{Binding Text}" Width="*">
+                                <DataGridTextColumn Header="Citát" Binding="{Binding Text}" Width="430">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="TextWrapping" Value="Wrap" />
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="Autor" Binding="{Binding Autor}" Width="190" />
+                                <DataGridTextColumn Header="Autor" Binding="{Binding Autor}" Width="180">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextWrapping" Value="Wrap" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
                                 <DataGridTextColumn Header="Jazyk" Binding="{Binding JazykNazov}" Width="100" />
                                 <DataGridTextColumn Header="Pôvod" Binding="{Binding PovodText}" Width="100" />
                             </DataGrid.Columns>
@@ -137,7 +143,7 @@
                                 <DataGridTextColumn Header="Rok" Binding="{Binding RokText}" Width="60" />
                                 <DataGridTextColumn Header="Pred" Binding="{Binding PredText}" Width="120" />
                                 <DataGridTextColumn Header="Druh" Binding="{Binding DruhText}" Width="100" />
-                                <DataGridTextColumn Header="Výročie" Binding="{Binding Text}" Width="*">
+                                <DataGridTextColumn Header="Výročie" Binding="{Binding Text}" Width="460">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="TextWrapping" Value="Wrap" />

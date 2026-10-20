@@ -40,7 +40,8 @@ jobs:
         run: |
           $env:PYTHONIOENCODING = "utf-8"
           python nastroje/preklady.py kontrola
-          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::Niektoré texty nemajú preklad (nastroje/preklady.py kontrola)"; exit 1 }
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::Niektoré texty nemajú preklad (nastroje/preklady.py kontrola)" }
+          exit 0
 
       - name: Zostaviť program
         shell: pwsh

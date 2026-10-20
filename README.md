@@ -33,6 +33,17 @@ overí, že každý text v programe má preklad vo všetkých jazykoch.
 - **Poznámky:** poznámkový blok s farbami, pripnutím a vyhľadávaním; poznámku možno prepojiť s dňom v kalendári,
   s udalosťou alebo s položkou evidencie (zobrazí sa v kalendári aj v karte položky).
 
+## Citát dňa a výročia
+
+- **Citát dňa** na dashboarde – v jazyku programu (zabudované príslovia a citáty vo všetkých jazykoch programu).
+  Ďalší citát, skrytie nechceného jedným kliknutím; vlastné citáty pridáte v časti *Citáty a výročia*.
+- **Výročia dňa** – udalosti, narodenia a úmrtia zo stránky dňa vo Wikipédii v jazyku programu (napr. „20. október“
+  zo slovenskej Wikipédie). Na dashboarde sú prednostne domáce (slovenské) a okrúhle výročia. Sťahujú sa
+  automaticky na dnes a týždeň dopredu; tlačidlom *Stiahnuť celý rok…* sa uložia všetky dni a potom fungujú aj
+  bez internetu. Vlastné výročia pridáte ku ktorémukoľvek dňu, nechcené skryjete alebo vymažete.
+- Všetko je v **Kalendáriu** (`C:\ProgramData\Kalendarium\kalendarium.db`) spolu s meninami a sviatkami – spoločnej
+  databáze pre ďalšie programy. Citáty a výročia sa dajú **exportovať a importovať** v súbore JSON.
+
 ## Nastavenia a konfigurácia
 
 V časti *Nastavenia* je jazyk, miesto pre počasie, meny kurzového lístka a **export a import konfigurácie programu**
@@ -116,7 +127,8 @@ Odinštalovanie programu databázu ani zálohy nemaže.
       záložka Udalosti v karte položky; tlač kalendára a export `.ics` pre Outlook a Google Kalendár
 - [x] **Verzia 0.7 – Dashboard a jazyky:** kurzový lístok, počasie, úlohy (To Do), poznámkový blok prepojený
       s kalendárom a položkami, export a import konfigurácie, jazyky EN, SK, CS, PL, HU, RU, ZH s tlačidlom Language reset
-- [ ] Etapa 7 – Kalendárium (citáty, výročia)
+- [x] **Etapa 7 – Kalendárium:** citát dňa (zabudované a vlastné citáty, skrytie, vymazanie), výročia dňa
+      z Wikipédie v jazyku programu (aj celý rok naraz, offline), vlastné výročia, export a import JSON
 - [ ] Etapa 8 – Skenovanie a údaje z internetu
 - [ ] Etapa 9 – Dokončenie
 

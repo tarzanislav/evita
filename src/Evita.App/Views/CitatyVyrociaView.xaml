@@ -24,7 +24,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="16" />
-                            <ColumnDefinition Width="360" />
+                            <ColumnDefinition Width="330" />
                         </Grid.ColumnDefinitions>
 
                         <DataGrid ItemsSource="{Binding Citaty}" SelectedItem="{Binding VybranyCitat}" AutoGenerateColumns="False"
@@ -39,22 +39,22 @@
                                 </Style>
                             </DataGrid.RowStyle>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Citát" Binding="{Binding Text}" Width="430">
+                                <DataGridTextColumn Header="Citát" Binding="{Binding Text}" Width="*" MinWidth="280">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="TextWrapping" Value="Wrap" />
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="Autor" Binding="{Binding Autor}" Width="180">
+                                <DataGridTextColumn Header="Autor" Binding="{Binding Autor}" Width="150">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="TextWrapping" Value="Wrap" />
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="Jazyk" Binding="{Binding JazykNazov}" Width="100" />
-                                <DataGridTextColumn Header="Pôvod" Binding="{Binding PovodText}" Width="100" />
+                                <DataGridTextColumn Header="Jazyk" Binding="{Binding JazykNazov}" Width="90" />
+                                <DataGridTextColumn Header="Pôvod" Binding="{Binding PovodText}" Width="90" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -125,7 +125,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="16" />
-                            <ColumnDefinition Width="360" />
+                            <ColumnDefinition Width="330" />
                         </Grid.ColumnDefinitions>
 
                         <DataGrid ItemsSource="{Binding Vyrocia}" SelectedItem="{Binding VybraneVyrocie}" AutoGenerateColumns="False"
@@ -141,17 +141,17 @@
                             </DataGrid.RowStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Rok" Binding="{Binding RokText}" Width="60" />
-                                <DataGridTextColumn Header="Pred" Binding="{Binding PredText}" Width="120" />
-                                <DataGridTextColumn Header="Druh" Binding="{Binding DruhText}" Width="100" />
-                                <DataGridTextColumn Header="Výročie" Binding="{Binding Text}" Width="460">
+                                <DataGridTextColumn Header="Pred" Binding="{Binding PredText}" Width="105" />
+                                <DataGridTextColumn Header="Druh" Binding="{Binding DruhText}" Width="90" />
+                                <DataGridTextColumn Header="Výročie" Binding="{Binding Text}" Width="*" MinWidth="280">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="TextWrapping" Value="Wrap" />
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="Pôvod" Binding="{Binding PovodText}" Width="95" />
-                                <DataGridTemplateColumn Width="80">
+                                <DataGridTextColumn Header="Pôvod" Binding="{Binding PovodText}" Width="90" />
+                                <DataGridTemplateColumn Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">

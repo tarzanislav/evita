@@ -17,11 +17,11 @@ internal static class PdfExport
         var vahy = new double[stlpce.Count];
         for (var i = 0; i < stlpce.Count; i++)
         {
-            var hlavicka = Hlavicka(stlpce[i]).Split(' ').Max(w => w.Length);
+            var dlzkaHlavicky = Hlavicka(stlpce[i]).Split(' ').Max(w => w.Length);
             var dlzky = texty.Select(t => t[i].Length).OrderBy(x => x).ToList();
             var typicka = dlzky.Count == 0 ? 0 : dlzky[(int)Math.Floor((dlzky.Count - 1) * 0.9)];
             var slovo = texty.Count == 0 ? 0 : texty.Max(t => t[i].Split(' ').Max(w => w.Length));
-            vahy[i] = Math.Max(hlavicka, Math.Max(Math.Min(slovo, 16), Math.Min(typicka, 30) * 0.7)) + 1.5;
+            vahy[i] = Math.Max(dlzkaHlavicky, Math.Max(Math.Min(slovo, 16), Math.Min(typicka, 30) * 0.7)) + 1.5;
         }
 
         var spolu = vahy.Sum();

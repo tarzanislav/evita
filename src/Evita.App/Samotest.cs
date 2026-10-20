@@ -502,6 +502,41 @@ internal static class Samotest
             // ------------------------------------------------------------ export
             var exportPriecinok = Path.Combine(Databaza.Priecinok, "Export");
             Directory.CreateDirectory(exportPriecinok);
+
+            // DOČASNÉ: formát stránok Wikipédie pre výročia (etapa 7)
+            try
+            {
+                using var wiki = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+                wiki.DefaultRequestHeaders.UserAgent.ParseAdd("EviTA/0.7 (https://github.com/tarzanislav/evita)");
+                foreach (var (jazyk, nazov) in new[] { ("sk", "20._október"), ("cs", "20._říjen"), ("pl", "20_października"), ("hu", "Október_20."),
+                             ("en", "October_20"), ("ru", "20_октября"), ("zh", "10月20日") })
+                {
+                    try
+                    {
+                        var text = wiki.GetStringAsync($"https://{jazyk}.wikipedia.org/w/index.php?title={Uri.EscapeDataString(nazov)}&action=raw").GetAwaiter().GetResult();
+                        File.WriteAllText(Path.Combine(exportPriecinok, $"wiki_{jazyk}.txt"), text, Encoding.UTF8);
+                    }
+                    catch (Exception ex)
+                    {
+                        File.WriteAllText(Path.Combine(exportPriecinok, $"wiki_{jazyk}.txt"), ex.ToString(), Encoding.UTF8);
+                    }
+
+                    try
+                    {
+                        var text = wiki.GetStringAsync($"https://api.wikimedia.org/feed/v1/wikipedia/{jazyk}/onthisday/all/10/20").GetAwaiter().GetResult();
+                        File.WriteAllText(Path.Combine(exportPriecinok, $"onthisday_{jazyk}.json"), text, Encoding.UTF8);
+                    }
+                    catch (Exception ex)
+                    {
+                        File.WriteAllText(Path.Combine(exportPriecinok, $"onthisday_{jazyk}.json"), ex.Message, Encoding.UTF8);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // len diagnostika
+            }
+
             var export = new ExportService();
             var import = new ImportService();
             var vsetkyStlpce = StlpcePrenosu.Vsetky.Select(s => s.Kluc).ToList();

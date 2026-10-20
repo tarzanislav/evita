@@ -252,12 +252,20 @@ public sealed class MobilnySkener : IDisposable
             }
 
             hlavicka.WriteByte(bajt[0]);
-            koniec = bajt[0] switch
+            const byte cr = 13;
+            const byte lf = 10;
+            if (bajt[0] == cr && koniec is 0 or 2)
             {
-                (byte)'\r' when koniec is 0 or 2 => koniec + 1,
-                (byte)'\n' when koniec is 1 or 3 => koniec + 1,
-                _ => 0,
-            };
+                koniec++;
+            }
+            else if (bajt[0] == lf && koniec is 1 or 3)
+            {
+                koniec++;
+            }
+            else
+            {
+                koniec = bajt[0] == cr ? 1 : 0;
+            }
         }
 
         var riadky = Encoding.ASCII.GetString(hlavicka.ToArray()).Split("\r\n");

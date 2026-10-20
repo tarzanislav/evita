@@ -344,9 +344,14 @@ public sealed class InventuraService
             .OrderByDescending(z => z.Cas)
             .ThenByDescending(z => z.Id)
             .Take(pocet)
-            .Select(z => new { z.Id, z.Cas, z.Kod, z.PolozkaId, Polozka = z.Polozka != null ? z.Polozka.PrirastkoveCislo + " – " + z.Polozka.Nazov : null, z.MiestnostId, z.Sposob })
+            .Select(z => new
+            {
+                z.Id, z.Cas, z.Kod, z.PolozkaId, z.MiestnostId, z.Sposob,
+                Cislo = z.Polozka != null ? (int?)z.Polozka.PrirastkoveCislo : null,
+                Nazov = z.Polozka != null ? z.Polozka.Nazov : null,
+            })
             .ToList()
-            .Select(z => new ZaznamInventury(z.Id, z.Cas, z.Kod, z.PolozkaId, z.Polozka, z.MiestnostId,
+            .Select(z => new ZaznamInventury(z.Id, z.Cas, z.Kod, z.PolozkaId, z.Cislo is int c ? $"{c} – {z.Nazov}" : null, z.MiestnostId,
                 z.MiestnostId is int m && miestnosti.TryGetValue(m, out var n) ? n : null, z.Sposob))
             .ToList();
     }

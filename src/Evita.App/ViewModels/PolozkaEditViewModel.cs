@@ -374,7 +374,7 @@ public partial class PolozkaEditViewModel : ObservableObject
         HladamEan = true;
         try
         {
-            vysledok = await new EanService().HladajAsync(Ean, JeNova ? null : _id);
+            vysledok = await new EanService().HladajAsync(Ean, JeNova ? null : (int?)_id);
         }
         catch (EvitaException ex)
         {

@@ -16,7 +16,7 @@ namespace Evita;
 /// Pracuje vo vlastnom dočasnom priečinku, skutočnej databázy sa nedotkne.
 /// Vytvorí ukážkovú databázu, vyskúša hlavné operácie a otvorí všetky obrazovky a okná.
 /// </summary>
-internal static class Samotest
+internal static partial class Samotest
 {
     public static List<string> Chyby { get; } = new();
 
@@ -795,13 +795,16 @@ internal static class Samotest
             Over(Ocakavaj<EvitaException>(() => zostavy.Vytvor(new MoznostiZostavy { Druh = DruhZostavy.SuhrnnyZoznam })), "zostava bez stĺpcov je odmietnutá");
             Krok("tlačové zostavy v poriadku");
 
+            // skenovanie, štítky, inventúra, mobil, EAN (Etapa 8)
+            SkenovanieSluzby(exportPriecinok);
+
             // obrazovky a okná
             var okno = new MainWindow();
             aplikacia.MainWindow = okno;
             okno.Show();
             Pumpuj();
             var model = (MainViewModel)okno.DataContext;
-            foreach (var sekcia in new[] { "dashboard", "kalendar", "ulohy", "poznamky", "evidencia", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia", "dashboard" })
+            foreach (var sekcia in new[] { "dashboard", "kalendar", "ulohy", "poznamky", "evidencia", "skenovanie", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia", "dashboard" })
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
@@ -1122,6 +1125,8 @@ internal static class Samotest
             OtvorAZatvor(new PolozkaEditWindow(polozkaSPoznamkou), "karta položky s poznámkami");
             Krok("okná kalendára v poriadku");
 
+            SkenovanieOkna(model, okno);
+
             // okno exportu
             var exportModel = new ExportViewModel(riadky.Take(10).Select(r => r.Id).ToList(), riadky.Take(2).Select(r => r.Id).ToList(), "test")
             {
@@ -1311,7 +1316,7 @@ internal static class Samotest
                 oknoJazyka.Show();
                 Pumpuj();
                 var modelJazyka = (MainViewModel)oknoJazyka.DataContext;
-                foreach (var sekcia in new[] { "dashboard", "evidencia", "kalendar", "ulohy", "poznamky", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia" })
+                foreach (var sekcia in new[] { "dashboard", "evidencia", "skenovanie", "kalendar", "ulohy", "poznamky", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia" })
                 {
                     oknoJazyka.OznacSekciu(sekcia);
                     Pumpuj();
@@ -1329,7 +1334,7 @@ internal static class Samotest
 
                     PrejdiZalozky(oknoJazyka);
                     Zbieraj(oknoJazyka);
-                    if (sekcia is "dashboard" or "evidencia" or "kalendar" or "poznamky" or "nastavenia" or "servis" or "kalendarium")
+                    if (sekcia is "dashboard" or "evidencia" or "kalendar" or "poznamky" or "nastavenia" or "servis" or "kalendarium" or "skenovanie")
                     {
                         Snimka(oknoJazyka, $"jazyk_{jazyk.Kod}_{sekcia}");
                     }
@@ -1362,7 +1367,7 @@ internal static class Samotest
                     (() => new VstupWindow(Preklad.T("Nová kategória"), Preklad.T("Názov novej kategórie:"), "", false), "vstup"),
                     (() => new UpozornenieWindow(udalostJazyka), "upozornenie"),
                     (() => modelJazyka.Evidencia.VytvorNahladTlace(), "nahlad"),
-                };
+                }.Concat(OknaSkenovania(riadkyJazyka)).ToArray();
                 foreach (var (vytvor, nazov) in oknaJazyka)
                 {
                     var w = vytvor();
@@ -1370,7 +1375,7 @@ internal static class Samotest
                     Pumpuj();
                     PrejdiZalozky(w);
                     Zbieraj(w);
-                    if (nazov is "polozka" or "udalost" or "export" or "prehlad_dna" or "prve_spustenie")
+                    if (nazov is "polozka" or "udalost" or "export" or "prehlad_dna" or "prve_spustenie" or "stitky" or "inventura")
                     {
                         Snimka(w, $"jazyk_{jazyk.Kod}_okno_{nazov}");
                     }

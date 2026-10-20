@@ -45,7 +45,7 @@ public partial class SkenovanieViewModel : ObservableObject, IObnovitelny, IPrij
 {
     private readonly MainViewModel _hlavne;
     private readonly SkenovanieService _sluzba = new();
-    private readonly InventuraService _inventury = new();
+    private readonly InventuraService _sluzbaInventur = new();
     private readonly CiselnikService _ciselniky = new();
     private bool _nacitavam;
 
@@ -106,7 +106,7 @@ public partial class SkenovanieViewModel : ObservableObject, IObnovitelny, IPrij
     private void NacitajInventury()
     {
         var vybrana = VybranaInventura?.Id;
-        Inventury = _inventury.Zoznam();
+        Inventury = _sluzbaInventur.Zoznam();
         VybranaInventura = Inventury.FirstOrDefault(i => i.Id == vybrana) ?? Inventury.FirstOrDefault(i => i.Prebieha) ?? Inventury.FirstOrDefault();
     }
 
@@ -224,6 +224,12 @@ public partial class SkenovanieViewModel : ObservableObject, IObnovitelny, IPrij
     /// <summary>Otvorí kartu položky (z naskenovaného kódu).</summary>
     public void OtvorPolozku(int id)
     {
+        if (Dialogy.TichyRezim)
+        {
+            Dialogy.TicheHlasenia.Add($"[Karta] {id}");
+            return;
+        }
+
         try
         {
             var okno = new PolozkaEditWindow(new PolozkaEditViewModel(id, null)) { Owner = Dialogy.Vlastnik };
@@ -263,7 +269,7 @@ public partial class SkenovanieViewModel : ObservableObject, IObnovitelny, IPrij
 
         try
         {
-            var id = _inventury.Nova(nazov);
+            var id = _sluzbaInventur.Nova(nazov);
             NacitajInventury();
             VybranaInventura = Inventury.FirstOrDefault(i => i.Id == id);
             OtvorInventuru(id);
@@ -341,7 +347,7 @@ public partial class SkenovanieViewModel : ObservableObject, IObnovitelny, IPrij
             return;
         }
 
-        _inventury.Vymaz(inventura.Id);
+        _sluzbaInventur.Vymaz(inventura.Id);
         NacitajInventury();
     }
 

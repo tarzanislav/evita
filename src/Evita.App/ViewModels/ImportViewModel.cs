@@ -5,6 +5,7 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Evita.Data;
+using Evita.Models;
 using Evita.Pomocne;
 using Evita.Services;
 using Microsoft.Win32;
@@ -13,6 +14,9 @@ namespace Evita.ViewModels;
 
 /// <summary>Pole EviTA vo výbere pri priradení stĺpcov ("" = stĺpec sa nepoužije).</summary>
 public sealed record PoleEviTA(string Kluc, string Nazov);
+
+/// <summary>Číselník vo výbere v 1. kroku.</summary>
+public sealed record VolbaCiselnika(TypCiselnika Typ, string Nazov);
 
 public sealed partial class PriradenieStlpca : ObservableObject
 {
@@ -36,13 +40,23 @@ public partial class ImportViewModel : ObservableObject
     private ZdrojImportu? _zdroj;
     private KontrolaImportu? _kontrola;
     private bool _kontrolujem;
+    private ImportCiselnikaService? _importCiselnika;
+    private HashSet<string> _existujuce = new();
 
     public ImportViewModel()
     {
-        PolaEviTA = new List<PoleEviTA> { new("", Preklad.T("(nepoužiť)")) }
+        _polaEviTA = PolaPoloziek();
+    }
+
+    private static List<PoleEviTA> PolaPoloziek() =>
+        new List<PoleEviTA> { new("", Preklad.T("(nepoužiť)")) }
             .Concat(StlpcePrenosu.Vsetky.Select(s => new PoleEviTA(s.Kluc, s.Povinny ? s.Nazov + " *" : s.Nazov)))
             .ToList();
-    }
+
+    private static List<PoleEviTA> PolaCiselnikaPre(TypCiselnika typ) =>
+        new List<PoleEviTA> { new("", Preklad.T("(nepoužiť)")) }
+            .Concat(PolaCiselnika.Pre(typ).Select(p => new PoleEviTA(p.Kluc, p.Povinne ? p.Nazov + " *" : p.Nazov)))
+            .ToList();
 
     // ------------------------------------------------------------------ kroky
 
@@ -77,6 +91,30 @@ public partial class ImportViewModel : ObservableObject
     [ObservableProperty] private string _cesta = "";
     [ObservableProperty] private bool _druhZlucenie = true;
     [ObservableProperty] private bool _druhCela;
+
+    /// <summary>Import číselníka (kategórie, miestnosti alebo osoby) namiesto položiek.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(JeCiselnik), nameof(JePolozky))]
+    private bool _druhCiselnik;
+
+    public bool JeCiselnik => DruhCiselnik;
+    public bool JePolozky => !DruhCiselnik;
+
+    public IReadOnlyList<VolbaCiselnika> Ciselniky { get; } = new VolbaCiselnika[]
+    {
+        new(TypCiselnika.Kategorie, Preklad.T("Kategórie")),
+        new(TypCiselnika.Miestnosti, Preklad.T("Miestnosti")),
+        new(TypCiselnika.Osoby, Preklad.T("Osoby")),
+    };
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NazovCiselnika))]
+    private TypCiselnika _typCiselnika = TypCiselnika.Kategorie;
+
+    public string NazovCiselnika => PolaCiselnika.NazovCiselnika(TypCiselnika);
+
+    /// <summary>Číselník, pre ktorý sú pripravené riadky kontroly (podľa neho sa nastavia stĺpce tabuľky).</summary>
+    [ObservableProperty] private TypCiselnika? _typRiadkovCiselnika;
 
     public IReadOnlyList<VzorovySubor> Vzory => VzoryService.Zoznam;
 
@@ -148,7 +186,7 @@ public partial class ImportViewModel : ObservableObject
 
     // ------------------------------------------------------------------ krok 2
 
-    public List<PoleEviTA> PolaEviTA { get; }
+    [ObservableProperty] private List<PoleEviTA> _polaEviTA;
 
     [ObservableProperty] private List<PriradenieStlpca> _priradenia = new();
     [ObservableProperty] private string _infoOSubore = "";
@@ -157,15 +195,32 @@ public partial class ImportViewModel : ObservableObject
 
     public ObservableCollection<RiadokImportu> Riadky { get; } = new();
 
+    public ObservableCollection<RiadokCiselnika> RiadkyCiselnika { get; } = new();
+
     [ObservableProperty] private ListCollectionView? _pohladRiadkov;
+    [ObservableProperty] private ListCollectionView? _pohladCiselnika;
     [ObservableProperty] private bool _lenProblemove;
     [ObservableProperty] private string _suhrnKontroly = "";
 
-    partial void OnLenProblemoveChanged(bool value) => PohladRiadkov?.Refresh();
+    partial void OnLenProblemoveChanged(bool value)
+    {
+        PohladRiadkov?.Refresh();
+        PohladCiselnika?.Refresh();
+    }
 
     [RelayCommand]
     private void VybratVsetky()
     {
+        if (JeCiselnik)
+        {
+            foreach (var r in RiadkyCiselnika.Where(r => r.MozeImportovat))
+            {
+                r.Importovat = true;
+            }
+
+            return;
+        }
+
         foreach (var r in Riadky.Where(r => r.MozeImportovat))
         {
             r.Importovat = true;
@@ -175,6 +230,16 @@ public partial class ImportViewModel : ObservableObject
     [RelayCommand]
     private void ZrusitVyber()
     {
+        if (JeCiselnik)
+        {
+            foreach (var r in RiadkyCiselnika)
+            {
+                r.Importovat = false;
+            }
+
+            return;
+        }
+
         foreach (var r in Riadky)
         {
             r.Importovat = false;
@@ -244,6 +309,12 @@ public partial class ImportViewModel : ObservableObject
             return;
         }
 
+        if (JeCiselnik)
+        {
+            NacitajSuborCiselnika();
+            return;
+        }
+
         if (Druh == DruhImportu.CelaDatabaza)
         {
             using var db = Databaza.Otvor();
@@ -269,6 +340,7 @@ public partial class ImportViewModel : ObservableObject
         }
 
         _zdroj = zdroj;
+        PolaEviTA = PolaPoloziek();
         var priradenie = ImportService.AutomatickePriradenie(zdroj.Hlavicky);
         Priradenia = zdroj.Hlavicky.Select((h, i) => new PriradenieStlpca(h, zdroj.Ukazka(i), priradenie[i])).ToList();
 
@@ -291,11 +363,161 @@ public partial class ImportViewModel : ObservableObject
         Krok = 2;
     }
 
+    private void NacitajSuborCiselnika()
+    {
+        var typ = TypCiselnika;
+        ZdrojImportu? zdroj = null;
+        Dialogy.Cakaj(() => zdroj = CitacSuborov.Nacitaj(Cesta, typ));
+        if (zdroj is null)
+        {
+            return;
+        }
+
+        if (zdroj.Riadky.Count == 0)
+        {
+            Dialogy.Info(Preklad.T("V súbore sa nenašli žiadne riadky s údajmi."));
+            return;
+        }
+
+        _zdroj = zdroj;
+        PolaEviTA = PolaCiselnikaPre(typ);
+        var priradenie = PolaCiselnika.AutomatickePriradenie(typ, zdroj.Hlavicky);
+        Priradenia = zdroj.Hlavicky.Select((h, i) => new PriradenieStlpca(h, zdroj.Ukazka(i), priradenie[i])).ToList();
+
+        var info = new StringBuilder();
+        info.Append(Preklad.F($"{zdroj.Format}, {zdroj.Riadky.Count} riadkov, {zdroj.Hlavicky.Count} stĺpcov"));
+        if (zdroj.Balik is not null)
+        {
+            info.Append(Preklad.F($" – číselník {NazovCiselnika} zo súboru EviTA"));
+        }
+
+        info.Append('.');
+        info.Append(Preklad.F($" Rozpoznaných stĺpcov: {priradenie.Count(k => k is not null)} z {zdroj.Hlavicky.Count}."));
+        foreach (var upozornenie in zdroj.Upozornenia)
+        {
+            info.Append("\n• ").Append(upozornenie);
+        }
+
+        InfoOSubore = info.ToString();
+        Krok = 2;
+    }
+
+    private void PripravKontroluCiselnika()
+    {
+        var typ = TypCiselnika;
+        var kluce = Priradenia.Select(p => p.Kluc).ToHashSet();
+        if (typ == TypCiselnika.Osoby
+                ? !kluce.Contains(PolaCiselnika.Priezvisko) && !kluce.Contains(PolaCiselnika.CeleMeno)
+                : !kluce.Contains(PolaCiselnika.Nazov))
+        {
+            Dialogy.Upozornenie(typ == TypCiselnika.Osoby
+                ? Preklad.T("Priraďte stĺpec s priezviskom, alebo stĺpec s menom a priezviskom.")
+                : Preklad.T("Priraďte stĺpec s názvom (pole Názov je povinné)."));
+            return;
+        }
+
+        var priradenie = Priradenia.Select(p => p.Kluc.Length == 0 ? null : p.Kluc).ToList();
+        var sluzba = new ImportCiselnikaService(typ);
+        List<RiadokCiselnika>? riadky = null;
+        Dialogy.Cakaj(() =>
+        {
+            riadky = sluzba.Priprav(_zdroj!, priradenie);
+            _existujuce = sluzba.Existujuce();
+            sluzba.SkontrolujVsetky(riadky, _existujuce);
+        });
+
+        if (riadky!.Count == 0)
+        {
+            Dialogy.Info(Preklad.T("V súbore sa nenašli žiadne riadky s údajmi."));
+            return;
+        }
+
+        _importCiselnika = sluzba;
+        foreach (var r in RiadkyCiselnika)
+        {
+            r.Zmeneny -= PriZmeneRiadkuCiselnika;
+            r.ZmenenyVyber -= PriZmeneVyberuCiselnika;
+        }
+
+        RiadkyCiselnika.Clear();
+        foreach (var r in riadky)
+        {
+            r.Zmeneny += PriZmeneRiadkuCiselnika;
+            r.ZmenenyVyber += PriZmeneVyberuCiselnika;
+            RiadkyCiselnika.Add(r);
+        }
+
+        TypRiadkovCiselnika = typ;
+        PohladCiselnika = new ListCollectionView(RiadkyCiselnika)
+        {
+            Filter = o => !LenProblemove || o is RiadokCiselnika { Vysledok: not StavRiadku.Ok },
+        };
+        LenProblemove = false;
+        PohladCiselnika.Refresh();
+        AktualizujSuhrn();
+        Krok = 3;
+    }
+
+    private void PriZmeneRiadkuCiselnika(RiadokCiselnika riadok)
+    {
+        if (_kontrolujem || _importCiselnika is null)
+        {
+            return;
+        }
+
+        _kontrolujem = true;
+        try
+        {
+            _importCiselnika.SkontrolujVsetky(RiadkyCiselnika, _existujuce);
+        }
+        finally
+        {
+            _kontrolujem = false;
+        }
+
+        AktualizujSuhrn();
+    }
+
+    private void PriZmeneVyberuCiselnika(RiadokCiselnika riadok)
+    {
+        if (!_kontrolujem)
+        {
+            AktualizujSuhrn();
+        }
+    }
+
+    private void PripravNahladCiselnika()
+    {
+        var vybrane = RiadkyCiselnika.Where(r => r.Importovat && r.MozeImportovat).ToList();
+        if (vybrane.Count == 0)
+        {
+            Dialogy.Info(Preklad.T("Na import nie je vybraná žiadna položka. Opravte chybné riadky alebo zaškrtnite riadky, ktoré chcete importovať."));
+            return;
+        }
+
+        var typ = _importCiselnika!.Typ;
+        NahladPridat = Preklad.F($"Do číselníka {PolaCiselnika.NazovCiselnika(typ)} pribudne {ImportCiselnikaService.PocetZaznamov(vybrane.Count)}.");
+        var preskocene = RiadkyCiselnika.Where(r => !(r.Importovat && r.MozeImportovat)).ToList();
+        NahladPreskocit = preskocene.Count == 0
+            ? Preklad.T("Nepreskočí sa žiadny riadok.")
+            : Preklad.F($"Preskočí sa {preskocene.Count} riadkov:\n") + string.Join("\n", preskocene.Take(50).Select(r =>
+                "• " + Preklad.F($"riadok {r.CisloRiadku}: {r.Popis(typ)} – {(r.Problem.Length > 0 ? r.Problem : Preklad.T("vynechané ručne"))}")))
+              + (preskocene.Count > 50 ? "\n…" : "");
+        NahladCiselniky = string.Join(", ", vybrane.Take(200).Select(r => r.Popis(typ))) + (vybrane.Count > 200 ? ", …" : "");
+        Krok = 4;
+    }
+
     private void PripravKontrolu()
     {
         if (_zdroj is null)
         {
             Krok = 1;
+            return;
+        }
+
+        if (JeCiselnik)
+        {
+            PripravKontroluCiselnika();
             return;
         }
 
@@ -389,8 +611,11 @@ public partial class ImportViewModel : ObservableObject
 
     private void AktualizujSuhrn()
     {
-        int Pocet(StavRiadku stav) => Riadky.Count(r => r.Vysledok == stav);
-        var casti = new List<string> { Preklad.F($"{Riadky.Count} riadkov"), Preklad.F($"v poriadku {Pocet(StavRiadku.Ok)}") };
+        var stavy = JeCiselnik
+            ? RiadkyCiselnika.Select(r => (r.Vysledok, Vybrany: r.Importovat && r.MozeImportovat)).ToList()
+            : Riadky.Select(r => (r.Vysledok, Vybrany: r.Importovat && r.MozeImportovat)).ToList();
+        int Pocet(StavRiadku stav) => stavy.Count(r => r.Vysledok == stav);
+        var casti = new List<string> { Preklad.F($"{stavy.Count} riadkov"), Preklad.F($"v poriadku {Pocet(StavRiadku.Ok)}") };
         if (Pocet(StavRiadku.Upozornenie) is > 0 and var u)
         {
             casti.Add(Preklad.F($"s upozornením {u}"));
@@ -411,11 +636,21 @@ public partial class ImportViewModel : ObservableObject
             casti.Add(Preklad.F($"s chybou {ch}"));
         }
 
-        SuhrnKontroly = string.Join(" · ", casti) + Preklad.F($"  —  vybrané na import: {Riadky.Count(r => r.Importovat && r.MozeImportovat)}");
+        SuhrnKontroly = string.Join(" · ", casti) + Preklad.F($"  —  vybrané na import: {stavy.Count(r => r.Vybrany)}");
     }
 
     private void PripravNahlad()
     {
+        if (JeCiselnik)
+        {
+            if (_importCiselnika is not null)
+            {
+                PripravNahladCiselnika();
+            }
+
+            return;
+        }
+
         if (_kontrola is null)
         {
             return;
@@ -469,6 +704,12 @@ public partial class ImportViewModel : ObservableObject
             return;
         }
 
+        if (JeCiselnik)
+        {
+            ImportovatCiselnik();
+            return;
+        }
+
         try
         {
             VysledokImportu? vysledok = null;
@@ -479,6 +720,33 @@ public partial class ImportViewModel : ObservableObject
             VysledokText = Preklad.F($"Import je hotový. Pribudlo {ExportService.PocetPoloziek(vysledok.Pridane)}") +
                            (vysledok.CisloOd is { } od ? Preklad.F($" (prírastkové čísla {od} – {vysledok.CisloDo})") : "") +
                            Preklad.F($", preskočených riadkov: {vysledok.Preskocene}.");
+            Krok = 5;
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            Dialogy.Chyba(Preklad.T("Import sa nepodaril. Databáza zostala bez zmeny."), ex);
+        }
+    }
+
+    private void ImportovatCiselnik()
+    {
+        if (_importCiselnika is null || _zdroj is null)
+        {
+            return;
+        }
+
+        try
+        {
+            VysledokImportu? vysledok = null;
+            Dialogy.Cakaj(() => vysledok = _importCiselnika.Importuj(_zdroj, RiadkyCiselnika));
+            Vysledok = vysledok;
+            ZmenyVDatach = true;
+            Protokol = vysledok!.Protokol;
+            VysledokText = Preklad.F($"Import je hotový. Do číselníka {PolaCiselnika.NazovCiselnika(_importCiselnika.Typ)} pribudlo {ImportCiselnikaService.PocetZaznamov(vysledok.Pridane)}, preskočených riadkov: {vysledok.Preskocene}.");
             Krok = 5;
         }
         catch (EvitaException ex)

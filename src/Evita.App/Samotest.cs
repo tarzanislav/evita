@@ -891,6 +891,39 @@ internal static class Samotest
             model.Tlac.VybranyStlpec = model.Tlac.Stlpce[1];
             model.Tlac.HoreCommand.Execute(null);
             Over(model.Tlac.Stlpce[0].Stlpec.Kluc == StlpcePrenosu.Nazov, "obrazovka tlače: zmena poradia stĺpcov");
+
+            // uložené zostavy: voľby, poradie stĺpcov a obdobie počítané podľa dňa tlače
+            var miestnostZostavy = model.Tlac.Miestnosti.First(v => v.Id != 0);
+            model.Tlac.MiestnostId = miestnostZostavy.Id;
+            model.Tlac.NaSirku = true;
+            model.Tlac.Podpis = false;
+            model.Tlac.NazovBezDialogu = "Inventúra – " + miestnostZostavy.Nazov;
+            model.Tlac.UlozitZostavuCommand.Execute(null);
+            model.Tlac.Vybrana = ZostavyService.Popis(DruhZostavy.Historia);
+            model.Tlac.ObdobieUlozenia = ObdobieZostavy.MinulyMesiac;
+            var minulyMesiac = UlozeneZostavy.Rozsah(ObdobieZostavy.MinulyMesiac, DateTime.Today)!.Value;
+            Over(model.Tlac.Od == minulyMesiac.Od && model.Tlac.Do == minulyMesiac.Do, "obdobie zostavy: minulý mesiac");
+            model.Tlac.NazovBezDialogu = "Zmeny za minulý mesiac";
+            model.Tlac.UlozitZostavuCommand.Execute(null);
+            Over(model.Tlac.UlozeneZostavy.Count == 2 && UlozeneZostavy.Nacitaj().Count == 2, "uloženie zostáv");
+            var tlacZnova = new TlacViewModel(model);
+            tlacZnova.Obnov();
+            tlacZnova.VybranaUlozena = tlacZnova.UlozeneZostavy.First(z => z.Nazov.StartsWith("Inventúra"));
+            Over(tlacZnova.Vybrana.Druh == DruhZostavy.PoMiestnostiach && tlacZnova.MiestnostId == miestnostZostavy.Id && tlacZnova.NaSirku
+                 && !tlacZnova.Podpis && tlacZnova.Stlpce[0].Stlpec.Kluc == StlpcePrenosu.Nazov, "použitie uloženej zostavy");
+            tlacZnova.VybranaUlozena = tlacZnova.UlozeneZostavy.First(z => z.Nazov.StartsWith("Zmeny"));
+            Over(tlacZnova.Vybrana.Druh == DruhZostavy.Historia && tlacZnova.Od == minulyMesiac.Od && tlacZnova.ObdobieUlozenia == ObdobieZostavy.MinulyMesiac,
+                "uložená zostava s obdobím „minulý mesiac“");
+            Over(tlacZnova.UlozeneZostavy.First(z => z.Nazov.StartsWith("Zmeny")).Popis.Contains("minulý mesiac"), "popis uloženej zostavy");
+            tlacZnova.VymazatUlozenuCommand.Execute(tlacZnova.UlozeneZostavy.First(z => z.Nazov.StartsWith("Zmeny")));
+            Over(UlozeneZostavy.Nacitaj().Count == 1 && tlacZnova.UlozeneZostavy.Count == 1, "vymazanie uloženej zostavy");
+            model.Tlac.NazovBezDialogu = null;
+            model.Tlac.Obnov();
+            model.Tlac.MiestnostId = 0;
+            model.Tlac.Podpis = true;
+            model.Tlac.Vybrana = ZostavyService.Popis(DruhZostavy.PoMiestnostiach);
+            model.Tlac.VybranyStlpec = model.Tlac.Stlpce[1];
+            model.Tlac.HoreCommand.Execute(null);
             var nahlad = model.Tlac.VytvorNahlad();
             Over(nahlad is { PocetStran: > 1 }, $"náhľad zostavy po miestnostiach ({nahlad?.PocetStran} strán)");
             nahlad!.Show();
@@ -1062,6 +1095,96 @@ internal static class Samotest
             oknoImportu.Close();
             Pumpuj();
             Krok("okno: sprievodca importom");
+
+            // ------------------------------------------------------------ sprievodca: import číselníkov
+            int PocetMiestnosti()
+            {
+                using var dbc = Databaza.Otvor();
+                return dbc.Miestnosti.Count();
+            }
+
+            string existujucaMiestnost;
+            using (var dbc = Databaza.Otvor())
+            {
+                existujucaMiestnost = dbc.Miestnosti.Select(m => m.Nazov).First();
+            }
+
+            var vzorCiselnikov = Path.Combine(VzoryService.Priecinok, VzoryService.Ciselniky);
+            var harokOsob = CitacSuborov.Nacitaj(vzorCiselnikov, TypCiselnika.Osoby);
+            var harokKategorii = CitacSuborov.Nacitaj(vzorCiselnikov, TypCiselnika.Kategorie);
+            Over(harokOsob.Riadky.Count == 2 && PolaCiselnika.AutomatickePriradenie(TypCiselnika.Osoby, harokOsob.Hlavicky).All(k => k is not null)
+                 && harokKategorii.Riadky.Count == 3, "vzor číselníkov: výber hárku podľa číselníka");
+
+            var csvMiestnosti = Path.Combine(Databaza.Priecinok, "miestnosti_import.csv");
+            File.WriteAllText(csvMiestnosti,
+                "Názov;Budova;Poznámka;Aktívna\r\nTestovacia učebňa A;C;prízemie;áno\r\nTestovacia učebňa A;C;;áno\r\n;C;bez názvu;áno\r\n" +
+                "Testovací kabinet B;D;;nie\r\n" + existujucaMiestnost + ";;;\r\n", new UTF8Encoding(true));
+            var predMiestnostami = PocetMiestnosti();
+            var sprievodcaC = new ImportViewModel { Cesta = csvMiestnosti, DruhCiselnik = true, TypCiselnika = TypCiselnika.Miestnosti };
+            var oknoC = new ImportWindow(sprievodcaC);
+            oknoC.Show();
+            Pumpuj();
+            sprievodcaC.DalejCommand.Execute(null);
+            Pumpuj();
+            Over(sprievodcaC.Krok == 2 && sprievodcaC.Priradenia.Count == 4 && sprievodcaC.Priradenia.All(pr => pr.Kluc.Length > 0),
+                $"číselník: rozpoznanie stĺpcov miestností (krok {sprievodcaC.Krok})");
+            Snimka(oknoC, "import_ciselnik_2");
+            sprievodcaC.DalejCommand.Execute(null);
+            Pumpuj();
+            var stavyC = sprievodcaC.RiadkyCiselnika.Select(r => r.Vysledok).ToList();
+            Over(sprievodcaC.Krok == 3 && stavyC.Count == 5 && stavyC[0] == StavRiadku.Ok && stavyC[1] == StavRiadku.Duplicita
+                 && stavyC[2] == StavRiadku.Chyba && stavyC[3] == StavRiadku.Ok && stavyC[4] == StavRiadku.Duplicita,
+                $"číselník: kontrola miestností ({string.Join(", ", stavyC)})");
+            Snimka(oknoC, "import_ciselnik_3");
+            sprievodcaC.RiadkyCiselnika[2].Pole1 = "Opravená miestnosť";
+            Pumpuj();
+            Over(sprievodcaC.RiadkyCiselnika[2].MozeImportovat && sprievodcaC.RiadkyCiselnika[2].Importovat, "číselník: oprava riadku v tabuľke");
+            sprievodcaC.DalejCommand.Execute(null);
+            Pumpuj();
+            Over(sprievodcaC.Krok == 4 && sprievodcaC.NahladPridat.Contains("3 záznamy"), $"číselník: náhľad ({sprievodcaC.NahladPridat})");
+            sprievodcaC.ImportovatCommand.Execute(null);
+            Pumpuj();
+            bool kabinetNeaktivny;
+            using (var dbc = Databaza.Otvor())
+            {
+                kabinetNeaktivny = dbc.Miestnosti.Any(m => m.Nazov == "Testovací kabinet B" && !m.Aktivna && m.Budova == "D");
+            }
+
+            Over(sprievodcaC.Krok == 5 && sprievodcaC.Vysledok?.Pridane == 3 && PocetMiestnosti() == predMiestnostami + 3 && kabinetNeaktivny,
+                "číselník: import miestností");
+            Over(sprievodcaC.Protokol.Contains("Opravená miestnosť"), "číselník: protokol");
+            Snimka(oknoC, "import_ciselnik_5");
+            sprievodcaC.VratitImportCommand.Execute(null);
+            Pumpuj();
+            Over(PocetMiestnosti() == predMiestnostami, "číselník: vrátenie importu");
+            oknoC.Close();
+            Pumpuj();
+
+            var csvOsoby = Path.Combine(Databaza.Priecinok, "osoby_import.csv");
+            File.WriteAllText(csvOsoby, "Osoba;Funkcia\r\nPeter Testovací;technik\r\nAnna Mária Skúšobná;učiteľka\r\n", new UTF8Encoding(true));
+            var sprievodcaO = new ImportViewModel { Cesta = csvOsoby, DruhCiselnik = true, TypCiselnika = TypCiselnika.Osoby };
+            sprievodcaO.DalejCommand.Execute(null);
+            sprievodcaO.DalejCommand.Execute(null);
+            sprievodcaO.DalejCommand.Execute(null);
+            sprievodcaO.ImportovatCommand.Execute(null);
+            bool osobaRozdelena;
+            using (var dbc = Databaza.Otvor())
+            {
+                osobaRozdelena = dbc.Osoby.Any(o => o.Meno == "Anna Mária" && o.Priezvisko == "Skúšobná" && o.Funkcia == "učiteľka");
+            }
+
+            Over(sprievodcaO.Vysledok?.Pridane == 2 && osobaRozdelena, "číselník: osoby s menom a priezviskom v jednom stĺpci");
+            var sprievodcaO2 = new ImportViewModel { Cesta = csvOsoby, DruhCiselnik = true, TypCiselnika = TypCiselnika.Osoby };
+            sprievodcaO2.DalejCommand.Execute(null);
+            sprievodcaO2.DalejCommand.Execute(null);
+            Over(sprievodcaO2.RiadkyCiselnika.All(r => r.Vysledok == StavRiadku.Duplicita), "číselník: osoby už v evidencii sa nepridajú znova");
+            sprievodcaO.VratitImportCommand.Execute(null);
+
+            var sprievodcaK = new ImportViewModel { Cesta = Path.Combine(VzoryService.Priecinok, VzoryService.Json), DruhCiselnik = true, TypCiselnika = TypCiselnika.Kategorie };
+            sprievodcaK.DalejCommand.Execute(null);
+            sprievodcaK.DalejCommand.Execute(null);
+            Over(sprievodcaK.Krok == 3 && sprievodcaK.RiadkyCiselnika.Count > 0, "číselník: kategórie zo súboru EviTA (JSON)");
+            Krok("sprievodca: import číselníkov");
             model.NovaVerzia = vydanie;
             Pumpuj();
             Over(model.JeNovaVerzia, "pruh s novou verziou");

@@ -6,6 +6,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using ClosedXML.Excel;
+using Evita.Models;
 
 namespace Evita.Services;
 
@@ -44,7 +45,33 @@ public static class CitacSuborov
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 
-    public static ZdrojImportu Nacitaj(string cesta)
+    /// <summary>Načíta súbor; pri importe číselníka (kategórie, miestnosti, osoby) sa v Exceli hľadá hárok
+    /// s názvom číselníka a zo súboru EviTA (JSON, XML) sa vezme zoznam číselníka.</summary>
+    public static ZdrojImportu Nacitaj(string cesta, TypCiselnika? ciselnik = null)
+    {
+        _ciselnik = ciselnik;
+        try
+        {
+            var zdroj = NacitajSubor(cesta);
+            if (ciselnik is { } typ && zdroj.Balik is { } balik)
+            {
+                PolaCiselnika.NaplnZBaliku(zdroj, balik, typ);
+            }
+
+            return zdroj;
+        }
+        finally
+        {
+            _ciselnik = null;
+        }
+    }
+
+    [ThreadStatic] private static TypCiselnika? _ciselnik;
+
+    private static bool JeHlavicka(string? text) =>
+        _ciselnik is { } typ ? PolaCiselnika.Rozpoznaj(typ, text) is not null : StlpcePrenosu.Rozpoznaj(text) is not null;
+
+    private static ZdrojImportu NacitajSubor(string cesta)
     {
         if (!File.Exists(cesta))
         {
@@ -94,7 +121,10 @@ public static class CitacSuborov
             throw new EvitaException(Preklad.T("Zošit neobsahuje žiadny viditeľný hárok."));
         }
 
-        var harok = harky.FirstOrDefault(h => StlpcePrenosu.Normalizuj(h.Name) == "polozky") ?? harky[0];
+        var harok = (_ciselnik is { } typ
+                        ? harky.FirstOrDefault(h => PolaCiselnika.JeHarok(typ, h.Name))
+                        : harky.FirstOrDefault(h => StlpcePrenosu.Normalizuj(h.Name) == "polozky"))
+                    ?? harky[0];
         var zdroj = new ZdrojImportu { Cesta = cesta, Format = "Excel" };
         if (harky.Count > 1)
         {
@@ -118,7 +148,7 @@ public static class CitacSuborov
                 riadokHlavicky = r;
             }
 
-            if (hodnoty.Any(h => StlpcePrenosu.Rozpoznaj(h) is not null))
+            if (hodnoty.Any(JeHlavicka))
             {
                 riadokHlavicky = r;
                 break;

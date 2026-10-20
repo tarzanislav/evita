@@ -56,13 +56,26 @@
                                        Text="Prvé naplnenie zo starej evidencie, hromadné doplnenie alebo spojenie dvoch evidencií. Pridajú sa len položky, ktoré v evidencii ešte nie sú. Nové položky dostanú prírastkové čísla od posledného + 1, pôvodné číslo sa zapíše do histórie." />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton GroupName="druh" IsChecked="{Binding DruhCela}">
+                    <RadioButton GroupName="druh" IsChecked="{Binding DruhCela}" Margin="0,0,0,8">
                         <StackPanel>
                             <TextBlock Text="Preniesť celú databázu do prázdnej evidencie" FontWeight="SemiBold" />
                             <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"
                                        Text="Prechod na nový počítač z úplného exportu EviTA (JSON alebo XML). Zachovajú sa prírastkové čísla, číselníky aj história zmien. Evidencia musí byť prázdna." />
                         </StackPanel>
                     </RadioButton>
+                    <RadioButton x:Name="VolbaCiselnik" GroupName="druh" IsChecked="{Binding DruhCiselnik}">
+                        <StackPanel>
+                            <TextBlock Text="Doplniť kategórie, miestnosti alebo osoby" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"
+                                       Text="Číselník z tabuľky (Excel, CSV) alebo zo súboru EviTA (JSON, XML). Pridajú sa len záznamy, ktoré v číselníku ešte nie sú; existujúce sa nemenia. V zošite Excel sa použije hárok s názvom číselníka (napr. Miestnosti), inak prvý hárok." />
+                        </StackPanel>
+                    </RadioButton>
+                    <StackPanel Orientation="Horizontal" Margin="28,6,0,0"
+                                Visibility="{Binding DruhCiselnik, Converter={StaticResource BoolNaViditelnost}}">
+                        <TextBlock Text="Číselník:" VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <ComboBox ItemsSource="{Binding Ciselniky}" DisplayMemberPath="Nazov" SelectedValuePath="Typ"
+                                  SelectedValue="{Binding TypCiselnika}" MinWidth="180" />
+                    </StackPanel>
                     <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0"
                                Text="Zálohu EviTA (súbor ZIP) obnovíte v časti Servis → Obnova." />
 
@@ -94,7 +107,11 @@
             <DockPanel Visibility="{Binding JeKrok2, Converter={StaticResource BoolNaViditelnost}}">
                 <TextBlock DockPanel.Dock="Top" Text="{Binding InfoOSubore}" TextWrapping="Wrap" Margin="0,0,0,6" />
                 <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,0,0,10" TextWrapping="Wrap"
+                           Visibility="{Binding JePolozky, Converter={StaticResource BoolNaViditelnost}}"
                            Text="Ku každému stĺpcu zo súboru vyberte pole EviTA. Stĺpce, ktoré nepotrebujete, nechajte „(nepoužiť)“. Ak priradíte jedno pole dvom stĺpcom (napr. Meno a Priezvisko → Pridelené), hodnoty sa spoja." />
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,0,0,10" TextWrapping="Wrap"
+                           Visibility="{Binding JeCiselnik, Converter={StaticResource BoolNaViditelnost}}"
+                           Text="Ku každému stĺpcu zo súboru vyberte pole číselníka. Stĺpce, ktoré nepotrebujete, nechajte „(nepoužiť)“. Ak sú meno a priezvisko osoby v jednom stĺpci (napr. Ján Novák), priraďte ho k poľu Meno a priezvisko." />
                 <DataGrid x:Name="TabulkaPriradeni" ItemsSource="{Binding Priradenia}" AutoGenerateColumns="False" CanUserAddRows="False"
                           CanUserDeleteRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
                     <DataGrid.Columns>
@@ -125,7 +142,53 @@
                 </DockPanel>
                 <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,0,0,8" TextWrapping="Wrap"
                            Text="Chybné hodnoty opravíte priamo v tabuľke (dvojklik na bunku), riadok sa hneď znova skontroluje. Riadky, ktoré nechcete importovať, odškrtnite. Pri možnej duplicite rozhodnite zaškrtnutím." />
+                <Grid>
+                <DataGrid x:Name="TabulkaCiselnika" ItemsSource="{Binding PohladCiselnika}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          CanUserDeleteRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single"
+                          SelectionUnit="Cell" Visibility="{Binding JeCiselnik, Converter={StaticResource BoolNaViditelnost}}">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Vysledok}" Value="{x:Static s:StavRiadku.Chyba}">
+                                    <Setter Property="Background" Value="{StaticResource PozadieChyba}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Vysledok}" Value="{x:Static s:StavRiadku.Upozornenie}">
+                                    <Setter Property="Background" Value="{StaticResource PozadieUpozornenie}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Vysledok}" Value="{x:Static s:StavRiadku.Duplicita}">
+                                    <Setter Property="Background" Value="{StaticResource PozadieDuplicita}" />
+                                    <Setter Property="Opacity" Value="0.7" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Import" Width="72">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding Importovat, UpdateSourceTrigger=PropertyChanged}"
+                                              IsEnabled="{Binding MozeImportovat}" HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Riadok" Binding="{Binding CisloRiadku, Mode=OneWay}" IsReadOnly="True" Width="72" />
+                        <DataGridTextColumn Header="Výsledok" Binding="{Binding VysledokText, Mode=OneWay}" IsReadOnly="True" Width="120" />
+                        <DataGridTextColumn Header="Problém" Binding="{Binding Problem, Mode=OneWay}" IsReadOnly="True" Width="280">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                    <Setter Property="FontSize" Value="12" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn x:Name="StlpecPole1" Header="Názov" Binding="{Binding Pole1}" Width="220" />
+                        <DataGridTextColumn x:Name="StlpecPole2" Header="Budova" Binding="{Binding Pole2}" Width="180" />
+                        <DataGridTextColumn x:Name="StlpecPole3" Header="Poznámka" Binding="{Binding Pole3}" Width="*" MinWidth="160" />
+                        <DataGridTextColumn Header="Aktívna" Binding="{Binding Aktivna}" Width="90" />
+                    </DataGrid.Columns>
+                </DataGrid>
                 <DataGrid x:Name="TabulkaRiadkov" ItemsSource="{Binding PohladRiadkov}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          Visibility="{Binding JePolozky, Converter={StaticResource BoolNaViditelnost}}"
                           CanUserDeleteRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single"
                           SelectionUnit="Cell" FrozenColumnCount="3"
                           EnableRowVirtualization="True" EnableColumnVirtualization="True">
@@ -187,6 +250,7 @@
                         <DataGridTextColumn Header="Poznámka" Binding="{Binding Poznamka}" Width="200" />
                     </DataGrid.Columns>
                 </DataGrid>
+                </Grid>
             </DockPanel>
 
             <!-- 4. náhľad -->

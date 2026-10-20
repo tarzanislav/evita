@@ -45,7 +45,233 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
         nameof(UkazPolozku), nameof(Dostupna), nameof(Poznamka), nameof(TextPodpisu), nameof(PopisVyfiltrovanych), nameof(UkazKalendar))]
     private PopisZostavy _vybrana;
 
-    partial void OnVybranaChanged(PopisZostavy value) => NastavPodlaZostavy();
+    partial void OnVybranaChanged(PopisZostavy value)
+    {
+        NastavPodlaZostavy();
+        if (!_pouzivamUlozenu)
+        {
+            // iná zostava zo zoznamu – uložená už nie je vybraná
+            _pouzivamUlozenu = true;
+            VybranaUlozena = null;
+            _pouzivamUlozenu = false;
+            ObdobieUlozenia = ObdobieZostavy.PevneDatumy;
+        }
+    }
+
+    // ------------------------------------------------------------------ uložené zostavy
+
+    private bool _pouzivamUlozenu;
+
+    public ObservableCollection<UlozenaZostava> UlozeneZostavy { get; } = new();
+
+    public bool ZiadneUlozene => UlozeneZostavy.Count == 0;
+
+    public IReadOnlyList<VolbaObdobia> Obdobia { get; } = Services.UlozeneZostavy.Obdobia;
+
+    [ObservableProperty] private UlozenaZostava? _vybranaUlozena;
+
+    /// <summary>Ako sa uloží obdobie: pevné dátumy alebo obdobie počítané podľa dňa tlače.</summary>
+    [ObservableProperty] private ObdobieZostavy _obdobieUlozenia = ObdobieZostavy.PevneDatumy;
+
+    /// <summary>Pre automatický test: názov bez okna na zadanie.</summary>
+    public string? NazovBezDialogu { get; set; }
+
+    partial void OnVybranaUlozenaChanged(UlozenaZostava? value)
+    {
+        if (value is not null && !_pouzivamUlozenu)
+        {
+            PouzitUlozenu(value);
+        }
+    }
+
+    partial void OnObdobieUlozeniaChanged(ObdobieZostavy value)
+    {
+        if (!_pouzivamUlozenu && Services.UlozeneZostavy.Rozsah(value, DateTime.Today) is { } rozsah)
+        {
+            Od = rozsah.Od;
+            Do = rozsah.Do;
+        }
+    }
+
+    private void NacitajUlozene()
+    {
+        var vybrana = VybranaUlozena?.Nazov;
+        _pouzivamUlozenu = true;
+        try
+        {
+            UlozeneZostavy.Clear();
+            foreach (var z in Services.UlozeneZostavy.Nacitaj())
+            {
+                UlozeneZostavy.Add(z);
+            }
+
+            VybranaUlozena = UlozeneZostavy.FirstOrDefault(z => z.Nazov == vybrana);
+        }
+        finally
+        {
+            _pouzivamUlozenu = false;
+        }
+
+        OnPropertyChanged(nameof(ZiadneUlozene));
+    }
+
+    /// <summary>Nastaví obrazovku podľa uloženej zostavy.</summary>
+    public void PouzitUlozenu(UlozenaZostava zostava)
+    {
+        var popis = Zostavy.FirstOrDefault(z => z.Druh.ToString() == zostava.Druh);
+        if (popis is null)
+        {
+            return;
+        }
+
+        _pouzivamUlozenu = true;
+        try
+        {
+            Vybrana = popis;
+            NastavPodlaZostavy();
+
+            var vybrane = zostava.Stlpce.Where(k => StlpcePrenosu.Vsetky.Any(s => s.Kluc == k)).Distinct().ToList();
+            if (vybrane.Count > 0)
+            {
+                Stlpce.Clear();
+                foreach (var kluc in vybrane)
+                {
+                    Stlpce.Add(new VolbaStlpca(StlpcePrenosu.Podla(kluc), true));
+                }
+
+                foreach (var stlpec in StlpcePrenosu.Vsetky.Where(s => !vybrane.Contains(s.Kluc)))
+                {
+                    Stlpce.Add(new VolbaStlpca(stlpec, false));
+                }
+            }
+
+            NaSirku = zostava.NaSirku;
+            VrataneVyradenych = zostava.VrataneVyradenych;
+            Podpis = zostava.Podpis;
+            KazdaNaNovejStrane = zostava.KazdaNaNovejStrane;
+            if (Enum.TryParse<Zoskupenie>(zostava.Zoskupenie, out var zoskupenie))
+            {
+                Zoskupenie = zoskupenie;
+            }
+
+            KalendarZoznam = zostava.KalendarZoznam;
+            AutomatickeTerminy = zostava.AutomatickeTerminy;
+            PrirastkoveCislo = zostava.PrirastkoveCislo ?? "";
+            KategoriaId = Kategorie.FirstOrDefault(v => v.Id != 0 && v.Nazov == zostava.Kategoria)?.Id ?? 0;
+            MiestnostId = Miestnosti.FirstOrDefault(v => v.Id != 0 && v.Nazov == zostava.Miestnost)?.Id ?? 0;
+            OsobaId = Osoby.FirstOrDefault(v => v.Id != 0 && v.Nazov == zostava.Osoba)?.Id ?? 0;
+
+            ObdobieUlozenia = zostava.DruhObdobia;
+            if (Services.UlozeneZostavy.Rozsah(zostava.DruhObdobia, DateTime.Today) is { } rozsah)
+            {
+                Od = rozsah.Od;
+                Do = rozsah.Do;
+            }
+            else if (zostava.Od is not null || zostava.Do is not null)
+            {
+                Od = zostava.Od;
+                Do = zostava.Do;
+            }
+
+            VybranaUlozena = UlozeneZostavy.FirstOrDefault(z => z.Nazov == zostava.Nazov);
+        }
+        finally
+        {
+            _pouzivamUlozenu = false;
+        }
+    }
+
+    [RelayCommand]
+    private void UlozitZostavu()
+    {
+        try
+        {
+            Moznosti(); // kontrola volieb (dátumy, číslo položky)
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+            return;
+        }
+
+        var navrh = VybranaUlozena?.Druh == Vybrana.Druh.ToString() ? VybranaUlozena.Nazov : Vybrana.Nazov;
+        var nazov = (NazovBezDialogu ?? Dialogy.Vstup(Preklad.T("Uložiť zostavu"), Preklad.T("Názov uloženej zostavy:"), navrh))?.Trim();
+        if (string.IsNullOrEmpty(nazov))
+        {
+            return;
+        }
+
+        if (nazov.Length > 100)
+        {
+            Dialogy.Upozornenie(Preklad.T("Názov zostavy je príliš dlhý (najviac 100 znakov)."));
+            return;
+        }
+
+        var existujuca = UlozeneZostavy.FirstOrDefault(z => Sk.Porovnanie.Equals(z.Nazov, nazov));
+        if (existujuca is not null && !Dialogy.Potvrd(Preklad.F($"Zostava „{existujuca.Nazov}“ už je uložená. Nahradiť ju súčasnými voľbami?")))
+        {
+            return;
+        }
+
+        string? NazovVolby(List<Volba> volby, int id) => id == 0 ? null : volby.FirstOrDefault(v => v.Id == id)?.Nazov;
+        var pevne = ObdobieUlozenia == ObdobieZostavy.PevneDatumy;
+        var zostava = new UlozenaZostava
+        {
+            Nazov = nazov,
+            Druh = Vybrana.Druh.ToString(),
+            Stlpce = Stlpce.Where(st => st.Vybrany).Select(st => st.Stlpec.Kluc).ToList(),
+            NaSirku = NaSirku,
+            VrataneVyradenych = VrataneVyradenych,
+            Podpis = Podpis,
+            KazdaNaNovejStrane = KazdaNaNovejStrane,
+            Zoskupenie = Zoskupenie.ToString(),
+            Obdobie = UkazObdobie ? ObdobieUlozenia.ToString() : nameof(ObdobieZostavy.PevneDatumy),
+            Od = UkazObdobie && pevne ? Od : null,
+            Do = UkazObdobie && pevne ? Do : null,
+            Kategoria = UkazKategoriu ? NazovVolby(Kategorie, KategoriaId) : null,
+            Miestnost = UkazMiestnost ? NazovVolby(Miestnosti, MiestnostId) : null,
+            Osoba = UkazOsobu ? NazovVolby(Osoby, OsobaId) : null,
+            PrirastkoveCislo = UkazPolozku && !string.IsNullOrWhiteSpace(PrirastkoveCislo) ? PrirastkoveCislo.Trim() : null,
+            KalendarZoznam = KalendarZoznam,
+            AutomatickeTerminy = AutomatickeTerminy,
+            Ulozene = DateTime.Now,
+        };
+
+        try
+        {
+            Services.UlozeneZostavy.Pridaj(zostava);
+        }
+        catch (Exception ex)
+        {
+            Dialogy.Chyba(Preklad.T("Zostavu sa nepodarilo uložiť."), ex);
+            return;
+        }
+
+        NacitajUlozene();
+        _pouzivamUlozenu = true;
+        VybranaUlozena = UlozeneZostavy.FirstOrDefault(z => z.Nazov == nazov);
+        _pouzivamUlozenu = false;
+    }
+
+    [RelayCommand]
+    private void VymazatUlozenu(UlozenaZostava? zostava)
+    {
+        zostava ??= VybranaUlozena;
+        if (zostava is null || !Dialogy.Potvrd(Preklad.F($"Vymazať uloženú zostavu „{zostava.Nazov}“?")))
+        {
+            return;
+        }
+
+        Services.UlozeneZostavy.Vymaz(zostava.Nazov);
+        if (VybranaUlozena?.Nazov == zostava.Nazov)
+        {
+            _pouzivamUlozenu = true;
+            VybranaUlozena = null;
+            _pouzivamUlozenu = false;
+        }
+
+        NacitajUlozene();
+    }
 
     public bool UkazObdobie => Vybrana.MaObdobie;
     public bool UkazVyradene => Vybrana.MaVyradene;
@@ -140,6 +366,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
             KategoriaId = 0;
         }
 
+        NacitajUlozene();
         var organizacia = NastaveniaTlace.Nacitaj();
         NazovOrganizacie = organizacia.Nazov ?? "";
         NastavLogo(organizacia.Logo);

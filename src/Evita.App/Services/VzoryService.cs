@@ -19,8 +19,9 @@ public static class VzoryService
     public const string Csv = "EviTA_vzor_CSV.csv";
     public const string Json = "EviTA_vzor_JSON.json";
     public const string Xml = "EviTA_vzor_XML.xml";
+    public const string Ciselniky = "EviTA_vzor_ciselniky.xlsx";
 
-    private static readonly string[] Subory = { Excel, Csv, Json, Xml, XsdEviTA.NazovSuboru };
+    private static readonly string[] Subory = { Excel, Csv, Json, Xml, Ciselniky, XsdEviTA.NazovSuboru };
 
     /// <summary>Názvy zo starších verzií – pri vytvorení vzorov sa odstránia.</summary>
     private static readonly string[] StareSubory = { "vzor_import.xlsx", "vzor_import.csv", "vzor_import.json", "vzor_import.xml" };
@@ -32,6 +33,7 @@ public static class VzoryService
         new("CSV (.csv)", Preklad.T("UTF-8, oddeľovač bodkočiarka"), Csv),
         new("JSON (.json)", Preklad.T("úplná štruktúra s číselníkmi"), Json),
         new("XML (.xml)", Preklad.T("spolu s popisom formátu evita.xsd"), Xml),
+        new(Preklad.T("Číselníky (.xlsx)"), Preklad.T("kategórie, miestnosti a osoby, každý číselník na vlastnom hárku"), Ciselniky),
     };
 
     /// <summary>Priečinok Stiahnuté (pri teste v testovacom priečinku).</summary>
@@ -185,11 +187,12 @@ public static class VzoryService
             navod.Column(3).Width = 90;
             navod.Column(4).Width = 26;
             navod.Range(7, 3, riadok, 3).Style.Alignment.WrapText = true;
-            zosit.Worksheet("Položky").SetTabActive();
+            harok.SetTabActive();
             zosit.SaveAs(Path.Combine(priecinok, Excel));
         }
 
         ExportService.ZapisCsv(Path.Combine(priecinok, Csv), stlpce, riadky);
+        VytvorVzorCiselnikov(Path.Combine(priecinok, Ciselniky));
 
         var balik = new BalikEviTAPolozky
         {
@@ -211,6 +214,58 @@ public static class VzoryService
         ExportService.ZapisJson(Path.Combine(priecinok, Json), balik);
         ExportService.ZapisXml(Path.Combine(priecinok, Xml), balik);
         return priecinok;
+    }
+
+    /// <summary>Zošit s hárkami Kategórie, Miestnosti a Osoby na import číselníkov.</summary>
+    private static void VytvorVzorCiselnikov(string cesta)
+    {
+        using var zosit = new XLWorkbook();
+        void Harok(TypCiselnika typ, string[] hlavicky, string?[][] riadky)
+        {
+            var harok = zosit.Worksheets.Add(PolaCiselnika.NazovCiselnika(typ));
+            for (var c = 0; c < hlavicky.Length; c++)
+            {
+                harok.Cell(1, c + 1).Value = hlavicky[c];
+            }
+
+            for (var r = 0; r < riadky.Length; r++)
+            {
+                for (var c = 0; c < riadky[r].Length; c++)
+                {
+                    if (riadky[r][c] is { } hodnota)
+                    {
+                        harok.Cell(r + 2, c + 1).Value = hodnota;
+                    }
+                }
+            }
+
+            var hlavicka = harok.Range(1, 1, 1, hlavicky.Length);
+            hlavicka.Style.Font.Bold = true;
+            hlavicka.Style.Fill.BackgroundColor = XLColor.FromHtml("#DCE6F1");
+            harok.SheetView.FreezeRows(1);
+            harok.Columns().AdjustToContents();
+        }
+
+        var ano = Preklad.T("áno");
+        Harok(TypCiselnika.Kategorie, new[] { Preklad.T("Názov"), Preklad.T("Aktívna") }, new[]
+        {
+            new[] { Preklad.T("notebook"), ano },
+            new[] { Preklad.T("projektor"), ano },
+            new[] { Preklad.T("tablet"), ano },
+        });
+        Harok(TypCiselnika.Miestnosti, new[] { Preklad.T("Názov"), Preklad.T("Budova"), Preklad.T("Poznámka"), Preklad.T("Aktívna") }, new[]
+        {
+            new[] { Preklad.T("Kancelária 101"), "A", null, ano },
+            new[] { Preklad.T("Sekretariát"), "A", null, ano },
+            new[] { Preklad.T("Učebňa 12"), "B", null, ano },
+            new[] { Preklad.T("Sklad"), "B", null, ano },
+        });
+        Harok(TypCiselnika.Osoby, new[] { Preklad.T("Meno"), Preklad.T("Priezvisko"), Preklad.T("Funkcia"), Preklad.T("Aktívna") }, new[]
+        {
+            new[] { "Ján", "Novák", Preklad.T("účtovník"), ano },
+            new[] { "Mária", "Kováčová", Preklad.T("učiteľka"), ano },
+        });
+        zosit.SaveAs(cesta);
     }
 
     /// <summary>Vytvorí vzory, ak niektorý chýba. Chyba sa ignoruje (vzory nie sú nevyhnutné).</summary>

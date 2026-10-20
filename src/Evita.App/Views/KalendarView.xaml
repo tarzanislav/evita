@@ -227,10 +227,14 @@
                         <TextBlock Text="Nová udalosť" />
                     </StackPanel>
                 </Button>
-                <Button Content="Nová poznámka" Padding="12,6" Margin="6,0,0,0" Command="{Binding NovaPoznamkaCommand}"
-                        ToolTip="Poznámka k zobrazenému dňu (pravým tlačidlom na deň v mesiaci ju pridáte k inému dňu)" />
+                <Button Padding="10,6" Margin="6,0,0,0" Command="{Binding NovaPoznamkaCommand}"
+                        ToolTip="Nová poznámka k zobrazenému dňu (pravým tlačidlom na deň v mesiaci ju pridáte k inému dňu)">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE70B;" FontSize="14" />
+                </Button>
                 <Button Content="Typy…" Padding="12,6" Margin="6,0,0,0" Command="{Binding TypyCommand}" />
-                <Button Content="Nastavenia…" Padding="12,6" Margin="6,0,0,0" Command="{Binding NastaveniaCommand}" />
+                <Button Padding="10,6" Margin="6,0,0,0" Command="{Binding NastaveniaCommand}" ToolTip="Nastavenia kalendára">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE713;" FontSize="14" />
+                </Button>
                 <Button Content="Export .ics…" Padding="12,6" Margin="6,0,0,0" Command="{Binding ExportIcsCommand}"
                         ToolTip="Uložiť kalendár pre Outlook alebo Google Kalendár" />
                 <Button Padding="12,6" Margin="6,0,0,0" Command="{Binding TlacitCommand}" ToolTip="Náhľad, tlač a PDF zobrazeného obdobia">
@@ -380,14 +384,18 @@
                                     <TextBlock Text="{Binding Sviatok}" FontSize="11.5" Foreground="{StaticResource FarbaSviatku}" TextWrapping="Wrap"
                                                Visibility="{Binding MaSviatok, Converter={StaticResource BoolNaViditelnost}}" />
                                 </StackPanel>
-                                <WrapPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
-                                    <Button Content="+ Udalosť" Padding="8,3" Margin="0,0,4,4"
+                                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,6,0,0">
+                                    <Button Padding="8,4" Margin="0,0,4,0" ToolTip="Nová udalosť"
                                             Command="{Binding DataContext.NovaUdalostCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}" />
-                                    <Button Content="+ Poznámka" Padding="8,3" Margin="0,0,0,4"
+                                            CommandParameter="{Binding}">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE710;" FontSize="12" />
+                                    </Button>
+                                    <Button Padding="8,4" ToolTip="Nová poznámka"
                                             Command="{Binding DataContext.NovaPoznamkaCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}" />
-                                </WrapPanel>
+                                            CommandParameter="{Binding}">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE70B;" FontSize="12" />
+                                    </Button>
+                                </StackPanel>
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel>
                                         <ItemsControl ItemsSource="{Binding Udalosti}" ItemTemplate="{StaticResource UdalostTyzden}" />

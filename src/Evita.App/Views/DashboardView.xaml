@@ -189,19 +189,27 @@
                         <TextBlock DockPanel.Dock="Top" Text="{Binding KurzyDatum}" Style="{StaticResource Popis}" Margin="0,2,0,6" />
 
                         <!-- prepočet -->
-                        <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
-                            <DockPanel>
-                                <TextBox DockPanel.Dock="Left" Width="72" Text="{Binding SumaPrepoctu, UpdateSourceTrigger=PropertyChanged}"
-                                         TextAlignment="Right" ToolTip="Suma na prepočet" />
-                                <ComboBox DockPanel.Dock="Left" Width="76" Margin="4,0,0,0" ItemsSource="{Binding MenyPrepoctu}" SelectedItem="{Binding MenaZ}" />
-                                <Button DockPanel.Dock="Left" Style="{StaticResource MaleTlacidlo}" Command="{Binding VymenitMenyCommand}" ToolTip="Vymeniť meny">
-                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE8AB;" FontSize="12" />
-                                </Button>
-                                <ComboBox DockPanel.Dock="Left" Width="76" Margin="4,0,0,0" ItemsSource="{Binding MenyPrepoctu}" SelectedItem="{Binding MenaNa}" />
-                                <TextBlock Text="{Binding VysledokPrepoctu}" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"
-                                           TextTrimming="CharacterEllipsis" ToolTip="{Binding VysledokPrepoctu}" />
-                            </DockPanel>
-                        </StackPanel>
+                        <Grid DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBox Text="{Binding SumaPrepoctu, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Right" ToolTip="Suma na prepočet" />
+                            <ComboBox Grid.Column="1" Width="78" Margin="4,0,0,0" ItemsSource="{Binding MenyPrepoctu}" SelectedItem="{Binding MenaZ}" />
+                            <Button Grid.Column="2" Style="{StaticResource MaleTlacidlo}" Command="{Binding VymenitMenyCommand}" ToolTip="Vymeniť meny">
+                                <TextBlock Style="{StaticResource Ikona}" Text="&#xE8AB;" FontSize="12" />
+                            </Button>
+                            <ComboBox Grid.Column="3" Width="78" Margin="4,0,0,0" ItemsSource="{Binding MenyPrepoctu}" SelectedItem="{Binding MenaNa}" />
+                            <TextBlock Grid.Row="1" Grid.ColumnSpan="4" Text="{Binding VysledokPrepoctu, StringFormat='= {0}'}" FontWeight="SemiBold" FontSize="15"
+                                       Margin="0,6,0,0" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"
+                                       Visibility="{Binding VysledokPrepoctu, Converter={StaticResource NieJePrazdne}}" />
+                        </Grid>
 
                         <TextBlock DockPanel.Dock="Bottom" Text="{Binding KurzyStav}" Style="{StaticResource Popis}" Margin="0,4,0,0"
                                    Visibility="{Binding KurzyStav, Converter={StaticResource NieJePrazdne}}" />

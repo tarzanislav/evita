@@ -36,6 +36,11 @@ public static class PrekladacXaml
 
     private static void PriNacitani(object sender, RoutedEventArgs e)
     {
+        if (sender is DatePicker datum)
+        {
+            NastavVodoznak(datum);
+        }
+
         if (Preklad.JeSlovencina || sender is not FrameworkElement prvok)
         {
             return;
@@ -48,6 +53,27 @@ public static class PrekladacXaml
         catch (Exception)
         {
             // preklad nesmie zastaviť zobrazenie okna
+        }
+    }
+
+    /// <summary>Text „Vyberte dátum“ v prázdnom poli dátumu (WPF ho má len v niektorých jazykoch).</summary>
+    private static void NastavVodoznak(DatePicker datum)
+    {
+        try
+        {
+            datum.ApplyTemplate();
+            if (datum.Template?.FindName("PART_TextBox", datum) is DatePickerTextBox pole)
+            {
+                pole.ApplyTemplate();
+                if (pole.Template?.FindName("PART_Watermark", pole) is ContentControl vodoznak)
+                {
+                    vodoznak.Content = Preklad.T("Vyberte dátum");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // pole dátumu funguje aj bez vlastného textu
         }
     }
 

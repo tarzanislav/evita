@@ -8,7 +8,7 @@
     </UserControl.InputBindings>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="360" />
+            <ColumnDefinition Width="330" />
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>

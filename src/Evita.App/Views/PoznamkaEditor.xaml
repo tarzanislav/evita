@@ -18,17 +18,17 @@
             <ItemsControl ItemsSource="{Binding Farby}" VerticalAlignment="Center">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
+                        <WrapPanel />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Button Width="26" Height="26" Margin="0,0,6,0" Padding="0" Cursor="Hand"
+                        <Button Width="22" Height="22" Margin="0,2,5,2" Padding="0" Cursor="Hand"
                                 Command="{Binding DataContext.ZvolFarbuCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border CornerRadius="13" Background="{Binding Converter={StaticResource FarbaNaStetec}}"
+                                    <Border CornerRadius="11" Background="{Binding Converter={StaticResource FarbaNaStetec}}"
                                             BorderThickness="1" BorderBrush="#40000000" />
                                 </ControlTemplate>
                             </Button.Template>
@@ -42,45 +42,34 @@
         <Border DockPanel.Dock="Bottom" Style="{StaticResource Karta}" Padding="12,8,12,10" Margin="0,10,0,0">
             <StackPanel>
                 <TextBlock Text="Prepojenie (nepovinné)" FontWeight="SemiBold" />
-                <Grid Margin="0,4,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                <TextBlock Text="Deň v kalendári" Style="{StaticResource Stitok}" Margin="0,8,0,3" />
+                <WrapPanel>
+                    <DatePicker SelectedDate="{Binding Datum}" Width="150" Margin="0,0,6,0" />
+                    <Button Content="Dnes" Padding="10,4" Margin="0,0,6,0" Command="{Binding DnesCommand}" />
+                    <Button Padding="8,4" Command="{Binding ZrusitDatumCommand}" ToolTip="Zrušiť prepojenie s dňom"
+                            Visibility="{Binding MaDatum, Converter={StaticResource BoolNaViditelnost}}">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE711;" FontSize="11" />
+                    </Button>
+                </WrapPanel>
 
-                    <TextBlock Text="Deň v kalendári" Style="{StaticResource Stitok}" Margin="0,8,12,0" VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,6,0,0">
-                        <DatePicker SelectedDate="{Binding Datum}" Width="150" />
-                        <Button Content="Dnes" Margin="6,0,0,0" Padding="10,4" Command="{Binding DnesCommand}" />
-                        <Button Margin="6,0,0,0" Padding="8,4" Command="{Binding ZrusitDatumCommand}" ToolTip="Zrušiť prepojenie s dňom"
-                                Visibility="{Binding MaDatum, Converter={StaticResource BoolNaViditelnost}}">
-                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE711;" FontSize="11" />
-                        </Button>
-                    </StackPanel>
+                <TextBlock Text="Položka (prírastkové číslo)" Style="{StaticResource Stitok}" Margin="0,8,0,3" />
+                <DockPanel>
+                    <TextBox Width="80" Text="{Binding PolozkaCislo, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button DockPanel.Dock="Right" Content="Otvoriť…" Padding="10,4" Margin="6,0,0,0" Command="{Binding OtvorPolozkuCommand}"
+                            Visibility="{Binding MaPolozku, Converter={StaticResource BoolNaViditelnost}}" />
+                    <TextBlock Text="{Binding PolozkaText}" Style="{StaticResource Popis}" FontSize="13" Margin="10,0,0,0"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" ToolTip="{Binding PolozkaText}" />
+                </DockPanel>
 
-                    <TextBlock Grid.Row="1" Text="Položka (prírastkové číslo)" Style="{StaticResource Stitok}" Margin="0,8,12,0" VerticalAlignment="Center" />
-                    <DockPanel Grid.Row="1" Grid.Column="1" Margin="0,6,0,0">
-                        <TextBox Width="90" Text="{Binding PolozkaCislo, UpdateSourceTrigger=PropertyChanged}" />
-                        <Button DockPanel.Dock="Right" Content="Otvoriť…" Padding="10,4" Margin="6,0,0,0" Command="{Binding OtvorPolozkuCommand}"
-                                Visibility="{Binding MaPolozku, Converter={StaticResource BoolNaViditelnost}}" />
-                        <TextBlock Text="{Binding PolozkaText}" Style="{StaticResource Popis}" FontSize="13" Margin="10,0,0,0"
-                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
-                    </DockPanel>
-
-                    <TextBlock Grid.Row="2" Text="Udalosť v kalendári" Style="{StaticResource Stitok}" Margin="0,8,12,0" VerticalAlignment="Center" />
-                    <DockPanel Grid.Row="2" Grid.Column="1" Margin="0,6,0,0">
-                        <Button DockPanel.Dock="Right" Content="Otvoriť…" Padding="10,4" Margin="6,0,0,0" Command="{Binding OtvorUdalostCommand}"
-                                Visibility="{Binding MaUdalost, Converter={StaticResource BoolNaViditelnost}}" />
-                        <ComboBox ItemsSource="{Binding Udalosti}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
-                                  SelectedValue="{Binding UdalostId}" IsTextSearchEnabled="True" TextSearch.TextPath="Nazov" />
-                    </DockPanel>
-                </Grid>
-                <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0">
+                <TextBlock Text="Udalosť v kalendári" Style="{StaticResource Stitok}" Margin="0,8,0,3" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Otvoriť…" Padding="10,4" Margin="6,0,0,0" Command="{Binding OtvorUdalostCommand}"
+                            Visibility="{Binding MaUdalost, Converter={StaticResource BoolNaViditelnost}}" />
+                    <ComboBox ItemsSource="{Binding Udalosti}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                              SelectedValue="{Binding UdalostId}" IsTextSearchEnabled="True" TextSearch.TextPath="Nazov" />
+                </DockPanel>
+                <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0"
+                           Visibility="{Binding JeNova, Converter={StaticResource InverzBoolNaViditelnost}}">
                     <Run Text="Vytvorená:" /> <Run Text="{Binding Vytvorene, Mode=OneWay}" />
                     <Run Text="   Zmenená:" /> <Run Text="{Binding ZmeneneText, Mode=OneWay}" />
                 </TextBlock>

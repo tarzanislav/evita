@@ -31,7 +31,7 @@
                             <Grid>
                                 <TextBox x:Name="Pole" FontSize="18" Padding="10,8" pom:CitackaKodov.SkenovaciePole="True"
                                          ToolTip="Štítok EviTA, inventárne alebo sériové číslo, prírastkové číslo alebo EAN výrobku" />
-                                <TextBlock Text="Naskenujte kód čítačkou alebo ho napíšte a stlačte Enter" Margin="14,0,0,0" FontSize="14"
+                                <TextBlock Text="Naskenujte alebo napíšte kód a stlačte Enter" Margin="14,0,0,0" FontSize="14"
                                            VerticalAlignment="Center" IsHitTestVisible="False" TextTrimming="CharacterEllipsis"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                            Visibility="{Binding Text, ElementName=Pole, Converter={StaticResource NieJePrazdne}, ConverterParameter=opacne}" />
@@ -210,10 +210,16 @@
                                 <TextBlock Style="{StaticResource Ikona}" Text="&#xE713;" Margin="0,0,10,0" />
                                 <TextBlock Text="Nastavenia skenovania" Style="{StaticResource Podnadpis}" Margin="0" />
                             </StackPanel>
-                            <CheckBox Content="Zvuk po naskenovaní" IsChecked="{Binding Zvuk}" />
-                            <CheckBox Content="Po naskenovaní otvoriť kartu položky" IsChecked="{Binding OtvoritKartu}" />
-                            <CheckBox Content="Rozpoznať čítačku kódov v celom programe" IsChecked="{Binding CitackaVsade}"
-                                      ToolTip="Ak je vypnuté, kódy z čítačky sa spracujú len v poli Naskenujte kód a v okne inventúry." />
+                            <CheckBox IsChecked="{Binding Zvuk}">
+                                <TextBlock Text="Zvuk po naskenovaní" TextWrapping="Wrap" />
+                            </CheckBox>
+                            <CheckBox IsChecked="{Binding OtvoritKartu}">
+                                <TextBlock Text="Po naskenovaní otvoriť kartu položky" TextWrapping="Wrap" />
+                            </CheckBox>
+                            <CheckBox IsChecked="{Binding CitackaVsade}"
+                                      ToolTip="Ak je vypnuté, kódy z čítačky sa spracujú len v poli Naskenujte kód a v okne inventúry.">
+                                <TextBlock Text="Rozpoznať čítačku kódov v celom programe" TextWrapping="Wrap" />
+                            </CheckBox>
                             <Grid Margin="0,4,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="140" />

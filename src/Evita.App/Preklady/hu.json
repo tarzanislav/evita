@@ -1786,5 +1786,14 @@
  "… a ďalších {0} odchýlok od popisu formátu.": "… és további {0} eltérés a formátumleírástól.",
  "‹ Späť": "‹ Vissza",
  "▲ Vyššie": "▲ Fel",
- "▼ Nižšie": "▼ Le"
+ "▼ Nižšie": "▼ Le",
+ "Stránku otvorte v prehliadači (napr. Chrome). Vnútorný prehliadač aplikácie Skener posiela z fotoaparátu len malý náhľad, z ktorého sa kód prečítať nedá.": "Nyissa meg az oldalt böngészőben (pl. Chrome). A Szkenner alkalmazás beépített böngészője csak kis előnézetet küld a kamerából, amelyből a kód nem olvasható.",
+ "Fotka je vo formáte {0}, ktorý Windows bez doplnku neotvorí. Vo fotoaparáte mobilu vypnite formát HEIF (vysoká účinnosť) a odfoťte kód znova.": "A fénykép {0} formátumú, amelyet a Windows kiegészítő nélkül nem nyit meg. Kapcsolja ki a HEIF (nagy hatékonyságú) formátumot a telefon kamerájában, és fényképezze le újra.",
+ "Súbor sa nedá otvoriť ako obrázok ({0}, {1} kB).": "A fájl nem nyitható meg képként ({0}, {1} kB).",
+ "Fotku sa nepodarilo spracovať: {0}": "A fényképet nem sikerült feldolgozni: {0}",
+ "Počítač dostal len malý náhľad fotky ({0}×{1} bodov), na ňom sa kód prečítať nedá. Otvorte adresu z QR kódu v prehliadači Chrome (nie v aplikácii Skener) a odfoťte kód znova.": "A számítógép csak a fénykép kis előnézetét kapta meg ({0}×{1} képpont), ebből a kód nem olvasható. Nyissa meg a QR-kód címét a Chrome böngészőben (ne a Szkenner alkalmazásban), és fényképezze le újra.",
+ "(Fotka: {0}.)": "(Fénykép: {0}.)",
+ "prehliadač fotku neotvorí, posiela sa originál": "a böngésző nem tudja megnyitni a fényképet, az eredeti kerül elküldésre",
+ "Stránka je otvorená vo vnútornom prehliadači aplikácie (napr. Skener), ktorý z fotoaparátu posiela len malý náhľad – kód sa z neho prečítať nedá.": "Az oldal egy alkalmazás beépített böngészőjében van megnyitva (pl. Szkenner), amely csak kis előnézetet küld a kamerából – ebből a kód nem olvasható.",
+ "Otvoriť v prehliadači Chrome": "Megnyitás Chrome böngészőben"
 }

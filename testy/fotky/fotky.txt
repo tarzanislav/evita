@@ -1,5 +1,7 @@
-# Skutočné fotky z mobilu na samotest čítania kódov (Mobil ako skener).
-# súbor | kód, ktorý sa musí na fotke nájsť
+# Fotky na samotest čítania kódov (Mobil ako skener): súbor | kód, ktorý sa musí na fotke nájsť
+# skutočné fotky krabíc z mobilu Redmi Note 9 Pro (3472×4640, JPEG)
 6972470564259__krabica.jpg | 6972470564259
 9120072379208__krabica.jpg | 9120072379208
 eaton_3s_mini.jpg | http://eaton.eu/3SMini
+# simulovaná fotka: malý, mierne rozmazaný EAN na kartóne (prečíta sa až po zaostrení)
+simulovana_6972470564259_zdialky.jpg | 6972470564259

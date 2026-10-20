@@ -1786,5 +1786,14 @@
  "… a ďalších {0} odchýlok od popisu formátu.": "… и ещё отклонений от описания формата: {0}.",
  "‹ Späť": "‹ Назад",
  "▲ Vyššie": "▲ Выше",
- "▼ Nižšie": "▼ Ниже"
+ "▼ Nižšie": "▼ Ниже",
+ "Stránku otvorte v prehliadači (napr. Chrome). Vnútorný prehliadač aplikácie Skener posiela z fotoaparátu len malý náhľad, z ktorého sa kód prečítať nedá.": "Откройте страницу в браузере (например, Chrome). Встроенный браузер приложения «Сканер» передаёт с камеры лишь маленькое превью, с которого код прочитать нельзя.",
+ "Fotka je vo formáte {0}, ktorý Windows bez doplnku neotvorí. Vo fotoaparáte mobilu vypnite formát HEIF (vysoká účinnosť) a odfoťte kód znova.": "Фото в формате {0}, который Windows без дополнения не открывает. Отключите в камере телефона формат HEIF (высокая эффективность) и сфотографируйте код снова.",
+ "Súbor sa nedá otvoriť ako obrázok ({0}, {1} kB).": "Файл не удаётся открыть как изображение ({0}, {1} кБ).",
+ "Fotku sa nepodarilo spracovať: {0}": "Не удалось обработать фото: {0}",
+ "Počítač dostal len malý náhľad fotky ({0}×{1} bodov), na ňom sa kód prečítať nedá. Otvorte adresu z QR kódu v prehliadači Chrome (nie v aplikácii Skener) a odfoťte kód znova.": "Компьютер получил лишь маленькое превью фото ({0}×{1} точек), с него код прочитать нельзя. Откройте адрес из QR-кода в браузере Chrome (не в приложении «Сканер») и сфотографируйте код снова.",
+ "(Fotka: {0}.)": "(Фото: {0}.)",
+ "prehliadač fotku neotvorí, posiela sa originál": "браузер не может открыть фото, отправляется оригинал",
+ "Stránka je otvorená vo vnútornom prehliadači aplikácie (napr. Skener), ktorý z fotoaparátu posiela len malý náhľad – kód sa z neho prečítať nedá.": "Страница открыта во встроенном браузере приложения (например, «Сканер»), который передаёт с камеры лишь маленькое превью – код с него прочитать нельзя.",
+ "Otvoriť v prehliadači Chrome": "Открыть в Chrome"
 }

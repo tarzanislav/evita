@@ -11,6 +11,8 @@
                 <TextBlock Text="Mobil ako skener" Style="{StaticResource Podnadpis}" FontSize="20" Margin="0" />
                 <TextBlock Style="{StaticResource Popis}" FontSize="13" Margin="0,4,12,0"
                            Text="Naskenujte QR kód fotoaparátom mobilu a otvorte stránku. Potom kód na zariadení odfoťte (alebo napíšte) – počítač ho prečíta a spracuje ako kód z čítačky. Mobil musí byť v rovnakej sieti (Wi-Fi) ako počítač." />
+                <TextBlock Style="{StaticResource Popis}" FontSize="13" Margin="0,4,12,0" FontWeight="SemiBold"
+                           Text="Stránku otvorte v prehliadači (napr. Chrome). Vnútorný prehliadač aplikácie Skener posiela z fotoaparátu len malý náhľad, z ktorého sa kód prečítať nedá." />
             </StackPanel>
         </DockPanel>
 

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Windows.Media;
@@ -33,18 +32,14 @@ internal static partial class Samotest
             var original = File.ReadAllBytes(Path.Combine(priecinok, subor));
             Krok($"fotka {subor}: {original.Length} B, {PopisObrazka(original)}");
 
-            // presne to, čo pošle stránka v mobile: zmenšenie na 2400 bodov a JPEG s kvalitou 92
-            var zMobilu = AkoZMobilu(original, 2400, 92);
-            Krok($"fotka {subor} ako z mobilu: {zMobilu.Length} B, {PopisObrazka(zMobilu)}");
-
-            foreach (var (nazov, data) in new[] { ("originál", original), ("z mobilu", zMobilu) })
+            // originál (prehliadač fotku nevie zmenšiť) a presne to, čo pošle stránka v mobile: najviac 3200 bodov, JPEG 92
+            foreach (var (nazov, data) in new[] { ("originál", original), ("z mobilu", AkoZMobilu(original, 3200, 92)) })
             {
-                var cas = Stopwatch.StartNew();
                 try
                 {
-                    var kody = CiarovyKod.PrecitajVsetkyZObrazka(data);
-                    Krok($"fotka {subor} ({nazov}): {cas.ElapsedMilliseconds} ms, kódy: {string.Join(", ", kody)}");
-                    if (!kody.Contains(kod))
+                    var citanie = CiarovyKod.PrecitajFotku(data);
+                    Krok($"fotka {subor} ({nazov}): {citanie.Popis}, kódy: {string.Join(", ", citanie.Kody)}");
+                    if (!citanie.Kody.Contains(kod))
                     {
                         chyby.Add($"{subor} ({nazov}) – chýba {kod}");
                     }
@@ -55,52 +50,68 @@ internal static partial class Samotest
                     chyby.Add($"{subor} ({nazov}) – {ex.GetType().Name}: {ex.Message}");
                 }
             }
-
-            // priamo surové body BGRA (bez zmenšenia) – oddelí chybu dekódovania od chyby čítačky
-            try
-            {
-                var (bgra, sirka, vyska) = BodyBgra(zMobilu);
-                long sucet = 0;
-                for (var i = 0; i < bgra.Length; i += 4)
-                {
-                    sucet += bgra[i] + bgra[i + 1] + bgra[i + 2];
-                }
-
-                Krok($"fotka {subor}: BGRA {sirka}×{vyska}, priemerný jas {sucet / 3.0 / (bgra.Length / 4):0.0}, "
-                     + $"kódy: {string.Join(", ", CiarovyKod.PrecitajVsetky(bgra, sirka, vyska))}");
-            }
-            catch (Exception ex)
-            {
-                Krok($"fotka {subor}: BGRA VÝNIMKA {ex}");
-            }
         }
 
-        // celá cesta cez server Mobil ako skener (POST /foto)
+        Over(chyby.Count == 0, $"fotky z mobilu: všetky kódy sa prečítali{(chyby.Count == 0 ? "" : " – " + string.Join("; ", chyby))}");
+
+        // celá cesta cez server Mobil ako skener (POST /foto) vrátane hlásení pri neúspechu
         var server = new MobilnySkener(Dispatcher.CurrentDispatcher);
         try
         {
             server.Spusti(SkenovanieService.PortMobilu());
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+            string Posli(byte[] data, string? info = null)
+            {
+                var obsah = new ByteArrayContent(data);
+                obsah.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+                using var poziadavka = new HttpRequestMessage(HttpMethod.Post, $"http://127.0.0.1:{server.Port}/foto?k={server.Kluc}") { Content = obsah };
+                if (info is not null)
+                {
+                    poziadavka.Headers.Add("X-Evita-Foto", info);
+                }
+
+                return System.Text.RegularExpressions.Regex.Unescape(Cakaj(Cakaj(http.SendAsync(poziadavka)).Content.ReadAsStringAsync()));
+            }
+
+            var stranka = Cakaj(http.GetStringAsync($"http://127.0.0.1:{server.Port}/?k={server.Kluc}"));
+            Over(stranka.Contains("X-Evita-Foto") && stranka.Contains("intent://") && stranka.Contains("package=com.android.chrome"),
+                "mobil: stránka posiela popis fotky a ponúkne otvorenie v Chrome");
+
             foreach (var (subor, kod) in zoznam)
             {
-                var zMobilu = AkoZMobilu(File.ReadAllBytes(Path.Combine(priecinok, subor)), 2400, 92);
-                var obsah = new ByteArrayContent(zMobilu);
-                obsah.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-                var odpoved = Cakaj(http.PostAsync($"http://127.0.0.1:{server.Port}/foto?k={server.Kluc}", obsah));
-                var json = Cakaj(odpoved.Content.ReadAsStringAsync());
+                var json = Posli(AkoZMobilu(File.ReadAllBytes(Path.Combine(priecinok, subor)), 3200, 92), "image/jpeg 4000 kB, 3472x4640 -> 2394x3200 900 kB");
                 Krok($"fotka {subor} cez /foto: {json}");
-                if (!json.Contains(kod.Replace("/", "\\/")) && !json.Contains(kod))
-                {
-                    chyby.Add($"{subor} cez /foto – chýba {kod}");
-                }
+                Over(json.Contains($"\"kod\":\"{kod}\""), $"mobil: kód z fotky {subor} ({kod})");
             }
+
+            // náhľad z vnútorného prehliadača aplikácie (MIUI Skener): 160 × 120 bodov
+            var nahlad = AkoZMobilu(File.ReadAllBytes(Path.Combine(priecinok, zoznam[0].Subor)), 160, 80);
+            var diagnostika = Path.Combine(MobilnySkener.PriecinokDiagnostiky, "necitatelna_fotka.txt");
+            if (File.Exists(diagnostika))
+            {
+                File.Delete(diagnostika);
+            }
+
+            var malyJson = Posli(nahlad, "image/jpeg 9 kB, 120x160 -> 120x160 4 kB");
+            Over(malyJson.Contains("\"ok\":false") && malyJson.Contains("náhľad") && malyJson.Contains("Chrome") && malyJson.Contains("120×160"),
+                $"mobil: malý náhľad fotky – rada otvoriť stránku v Chrome ({malyJson})");
+            Over(File.Exists(Path.Combine(MobilnySkener.PriecinokDiagnostiky, "necitatelna_fotka.jpg"))
+                 && File.ReadAllText(diagnostika).Contains("120x160 -> 120x160"),
+                "mobil: nečitateľná fotka je odložená na rozbor aj s popisom z mobilu");
+
+            var heic = new byte[64];
+            System.Text.Encoding.ASCII.GetBytes("\0\0\0\u0018ftypheic").CopyTo(heic, 0);
+            var heicJson = Posli(heic);
+            Over(heicJson.Contains("\"ok\":false") && heicJson.Contains("HEIC") && heicJson.Contains("HEIF"), $"mobil: fotka HEIC – jasné hlásenie ({heicJson})");
+            var zlyJson = Posli(System.Text.Encoding.ASCII.GetBytes("toto nie je obrazok"));
+            Over(zlyJson.Contains("\"ok\":false") && zlyJson.Contains("nedá otvoriť"), $"mobil: poškodený súbor – hlásenie s príčinou ({zlyJson})");
         }
         finally
         {
             server.Dispose();
         }
 
-        Over(chyby.Count == 0, $"fotky z mobilu: všetky kódy sa prečítali{(chyby.Count == 0 ? "" : " – " + string.Join("; ", chyby))}");
+        Krok("fotky z mobilu v poriadku");
     }
 
     private static string PopisObrazka(byte[] subor)
@@ -146,15 +157,5 @@ internal static partial class Samotest
         using var vystup = new MemoryStream();
         koder.Save(vystup);
         return vystup.ToArray();
-    }
-
-    private static (byte[] Data, int Sirka, int Vyska) BodyBgra(byte[] subor)
-    {
-        using var prud = new MemoryStream(subor);
-        var snimka = BitmapFrame.Create(prud, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.OnLoad);
-        var bgra = new FormatConvertedBitmap(snimka, PixelFormats.Bgra32, null, 0);
-        var data = new byte[bgra.PixelWidth * bgra.PixelHeight * 4];
-        bgra.CopyPixels(data, bgra.PixelWidth * 4, 0);
-        return (data, bgra.PixelWidth, bgra.PixelHeight);
     }
 }

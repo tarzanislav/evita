@@ -1786,5 +1786,14 @@
  "… a ďalších {0} odchýlok od popisu formátu.": "… 以及另外 {0} 处与格式说明不符。",
  "‹ Späť": "‹ 上一步",
  "▲ Vyššie": "▲ 上移",
- "▼ Nižšie": "▼ 下移"
+ "▼ Nižšie": "▼ 下移",
+ "Stránku otvorte v prehliadači (napr. Chrome). Vnútorný prehliadač aplikácie Skener posiela z fotoaparátu len malý náhľad, z ktorého sa kód prečítať nedá.": "请在浏览器（例如 Chrome）中打开页面。“扫一扫”等应用的内置浏览器只会从相机发送小预览图，无法从中读取代码。",
+ "Fotka je vo formáte {0}, ktorý Windows bez doplnku neotvorí. Vo fotoaparáte mobilu vypnite formát HEIF (vysoká účinnosť) a odfoťte kód znova.": "照片为 {0} 格式，Windows 未安装扩展时无法打开。请在手机相机中关闭 HEIF（高效）格式后重新拍摄。",
+ "Súbor sa nedá otvoriť ako obrázok ({0}, {1} kB).": "无法将文件作为图像打开（{0}，{1} kB）。",
+ "Fotku sa nepodarilo spracovať: {0}": "无法处理照片：{0}",
+ "Počítač dostal len malý náhľad fotky ({0}×{1} bodov), na ňom sa kód prečítať nedá. Otvorte adresu z QR kódu v prehliadači Chrome (nie v aplikácii Skener) a odfoťte kód znova.": "电脑只收到照片的小预览图（{0}×{1} 像素），无法从中读取代码。请在 Chrome 浏览器（而不是扫描应用）中打开二维码中的地址，然后重新拍摄。",
+ "(Fotka: {0}.)": "（照片：{0}。）",
+ "prehliadač fotku neotvorí, posiela sa originál": "浏览器无法打开照片，将发送原图",
+ "Stránka je otvorená vo vnútornom prehliadači aplikácie (napr. Skener), ktorý z fotoaparátu posiela len malý náhľad – kód sa z neho prečítať nedá.": "页面在应用的内置浏览器（例如扫描应用）中打开，它只会从相机发送小预览图——无法从中读取代码。",
+ "Otvoriť v prehliadači Chrome": "在 Chrome 中打开"
 }

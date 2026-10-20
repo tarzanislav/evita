@@ -45,7 +45,7 @@
                     <TextBlock Text="Druh" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                         <RadioButton GroupName="druh" Content="udalosť" IsChecked="{Binding JeUdalost}" />
-                        <RadioButton GroupName="druh" Content="úloha (dá sa odškrtnúť)" IsChecked="{Binding JeUloha}" Margin="12,0,0,0" />
+                        <RadioButton GroupName="druh" Content="úloha" ToolTip="Úlohu možno označiť ako hotovú; nesplnená sa ukáže medzi úlohami po termíne." IsChecked="{Binding JeUloha}" Margin="12,0,0,0" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

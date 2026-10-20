@@ -191,7 +191,7 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         var od = Pondelok(AktualnyDatum);
         var po = od.AddDays(6);
         DniTyzdna = VytvorDni(od, po, null);
-        Titulok = $"{od:d. M.} – {po.ToString("d. MMMM yyyy", Sk.Kultura)}  ·  {KalendarService.CisloTyzdna(od)}. týždeň";
+        Titulok = $"{od:d. M.} – {po:d. M. yyyy} · {KalendarService.CisloTyzdna(od)}. týždeň";
         Suhrn = $"{DniTyzdna.SelectMany(d => d.Udalosti).Select(u => u.Kluc).Distinct().Count()} udalostí a termínov v týždni.";
     }
 

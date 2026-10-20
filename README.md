@@ -35,6 +35,15 @@ Kontrolu možno vypnúť alebo spustiť ručne v časti *Servis → Aktualizáci
 Každá verzia má na GitHube vlastné vydanie (napr. `v0.2.7`) s inštalátorom `EviTA_Setup_0.2.7.exe`
 a zdrojovým kódom `evita-0.2.7.zip` a `evita-0.2.7.tar.gz`.
 
+## Pracovný kalendár
+
+Menu *Kalendár* ukazuje mesiac, týždeň alebo zoznam udalostí. Víkendy a dni pracovného pokoja sú farebne odlíšené,
+pri každom dni sú meniny a sviatky. Dvojklikom na deň pridáte udalosť alebo úlohu (typ s farbou, čas alebo celý deň
+či obdobie cez viac dní, opakovanie, pripomienka, naviazanie na položku, miestnosť alebo osobu, stav). Koniec záruky,
+ďalšia revízia, pravidelná záloha a ročná inventúra sa do kalendára dostanú automaticky (dajú sa vypnúť v nastaveniach
+kalendára). Pri spustení programu sa zobrazí prehľad dňa s úlohami po termíne a pripomienkami. Kalendár sa dá
+vytlačiť (mesiac na strane alebo zoznam) a uložiť ako `.ics` pre Outlook alebo Google Kalendár.
+
 ## Tlač a zostavy
 
 V menu *Tlač a zostavy* vyberiete zostavu, nastavíte obdobie, zoskupenie, stĺpce a ich poradie a orientáciu A4.
@@ -66,7 +75,10 @@ Odinštalovanie programu databázu ani zálohy nemaže.
 - [x] **Etapa 5 – Tlač a zostavy:** súhrnný zoznam, vyfiltrované položky, po miestnostiach (inventúrny zoznam s podpismi),
       po kategóriách, podľa pridelenia (zverená technika s podpisom), prírastkový zoznam, podľa dátumu pridania,
       vyradené položky, história zmien; náhľad, tlač a PDF; hlavička s názvom organizácie a logom
-- [ ] Etapa 6 – Kalendár
+- [x] **Etapa 6 – Pracovný kalendár:** mesiac, týždeň a zoznam so sviatkami, menami a číslom týždňa; udalosti a úlohy
+      s typmi a farbami, opakovaním, pripomienkou a naviazaním na položku, miestnosť alebo osobu; automatické termíny
+      (záruky, revízie, zálohy, inventúra); prehľad dňa pri spustení; upozornenie pred udalosťou; panel na dashboarde;
+      záložka Udalosti v karte položky; tlač kalendára a export `.ics` pre Outlook a Google Kalendár
 - [ ] Etapa 7 – Kalendárium (citáty, výročia)
 - [ ] Etapa 8 – Skenovanie a údaje z internetu
 - [ ] Etapa 9 – Dokončenie

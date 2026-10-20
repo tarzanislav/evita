@@ -38,7 +38,7 @@
                             <Run Text="{Binding CasText, Mode=OneWay}" />
                             <Run Text="·" />
                             <Run Text="{Binding Typ, Mode=OneWay}" />
-                            <Run Text="{Binding Naviazanie, Mode=OneWay, StringFormat='· {0}'}" />
+                            <Run Text="{Binding Naviazanie, Mode=OneWay, StringFormat='· {0}', TargetNullValue=''}" />
                         </TextBlock>
                     </StackPanel>
                 </DockPanel>

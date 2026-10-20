@@ -83,6 +83,46 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+        <!-- udalosť v stĺpci týždňa (úzka) -->
+        <DataTemplate x:Key="UdalostTyzden">
+            <Button Template="{StaticResource BezRamceka}" Cursor="Hand" Margin="0,0,0,5"
+                    Command="{Binding DataContext.OtvorUdalostCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}">
+                <Button.ToolTip>
+                    <StackPanel MaxWidth="320">
+                        <TextBlock Text="{Binding Nazov}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding CasText}" />
+                        <TextBlock>
+                            <Run Text="{Binding Typ, Mode=OneWay}" /> <Run Text="·" /> <Run Text="{Binding DruhText, Mode=OneWay}" />
+                            <Run Text="·" /> <Run Text="{Binding StavText, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Text="{Binding Naviazanie}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Popis}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Button.ToolTip>
+                <Border x:Name="Ramik" CornerRadius="4" Padding="6,4" BorderThickness="3,0,0,0"
+                        BorderBrush="{Binding Farba, Converter={StaticResource FarbaNaStetec}}"
+                        Background="{Binding Farba, Converter={StaticResource FarbaNaStetec}, ConverterParameter=22}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding CasText}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="Text" Text="{Binding Nazov}" FontWeight="SemiBold" FontSize="12.5" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Naviazanie}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Visibility="{Binding Naviazanie, Converter={StaticResource NieJePrazdne}}" />
+                    </StackPanel>
+                </Border>
+            </Button>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Stav}" Value="Hotovo">
+                    <Setter TargetName="Ramik" Property="Opacity" Value="0.6" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Stav}" Value="Zrusene">
+                    <Setter TargetName="Ramik" Property="Opacity" Value="0.5" />
+                    <Setter TargetName="Text" Property="TextDecorations" Value="Strikethrough" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
         <!-- bunka dňa v mesiaci -->
         <DataTemplate x:Key="DenMesiaca">
             <Border x:Name="Bunka" BorderThickness="0,0,1,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
@@ -161,14 +201,21 @@
         </DockPanel>
 
         <!-- navigácia -->
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                 <RadioButton Style="{StaticResource Rezim}" GroupName="rezim" Content="Mesiac" IsChecked="{Binding JeMesiac}" />
                 <RadioButton Style="{StaticResource Rezim}" GroupName="rezim" Content="Týždeň" IsChecked="{Binding JeTyzden}" />
                 <RadioButton Style="{StaticResource Rezim}" GroupName="rezim" Content="Zoznam" IsChecked="{Binding JeZoznam}" />
                 <TextBlock Text="Skočiť na" VerticalAlignment="Center" Margin="14,0,6,0" />
                 <DatePicker SelectedDate="{Binding SkocNa}" Width="140" />
             </StackPanel>
+            <TextBlock Grid.Column="1" Text="{Binding Titulok}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"
+                       Margin="14,0,12,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Titulok}" />
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Padding="10,5" Command="{Binding PredchadzajuceCommand}" ToolTip="Predchádzajúce">
                     <TextBlock Style="{StaticResource Ikona}" Text="&#xE76B;" FontSize="13" />
@@ -177,9 +224,8 @@
                 <Button Padding="10,5" Command="{Binding NasledujuceCommand}" ToolTip="Nasledujúce">
                     <TextBlock Style="{StaticResource Ikona}" Text="&#xE76C;" FontSize="13" />
                 </Button>
-                <TextBlock Text="{Binding Titulok}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Margin="16,0,0,0" />
             </StackPanel>
-        </DockPanel>
+        </Grid>
 
         <!-- legenda a súhrn -->
         <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
@@ -277,7 +323,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border x:Name="Karta" Style="{StaticResource Karta}" Margin="0,0,8,0" Padding="10,8">
+                        <Border x:Name="Karta" Style="{StaticResource Karta}" Margin="0,0,6,0" Padding="7,8">
                             <Border.InputBindings>
                                 <MouseBinding Gesture="LeftDoubleClick"
                                               Command="{Binding DataContext.NovaUdalostCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -295,7 +341,7 @@
                                         Command="{Binding DataContext.NovaUdalostCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}" />
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                    <ItemsControl ItemsSource="{Binding Udalosti}" ItemTemplate="{StaticResource UdalostRiadok}" />
+                                    <ItemsControl ItemsSource="{Binding Udalosti}" ItemTemplate="{StaticResource UdalostTyzden}" />
                                 </ScrollViewer>
                             </DockPanel>
                         </Border>

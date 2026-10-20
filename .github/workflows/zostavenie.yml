@@ -1,0 +1,66 @@
+name: Zostavenie EviTA
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zostavenie
+  cancel-in-progress: true
+
+jobs:
+  zostavenie:
+    runs-on: windows-latest
+    steps:
+      - name: Stiahnuť zdrojový kód
+        uses: actions/checkout@v5
+
+      - name: Nainštalovať .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Určiť verziu
+        id: verzia
+        shell: pwsh
+        run: |
+          $v = "0.1.${{ github.run_number }}"
+          "cislo=$v" >> $env:GITHUB_OUTPUT
+          Write-Host "Verzia: $v"
+
+      - name: Zostaviť program
+        shell: pwsh
+        run: >
+          dotnet publish src/Evita.App/Evita.App.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:Version=${{ steps.verzia.outputs.cislo }}
+          -o publish
+
+      - name: Zostaviť inštalátor
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          & $iscc "/DAppVersion=${{ steps.verzia.outputs.cislo }}" "/DSourceDir=$PWD\publish" installer\evita.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Zverejniť najnovšiu verziu
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $verzia = "${{ steps.verzia.outputs.cislo }}"
+          gh release delete najnovsia --yes --cleanup-tag 2>$null
+          $global:LASTEXITCODE = 0
+          $poznamky = "Automaticky zostavená verzia $verzia z $(Get-Date -Format 'd. M. yyyy H:mm').`n`nStiahnite súbor EviTA_Setup.exe a spustite ho."
+          gh release create najnovsia installer/Output/EviTA_Setup.exe `
+            --title "EviTA $verzia (najnovšia)" `
+            --notes $poznamky `
+            --prerelease `
+            --target ${{ github.sha }}

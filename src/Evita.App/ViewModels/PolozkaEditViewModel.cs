@@ -1,0 +1,270 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Evita.Data;
+using Evita.Models;
+using Evita.Pomocne;
+using Evita.Services;
+
+namespace Evita.ViewModels;
+
+/// <summary>Karta položky – nová, úprava alebo kópia.</summary>
+public partial class PolozkaEditViewModel : ObservableObject
+{
+    private readonly PolozkaService _sluzba = new();
+    private readonly CiselnikService _ciselniky = new();
+    private readonly int _id;
+    private readonly int _verzia;
+
+    /// <param name="id">Id upravovanej položky, alebo null pre novú.</param>
+    /// <param name="kopiaZ">Id položky, ktorá sa má skopírovať do novej.</param>
+    public PolozkaEditViewModel(int? id, int? kopiaZ)
+    {
+        Polozka? zdroj = null;
+        if (id is int upravovana)
+        {
+            zdroj = _sluzba.Nacitaj(upravovana) ?? throw new EvitaException("Položka už neexistuje.");
+            _id = zdroj.Id;
+            _verzia = zdroj.Verzia;
+            Titulok = $"Položka {zdroj.PrirastkoveCislo} – {zdroj.Nazov}";
+            PrirastkoveCisloText = zdroj.PrirastkoveCislo.ToString();
+            DatumPridaniaText = Sk.DatumCas(zdroj.DatumPridania);
+            DatumZmenyText = Sk.DatumCas(zdroj.DatumZmeny);
+            Historia = _sluzba.Historia(zdroj.Id);
+        }
+        else
+        {
+            JeNova = true;
+            using var db = Databaza.Otvor();
+            PrirastkoveCisloText = $"{Databaza.DalsiePrirastkoveCislo(db)} (pridelí sa pri uložení)";
+            if (kopiaZ is int kopia)
+            {
+                zdroj = _sluzba.Nacitaj(kopia);
+                Titulok = "Nová položka (kópia)";
+            }
+            else
+            {
+                Titulok = "Nová položka";
+            }
+        }
+
+        NacitajVolby(zdroj?.KategoriaId, zdroj?.MiestnostId, zdroj?.OsobaId);
+
+        if (zdroj is not null)
+        {
+            _nazov = zdroj.Nazov;
+            _kategoriaId = zdroj.KategoriaId;
+            _miestnostId = zdroj.MiestnostId ?? 0;
+            _osobaId = zdroj.OsobaId ?? 0;
+            _vyrobca = zdroj.Vyrobca ?? "";
+            _model = zdroj.Model ?? "";
+            _stav = zdroj.Stav;
+            _datumNakupu = zdroj.DatumNakupu;
+            _cenaText = zdroj.Cena?.ToString("0.00", Sk.Kultura) ?? "";
+            _zarukaDo = zdroj.ZarukaDo;
+            _dalsiaRevizia = zdroj.DalsiaRevizia;
+            _poznamka = zdroj.Poznamka ?? "";
+
+            // pri kópii sa jedinečné údaje neprenášajú
+            if (!JeNova)
+            {
+                _serioveCislo = zdroj.SerioveCislo ?? "";
+                _inventarneCislo = zdroj.InventarneCislo ?? "";
+                _datumVyradenia = zdroj.DatumVyradenia;
+                _dovodVyradenia = zdroj.DovodVyradenia ?? "";
+            }
+            else if (_stav == StavPolozky.Vyradene)
+            {
+                _stav = StavPolozky.VPrevadzke;
+            }
+        }
+    }
+
+    public string Titulok { get; }
+    public bool JeNova { get; }
+    public string PrirastkoveCisloText { get; }
+    public string DatumPridaniaText { get; } = "";
+    public string DatumZmenyText { get; } = "";
+    public List<HistoriaZmeny> Historia { get; } = new();
+    public bool MaHistoriu => Historia.Count > 0;
+
+    public IReadOnlyList<VolbaStavu> Stavy => StavyPoloziek.Vsetky;
+
+    [ObservableProperty] private List<Volba> _kategorie = new();
+    [ObservableProperty] private List<Volba> _miestnosti = new();
+    [ObservableProperty] private List<Volba> _osoby = new();
+
+    [ObservableProperty] private string _nazov = "";
+    [ObservableProperty] private int _kategoriaId;
+    [ObservableProperty] private int _miestnostId;
+    [ObservableProperty] private int _osobaId;
+    [ObservableProperty] private string _vyrobca = "";
+    [ObservableProperty] private string _model = "";
+    [ObservableProperty] private string _serioveCislo = "";
+    [ObservableProperty] private string _inventarneCislo = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(JeVyradena))]
+    private StavPolozky _stav = StavPolozky.VPrevadzke;
+
+    [ObservableProperty] private DateTime? _datumNakupu;
+    [ObservableProperty] private string _cenaText = "";
+    [ObservableProperty] private DateTime? _zarukaDo;
+    [ObservableProperty] private DateTime? _dalsiaRevizia;
+    [ObservableProperty] private DateTime? _datumVyradenia;
+    [ObservableProperty] private string _dovodVyradenia = "";
+    [ObservableProperty] private string _poznamka = "";
+
+    [ObservableProperty] private int _pocetKusov = 1;
+    [ObservableProperty] private string _serioveCislaHromadne = "";
+
+    public bool JeVyradena => Stav == StavPolozky.Vyradene;
+
+    /// <summary>Id uložených položiek (pri hromadnom pridaní ich je viac).</summary>
+    public List<int> UlozeneId { get; private set; } = new();
+
+    /// <summary>Žiadosť na zatvorenie okna s výsledkom.</summary>
+    public event Action<bool>? Zatvorit;
+
+    partial void OnStavChanged(StavPolozky value)
+    {
+        if (value == StavPolozky.Vyradene && DatumVyradenia is null)
+        {
+            DatumVyradenia = DateTime.Today;
+        }
+    }
+
+    [RelayCommand]
+    private void Ulozit()
+    {
+        if (string.IsNullOrWhiteSpace(Nazov))
+        {
+            Dialogy.Upozornenie("Zadajte názov technológie.");
+            return;
+        }
+
+        if (KategoriaId <= 0)
+        {
+            Dialogy.Upozornenie("Vyberte kategóriu.");
+            return;
+        }
+
+        if (!Sk.SkusPrecitatSumu(CenaText, out var cena))
+        {
+            Dialogy.Upozornenie("Cenu sa nepodarilo prečítať. Napíšte ju ako číslo, napríklad 749,90.");
+            return;
+        }
+
+        var p = new Polozka
+        {
+            Id = _id,
+            Verzia = _verzia,
+            Nazov = Nazov,
+            KategoriaId = KategoriaId,
+            MiestnostId = MiestnostId > 0 ? MiestnostId : null,
+            OsobaId = OsobaId > 0 ? OsobaId : null,
+            Vyrobca = Vyrobca,
+            Model = Model,
+            SerioveCislo = SerioveCislo,
+            InventarneCislo = InventarneCislo,
+            Stav = Stav,
+            DatumNakupu = DatumNakupu,
+            Cena = cena,
+            ZarukaDo = ZarukaDo,
+            DalsiaRevizia = DalsiaRevizia,
+            DatumVyradenia = DatumVyradenia,
+            DovodVyradenia = DovodVyradenia,
+            Poznamka = Poznamka,
+        };
+
+        if (JeNova)
+        {
+            if (PocetKusov < 1 || PocetKusov > 500)
+            {
+                Dialogy.Upozornenie("Počet kusov musí byť od 1 do 500.");
+                return;
+            }
+
+            var serioveCisla = SerioveCislaHromadne
+                .Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .ToList();
+            if (PocetKusov == 1 && serioveCisla.Count == 0 && !string.IsNullOrWhiteSpace(SerioveCislo))
+            {
+                serioveCisla.Add(SerioveCislo);
+            }
+
+            if (PocetKusov > 1 && serioveCisla.Count > PocetKusov)
+            {
+                Dialogy.Upozornenie($"Zadali ste {serioveCisla.Count} sériových čísel, ale počet kusov je {PocetKusov}.");
+                return;
+            }
+
+            if (PocetKusov > 1 && !Dialogy.Potvrd($"Pridať {PocetKusov} rovnakých položiek s po sebe idúcimi prírastkovými číslami?"))
+            {
+                return;
+            }
+
+            UlozeneId = _sluzba.Pridaj(p, PocetKusov, serioveCisla);
+        }
+        else
+        {
+            _sluzba.Uloz(p);
+            UlozeneId = new List<int> { _id };
+        }
+
+        Zatvorit?.Invoke(true);
+    }
+
+    [RelayCommand]
+    private void Zrusit() => Zatvorit?.Invoke(false);
+
+    [RelayCommand]
+    private void NovaKategoria()
+    {
+        var nazov = Dialogy.Vstup("Nová kategória", "Názov novej kategórie:");
+        if (string.IsNullOrWhiteSpace(nazov))
+        {
+            return;
+        }
+
+        var id = _ciselniky.Uloz(TypCiselnika.Kategorie, 0, nazov, null, null);
+        NacitajVolby(id, MiestnostId, OsobaId);
+        KategoriaId = id;
+    }
+
+    [RelayCommand]
+    private void NovaMiestnost()
+    {
+        var nazov = Dialogy.Vstup("Nová miestnosť", "Názov novej miestnosti (napr. Učebňa 105):");
+        if (string.IsNullOrWhiteSpace(nazov))
+        {
+            return;
+        }
+
+        var id = _ciselniky.Uloz(TypCiselnika.Miestnosti, 0, nazov, null, null);
+        NacitajVolby(KategoriaId, id, OsobaId);
+        MiestnostId = id;
+    }
+
+    [RelayCommand]
+    private void NovaOsoba()
+    {
+        var text = Dialogy.Vstup("Nová osoba", "Meno a priezvisko (alebo názov útvaru):");
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var casti = text.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var (meno, priezvisko) = casti.Length == 2 ? (casti[0], casti[1]) : ("", casti[0]);
+        var id = _ciselniky.Uloz(TypCiselnika.Osoby, 0, meno, priezvisko, null);
+        NacitajVolby(KategoriaId, MiestnostId, id);
+        OsobaId = id;
+    }
+
+    private void NacitajVolby(int? kategoria, int? miestnost, int? osoba)
+    {
+        Kategorie = _ciselniky.Volby(TypCiselnika.Kategorie, kategoria, null);
+        Miestnosti = _ciselniky.Volby(TypCiselnika.Miestnosti, miestnost, "(nezadaná)");
+        Osoby = _ciselniky.Volby(TypCiselnika.Osoby, osoba, "(nikto)");
+    }
+}

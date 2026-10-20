@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>EviTA</AssemblyName>
+    <RootNamespace>Evita</RootNamespace>
+    <ApplicationIcon>Assets\evita.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <Product>EviTA</Product>
+    <Company>tarzanislav</Company>
+    <Description>EviTA – evidencia informačných technológií a príslušenstva</Description>
+    <Copyright>© 2026 tarzanislav</Copyright>
+    <SatelliteResourceLanguages>sk</SatelliteResourceLanguages>
+    <NoWarn>$(NoWarn);WPF0001;MVVMTK0045</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\evita.ico" />
+  </ItemGroup>
+
+</Project>

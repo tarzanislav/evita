@@ -1,0 +1,29 @@
+<Window x:Class="Evita.Views.HromadnaZmenaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Hromadná zmena"
+        Width="520" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+    <StackPanel Margin="24">
+        <TextBlock Text="Hromadná zmena" Style="{StaticResource Podnadpis}" />
+        <TextBlock Text="{Binding Popis}" TextWrapping="Wrap" Margin="0,0,0,12" />
+
+        <CheckBox Content="Zmeniť miestnosť" IsChecked="{Binding ZmenitMiestnost}" Margin="0,8,0,4" />
+        <ComboBox ItemsSource="{Binding Miestnosti}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                  SelectedValue="{Binding MiestnostId}" IsEnabled="{Binding ZmenitMiestnost}" />
+
+        <CheckBox Content="Zmeniť pridelenie" IsChecked="{Binding ZmenitOsobu}" Margin="0,14,0,4" />
+        <ComboBox ItemsSource="{Binding Osoby}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                  SelectedValue="{Binding OsobaId}" IsEnabled="{Binding ZmenitOsobu}" />
+
+        <CheckBox Content="Zmeniť stav" IsChecked="{Binding ZmenitStav}" Margin="0,14,0,4" />
+        <ComboBox ItemsSource="{Binding Stavy}" DisplayMemberPath="Nazov" SelectedValuePath="Stav"
+                  SelectedValue="{Binding Stav}" IsEnabled="{Binding ZmenitStav}" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+            <Button Content="Použiť zmenu" MinWidth="130" Command="{Binding UlozitCommand}"
+                    Style="{DynamicResource AccentButtonStyle}" />
+            <Button Content="Zrušiť" MinWidth="110" Margin="8,0,0,0" IsCancel="True" />
+        </StackPanel>
+    </StackPanel>
+</Window>

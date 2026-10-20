@@ -1,0 +1,29 @@
+<Window x:Class="Evita.Views.VymazanieWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Vymazať dáta a začať nanovo"
+        Width="560" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+    <StackPanel Margin="24">
+        <TextBlock Text="Vymazať dáta a začať nanovo" Style="{StaticResource Podnadpis}" />
+        <TextBlock TextWrapping="Wrap"
+                   Text="Vymažú sa všetky položky evidencie a celá história zmien. Prírastkové číslo sa vráti na 1. Kategórie a nastavenia zostanú." />
+        <TextBlock TextWrapping="Wrap" Margin="0,8,0,0"
+                   Text="Pred vymazaním sa automaticky urobí záloha, takže krok sa dá vrátiť." />
+
+        <CheckBox x:Name="PonechatMiestnostiPole" Margin="0,16,0,0"
+                  Content="Ponechať miestnosti (ak ste ich už upravili na skutočné)" />
+        <CheckBox x:Name="PonechatOsobyPole" Margin="0,6,0,0"
+                  Content="Ponechať osoby (ak ste ich už upravili na skutočné)" />
+
+        <TextBlock Style="{StaticResource Stitok}" Margin="0,18,0,4"
+                   Text="Na potvrdenie napíšte slovo VYMAZAŤ:" />
+        <TextBox x:Name="Potvrdenie" TextChanged="Potvrdenie_TextChanged" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="Vymazat" Content="Vymazať" MinWidth="110" IsEnabled="False" Click="Vymazat_Click"
+                    Style="{DynamicResource AccentButtonStyle}" />
+            <Button Content="Zrušiť" IsCancel="True" MinWidth="110" Margin="8,0,0,0" />
+        </StackPanel>
+    </StackPanel>
+</Window>

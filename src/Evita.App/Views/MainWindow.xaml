@@ -1,0 +1,137 @@
+<Window x:Class="Evita.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Evita.ViewModels"
+        xmlns:v="clr-namespace:Evita.Views"
+        Title="EviTA – evidencia IT techniky"
+        Width="1320" Height="840" MinWidth="1000" MinHeight="640"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+            <v:DashboardView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:EvidenciaViewModel}">
+            <v:EvidenciaView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CiselnikViewModel}">
+            <v:CiselnikView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ServisViewModel}">
+            <v:ServisView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ľavé menu -->
+        <Border Grid.Column="0" BorderThickness="0,0,1,0"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource LayerFillColorDefaultBrush}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="20,22,16,18">
+                    <TextBlock Text="EviTA" FontSize="28" FontWeight="Bold" />
+                    <TextBlock Text="Evidencia IT techniky" Style="{StaticResource Popis}" />
+                </StackPanel>
+
+                <TextBlock DockPanel.Dock="Bottom" Margin="20,8,16,16" Style="{StaticResource Popis}"
+                           Text="{Binding VerziaText}" />
+
+                <ListBox x:Name="Navigacia" Margin="8,0" BorderThickness="0" Background="Transparent"
+                         SelectionChanged="Navigacia_SelectionChanged">
+                    <ListBoxItem Tag="dashboard">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE80F;" Margin="0,0,12,0" />
+                            <TextBlock Text="Dashboard" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="evidencia">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE8FD;" Margin="0,0,12,0" />
+                            <TextBlock Text="Evidencia" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="kalendar" IsEnabled="False" ToolTipService.ShowOnDisabled="True"
+                                 ToolTip="Pripravuje sa (etapa 6)">
+                        <StackPanel Orientation="Horizontal" Opacity="0.5">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE787;" Margin="0,0,12,0" />
+                            <TextBlock Text="Kalendár" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="tlac" IsEnabled="False" ToolTipService.ShowOnDisabled="True"
+                                 ToolTip="Pripravuje sa (etapa 5)">
+                        <StackPanel Orientation="Horizontal" Opacity="0.5">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" Margin="0,0,12,0" />
+                            <TextBlock Text="Tlač a zostavy" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="import" IsEnabled="False" ToolTipService.ShowOnDisabled="True"
+                                 ToolTip="Pripravuje sa (etapa 4)">
+                        <StackPanel Orientation="Horizontal" Opacity="0.5">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE8B5;" Margin="0,0,12,0" />
+                            <TextBlock Text="Import a export" />
+                        </StackPanel>
+                    </ListBoxItem>
+
+                    <ListBoxItem IsEnabled="False" IsHitTestVisible="False" Focusable="False" Padding="0">
+                        <Separator Margin="8,4" />
+                    </ListBoxItem>
+
+                    <ListBoxItem Tag="kategorie">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE8EC;" Margin="0,0,12,0" />
+                            <TextBlock Text="Kategórie" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="miestnosti">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE707;" Margin="0,0,12,0" />
+                            <TextBlock Text="Miestnosti" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="osoby">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE716;" Margin="0,0,12,0" />
+                            <TextBlock Text="Osoby" />
+                        </StackPanel>
+                    </ListBoxItem>
+
+                    <ListBoxItem IsEnabled="False" IsHitTestVisible="False" Focusable="False" Padding="0">
+                        <Separator Margin="8,4" />
+                    </ListBoxItem>
+
+                    <ListBoxItem Tag="servis">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE90F;" Margin="0,0,12,0" />
+                            <TextBlock Text="Servis" />
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- obsah -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Padding="20,10"
+                    Background="{DynamicResource SystemFillColorAttentionBackgroundBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
+                    Visibility="{Binding UkazkoveData, Converter={StaticResource BoolNaViditelnost}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE946;" Margin="0,0,10,0" />
+                    <TextBlock VerticalAlignment="Center" TextWrapping="Wrap"
+                               Text="Pracujete s ukážkovými dátami. Keď ich už nepotrebujete, vymažte ich v časti Servis → Vymazať dáta a začať nanovo." />
+                </StackPanel>
+            </Border>
+
+            <ContentControl Grid.Row="1" Margin="24,20,24,16" Content="{Binding AktualnyObsah}" Focusable="False" />
+        </Grid>
+    </Grid>
+</Window>

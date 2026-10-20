@@ -1,0 +1,176 @@
+<Window x:Class="Evita.Views.PolozkaEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Titulok}"
+        Width="860" Height="760" MinWidth="720" MinHeight="560"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Window.Resources>
+        <Style x:Key="Pole" TargetType="FrameworkElement">
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+        <Style x:Key="TlacidloPlus" TargetType="Button">
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel Margin="20,16,20,16">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Content="Uložiť" MinWidth="120" IsDefault="False" Command="{Binding UlozitCommand}"
+                    Style="{DynamicResource AccentButtonStyle}" ToolTip="Ctrl+S" />
+            <Button Content="Zrušiť" MinWidth="120" Margin="8,0,0,0" IsCancel="True" />
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Titulok}" Style="{StaticResource Podnadpis}" FontSize="20"
+                   TextTrimming="CharacterEllipsis" />
+
+        <TabControl>
+            <TabItem Header="Údaje">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                    <Grid Margin="0,8,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- ľavý stĺpec -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Prírastkové číslo" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                            <TextBox Text="{Binding PrirastkoveCisloText, Mode=OneWay}" IsReadOnly="True" Focusable="False" />
+
+                            <TextBlock Text="Názov technológie *" Style="{StaticResource Stitok}" />
+                            <TextBox x:Name="NazovPole" Text="{Binding Nazov, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Text="Kategória *" Style="{StaticResource Stitok}" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="+" Style="{StaticResource TlacidloPlus}"
+                                        ToolTip="Vytvoriť novú kategóriu" Command="{Binding NovaKategoriaCommand}" />
+                                <ComboBox ItemsSource="{Binding Kategorie}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                          SelectedValue="{Binding KategoriaId}" />
+                            </DockPanel>
+
+                            <TextBlock Text="Miestnosť" Style="{StaticResource Stitok}" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="+" Style="{StaticResource TlacidloPlus}"
+                                        ToolTip="Vytvoriť novú miestnosť" Command="{Binding NovaMiestnostCommand}" />
+                                <ComboBox ItemsSource="{Binding Miestnosti}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                          SelectedValue="{Binding MiestnostId}" />
+                            </DockPanel>
+
+                            <TextBlock Text="Pridelené" Style="{StaticResource Stitok}" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="+" Style="{StaticResource TlacidloPlus}"
+                                        ToolTip="Pridať novú osobu" Command="{Binding NovaOsobaCommand}" />
+                                <ComboBox ItemsSource="{Binding Osoby}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                          SelectedValue="{Binding OsobaId}" />
+                            </DockPanel>
+
+                            <TextBlock Text="Stav" Style="{StaticResource Stitok}" />
+                            <ComboBox ItemsSource="{Binding Stavy}" DisplayMemberPath="Nazov" SelectedValuePath="Stav"
+                                      SelectedValue="{Binding Stav}" />
+
+                            <StackPanel Visibility="{Binding JeVyradena, Converter={StaticResource BoolNaViditelnost}}">
+                                <TextBlock Text="Dátum vyradenia" Style="{StaticResource Stitok}" />
+                                <DatePicker SelectedDate="{Binding DatumVyradenia}" />
+                                <TextBlock Text="Dôvod vyradenia" Style="{StaticResource Stitok}" />
+                                <TextBox Text="{Binding DovodVyradenia, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+
+                            <StackPanel Visibility="{Binding JeNova, Converter={StaticResource BoolNaViditelnost}}">
+                                <TextBlock Text="Počet kusov (hromadné pridanie)" Style="{StaticResource Stitok}" />
+                                <TextBox Text="{Binding PocetKusov, UpdateSourceTrigger=PropertyChanged}" Width="100"
+                                         HorizontalAlignment="Left" />
+                                <TextBlock Text="Sériové čísla jednotlivých kusov (každé na nový riadok, nepovinné)"
+                                           Style="{StaticResource Stitok}" TextWrapping="Wrap" />
+                                <TextBox Text="{Binding SerioveCislaHromadne, UpdateSourceTrigger=PropertyChanged}"
+                                         AcceptsReturn="True" TextWrapping="NoWrap" Height="90"
+                                         VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- pravý stĺpec -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Výrobca" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                            <TextBox Text="{Binding Vyrobca, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Text="Model" Style="{StaticResource Stitok}" />
+                            <TextBox Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Text="Sériové číslo" Style="{StaticResource Stitok}" />
+                            <TextBox Text="{Binding SerioveCislo, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Text="Inventárne číslo" Style="{StaticResource Stitok}" />
+                            <TextBox Text="{Binding InventarneCislo, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Dátum nákupu" Style="{StaticResource Stitok}" />
+                                    <DatePicker SelectedDate="{Binding DatumNakupu}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Cena (€)" Style="{StaticResource Stitok}" />
+                                    <TextBox Text="{Binding CenaText, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Záruka do" Style="{StaticResource Stitok}" />
+                                    <DatePicker SelectedDate="{Binding ZarukaDo}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Ďalšia revízia" Style="{StaticResource Stitok}" />
+                                    <DatePicker SelectedDate="{Binding DalsiaRevizia}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Poznámka" Style="{StaticResource Stitok}" />
+                            <TextBox Text="{Binding Poznamka, UpdateSourceTrigger=PropertyChanged}"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Height="130"
+                                     VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" />
+
+                            <StackPanel Visibility="{Binding JeNova, Converter={StaticResource InverzBoolNaViditelnost}}"
+                                        Margin="0,10,0,0">
+                                <TextBlock Style="{StaticResource Popis}">
+                                    <Run Text="Pridané:" /> <Run Text="{Binding DatumPridaniaText, Mode=OneWay}" />
+                                    <Run Text="   Naposledy zmenené:" /> <Run Text="{Binding DatumZmenyText, Mode=OneWay}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="História zmien"
+                     Visibility="{Binding JeNova, Converter={StaticResource InverzBoolNaViditelnost}}">
+                <DockPanel Margin="0,8,0,0">
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,0,0,8"
+                               Text="Každá zmena položky s dátumom, časom a používateľom. Najnovšie hore." />
+                    <DataGrid ItemsSource="{Binding Historia}" AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Dátum a čas" Binding="{Binding Cas, StringFormat='d. M. yyyy H:mm'}" Width="130" />
+                            <DataGridTextColumn Header="Akcia" Binding="{Binding Akcia}" Width="95" />
+                            <DataGridTextColumn Header="Pole" Binding="{Binding Pole}" Width="120" />
+                            <DataGridTextColumn Header="Pôvodne" Binding="{Binding StaraHodnota}" Width="*" />
+                            <DataGridTextColumn Header="Nová hodnota" Binding="{Binding NovaHodnota}" Width="*" />
+                            <DataGridTextColumn Header="Používateľ" Binding="{Binding Pouzivatel}" Width="100" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

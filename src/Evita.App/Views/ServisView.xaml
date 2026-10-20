@@ -1,0 +1,71 @@
+<UserControl x:Class="Evita.Views.ServisView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="Akcia" TargetType="Button">
+            <Setter Property="Margin" Value="0,0,8,8" />
+            <Setter Property="Padding" Value="14,7" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="980" HorizontalAlignment="Left">
+            <TextBlock Text="Servis" Style="{StaticResource Nadpis}" />
+
+            <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Databáza" Style="{StaticResource Podnadpis}" />
+                    <TextBlock TextWrapping="Wrap">
+                        <Run Text="Umiestnenie:" /> <Run Text="{Binding CestaDatabazy, Mode=OneWay}" FontWeight="SemiBold" />
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" Margin="0,4,0,0">
+                        <Run Text="Veľkosť:" /> <Run Text="{Binding Velkost, Mode=OneWay}" />
+                        <Run Text="   Verzia dátovej štruktúry:" /> <Run Text="{Binding VerziaSchemy, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Text="{Binding Pocty}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Style="{StaticResource Akcia}" Content="Kompaktovať databázu" Command="{Binding KompaktovatCommand}"
+                                ToolTip="Uvoľní nepoužité miesto v súbore databázy" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Záloha" Style="{StaticResource Podnadpis}" />
+                    <TextBlock TextWrapping="Wrap"
+                               Text="Celá databáza sa uloží do jedného súboru ZIP. Pravidelné automatické zálohy a obnova zo zálohy pribudnú v etape 2." />
+                    <TextBlock Text="{Binding PoslednaZaloha}" Style="{StaticResource Popis}" Margin="0,6,0,0" />
+                    <TextBlock Style="{StaticResource Popis}">
+                        <Run Text="Priečinok záloh:" /> <Run Text="{Binding PriecinokZaloh, Mode=OneWay}" />
+                    </TextBlock>
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Style="{DynamicResource AccentButtonStyle}" Margin="0,0,8,8" Padding="14,7"
+                                Content="Zálohovať teraz" Command="{Binding ZalohovatTerazCommand}" />
+                        <Button Style="{StaticResource Akcia}" Content="Otvoriť priečinok záloh"
+                                Command="{Binding OtvoritPriecinokZalohCommand}" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Ukážkové dáta a nový začiatok" Style="{StaticResource Podnadpis}" />
+                    <TextBlock TextWrapping="Wrap"
+                               Text="Ukážková databáza obsahuje 200 položiek, 30 osôb, 25 miestností a históriu zmien. Keď ju už nepotrebujete, vymažte dáta a začnite vlastnú evidenciu od prírastkového čísla 1. Pred vymazaním sa vždy urobí záloha." />
+                    <TextBlock Margin="0,6,0,0" FontWeight="SemiBold" Text="Momentálne pracujete s ukážkovými dátami."
+                               Visibility="{Binding UkazkoveData, Converter={StaticResource BoolNaViditelnost}}" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Style="{StaticResource Akcia}" Content="Vymazať dáta a začať nanovo"
+                                Command="{Binding VymazatVsetkoCommand}" />
+                        <Button Style="{StaticResource Akcia}" Content="Načítať ukážkové dáta"
+                                Command="{Binding NacitatUkazkoveCommand}" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource Popis}"
+                       Text="Kontrola integrity, oprava a ďalšie nástroje na ladenie databázy pribudnú v etape 2." />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

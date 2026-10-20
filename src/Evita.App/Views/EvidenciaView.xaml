@@ -1,0 +1,152 @@
+<UserControl x:Class="Evita.Views.EvidenciaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.InputBindings>
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding NovaCommand}" />
+        <KeyBinding Key="F2" Command="{Binding UpravitCommand}" />
+        <KeyBinding Key="F5" Command="{Binding ObnovZoznamCommand}" />
+    </UserControl.InputBindings>
+
+    <UserControl.Resources>
+        <Style x:Key="TlacidloNastroja" TargetType="Button">
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="Padding" Value="12,6" />
+        </Style>
+        <Style x:Key="FilterStitok" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- nadpis a vyhľadávanie -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="340" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Evidencia" Style="{StaticResource Nadpis}" Margin="0" VerticalAlignment="Center" />
+            <TextBox x:Name="Hladanie" Grid.Column="1" VerticalAlignment="Center"
+                     Text="{Binding HladanyText, UpdateSourceTrigger=PropertyChanged}"
+                     ToolTip="Hľadá v čísle, názve, kategórii, miestnosti, osobe, výrobcovi, modeli, sériovom a inventárnom čísle a poznámke. Diakritika nehrá rolu. (Ctrl+F)" />
+        </Grid>
+
+        <!-- tlačidlá -->
+        <WrapPanel DockPanel.Dock="Top">
+            <Button Style="{DynamicResource AccentButtonStyle}" Margin="0,0,6,6" Padding="12,6"
+                    Command="{Binding NovaCommand}" ToolTip="Ctrl+N">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE710;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Nová položka" />
+                </StackPanel>
+            </Button>
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding UpravitCommand}" ToolTip="Enter alebo F2"
+                    Content="Upraviť" />
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding KopiaCommand}"
+                    Content="Kópia" ToolTip="Nová položka s rovnakými údajmi (bez sériového a inventárneho čísla)" />
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding HromadnaZmenaCommand}"
+                    Content="Hromadná zmena" ToolTip="Zmeniť miestnosť, pridelenie alebo stav viacerým označeným položkám naraz" />
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding VyraditCommand}"
+                    Content="Vyradiť" ToolTip="Delete" />
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding ObnovitCommand}"
+                    Content="Vrátiť do prevádzky" />
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding VymazatCommand}"
+                    Content="Vymazať" />
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding ObnovZoznamCommand}"
+                    Content="Obnoviť zoznam" ToolTip="F5" />
+        </WrapPanel>
+
+        <!-- filtre -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Karta}" Padding="12,10" Margin="0,4,0,10">
+            <StackPanel>
+                <WrapPanel>
+                    <StackPanel Margin="0,0,12,4" Width="180">
+                        <TextBlock Text="Kategória" Style="{StaticResource FilterStitok}" />
+                        <ComboBox ItemsSource="{Binding FilterKategorie}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                  SelectedValue="{Binding FilterKategoria}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,4" Width="200">
+                        <TextBlock Text="Miestnosť" Style="{StaticResource FilterStitok}" />
+                        <ComboBox ItemsSource="{Binding FilterMiestnosti}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                  SelectedValue="{Binding FilterMiestnost}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,4" Width="200">
+                        <TextBlock Text="Pridelené" Style="{StaticResource FilterStitok}" />
+                        <ComboBox ItemsSource="{Binding FilterOsoby}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                  SelectedValue="{Binding FilterOsoba}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,4" Width="200">
+                        <TextBlock Text="Stav" Style="{StaticResource FilterStitok}" />
+                        <ComboBox ItemsSource="{Binding FilterStavy}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                  SelectedValue="{Binding FilterStav}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,4" Width="150">
+                        <TextBlock Text="Pridané od" Style="{StaticResource FilterStitok}" />
+                        <DatePicker SelectedDate="{Binding PridaneOd}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,4" Width="150">
+                        <TextBlock Text="Pridané do" Style="{StaticResource FilterStitok}" />
+                        <DatePicker SelectedDate="{Binding PridaneDo}" />
+                    </StackPanel>
+                    <Button Content="Zrušiť filtre" Command="{Binding VycistitFiltreCommand}"
+                            VerticalAlignment="Bottom" Margin="0,0,0,4" Padding="12,6" />
+                </WrapPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,6,0,0"
+                            Visibility="{Binding RychlyFilter, Converter={StaticResource NieJePrazdne}}">
+                    <TextBlock VerticalAlignment="Center" FontWeight="SemiBold">
+                        <Run Text="Rýchly filter:" /> <Run Text="{Binding RychlyFilterPopis, Mode=OneWay}" />
+                    </TextBlock>
+                    <Button Content="Zrušiť" Margin="10,0,0,0" Padding="10,2" Command="{Binding ZrusRychlyFilterCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- stavový riadok -->
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,8,0,0" Style="{StaticResource Popis}">
+            <Run Text="{Binding StavText, Mode=OneWay}" />
+            <Run Text="  ·  Dvojklik alebo Enter otvorí kartu položky, viac položiek označíte s Ctrl alebo Shift." />
+        </TextBlock>
+
+        <!-- tabuľka -->
+        <DataGrid x:Name="Tabulka"
+                  ItemsSource="{Binding Pohlad}"
+                  SelectedItem="{Binding Vybrana}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  SelectionMode="Extended" SelectionUnit="FullRow"
+                  CanUserAddRows="False" CanUserDeleteRows="False"
+                  CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="True"
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                  EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  MouseDoubleClick="Tabulka_MouseDoubleClick"
+                  PreviewKeyDown="Tabulka_PreviewKeyDown"
+                  SelectionChanged="Tabulka_SelectionChanged">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Č." Binding="{Binding PrirastkoveCislo}" Width="64" />
+                <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="2*" MinWidth="200">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Vyradena}" Value="True">
+                                    <Setter Property="TextDecorations" Value="Strikethrough" />
+                                    <Setter Property="Opacity" Value="0.6" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Kategória" Binding="{Binding Kategoria}" Width="130" />
+                <DataGridTextColumn Header="Miestnosť" Binding="{Binding Miestnost}" Width="*" MinWidth="120" />
+                <DataGridTextColumn Header="Pridelené" Binding="{Binding Osoba}" Width="*" MinWidth="120" />
+                <DataGridTextColumn Header="Výrobca" Binding="{Binding Vyrobca}" Width="100" />
+                <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="130" />
+                <DataGridTextColumn Header="Sériové číslo" Binding="{Binding SerioveCislo}" Width="120" />
+                <DataGridTextColumn Header="Stav" Binding="{Binding Stav}" Width="95" SortMemberPath="StavHodnota" />
+                <DataGridTextColumn Header="Pridané" Binding="{Binding DatumPridania, StringFormat='d. M. yyyy'}" Width="90" />
+                <DataGridTextColumn Header="Zmenené" Binding="{Binding DatumZmeny, StringFormat='d. M. yyyy'}" Width="90" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

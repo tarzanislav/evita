@@ -1,0 +1,58 @@
+<UserControl x:Class="Evita.Views.CiselnikView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Nadpis}" Style="{StaticResource Nadpis}" />
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Napoveda}" Style="{StaticResource Popis}" Margin="0,-8,0,12" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <DataGrid Grid.Column="0" x:Name="Tabulka"
+                      ItemsSource="{Binding Polozky}" SelectedItem="{Binding Vybrana}"
+                      AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                      CanUserAddRows="False" CanUserDeleteRows="False"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="2*" />
+                    <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                    <DataGridTextColumn Header="Položiek" Binding="{Binding Pocet}" Width="80" />
+                    <DataGridTextColumn Header="Aktívna" Binding="{Binding AktivnaText}" Width="70" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Border Grid.Column="2" Style="{StaticResource Karta}" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="{Binding FormularNadpis}" Style="{StaticResource Podnadpis}" TextWrapping="Wrap" />
+
+                    <TextBlock Text="{Binding Pole1Popis}" Style="{StaticResource Stitok}" />
+                    <TextBox Text="{Binding Pole1, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <StackPanel Visibility="{Binding MaPole2, Converter={StaticResource BoolNaViditelnost}}">
+                        <TextBlock Text="{Binding Pole2Popis}" Style="{StaticResource Stitok}" />
+                        <TextBox Text="{Binding Pole2, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding MaPole3, Converter={StaticResource BoolNaViditelnost}}">
+                        <TextBlock Text="{Binding Pole3Popis}" Style="{StaticResource Stitok}" />
+                        <TextBox Text="{Binding Pole3, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <WrapPanel Margin="0,16,0,0">
+                        <Button Content="Uložiť" Command="{Binding UlozitCommand}" MinWidth="90" Margin="0,0,6,6"
+                                Style="{DynamicResource AccentButtonStyle}" />
+                        <Button Content="{Binding NovaText}" Command="{Binding NovaCommand}" Margin="0,0,6,6" />
+                    </WrapPanel>
+                    <WrapPanel Visibility="{Binding Upravujem, Converter={StaticResource BoolNaViditelnost}}">
+                        <Button Content="Aktivovať / deaktivovať" Command="{Binding PrepnutAktivnuCommand}" Margin="0,0,6,6" />
+                        <Button Content="Vymazať" Command="{Binding VymazatCommand}" Margin="0,0,6,6" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

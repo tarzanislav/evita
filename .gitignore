@@ -1,0 +1,17 @@
+## .NET
+bin/
+obj/
+publish/
+*.user
+*.suo
+.vs/
+.vscode/
+*.DotSettings.user
+
+## Inštalátor
+installer/Output/
+
+## Lokálne databázy pri vývoji
+*.db
+*.db-wal
+*.db-shm

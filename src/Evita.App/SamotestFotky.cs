@@ -84,8 +84,8 @@ internal static partial class Samotest
                 Over(json.Contains($"\"kod\":\"{kod}\""), $"mobil: kód z fotky {subor} ({kod})");
             }
 
-            // náhľad z vnútorného prehliadača aplikácie (MIUI Skener): 160 × 120 bodov
-            var nahlad = AkoZMobilu(File.ReadAllBytes(Path.Combine(priecinok, zoznam[0].Subor)), 160, 80);
+            // náhľad z vnútorného prehliadača aplikácie (MIUI Skener): celá fotka krabice zmenšená na 160 bodov
+            var nahlad = AkoZMobilu(File.ReadAllBytes(Path.Combine(priecinok, zoznam[^1].Subor)), 160, 80);
             var diagnostika = Path.Combine(MobilnySkener.PriecinokDiagnostiky, "necitatelna_fotka.txt");
             if (File.Exists(diagnostika))
             {

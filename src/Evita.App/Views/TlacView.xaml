@@ -1,0 +1,193 @@
+<UserControl x:Class="Evita.Views.TlacView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="Volba" TargetType="StackPanel">
+            <Setter Property="Margin" Value="0,0,16,10" />
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Tlač a zostavy" Style="{StaticResource Nadpis}" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="290" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- zoznam zostáv -->
+            <Border Style="{StaticResource Karta}" Padding="6">
+                <ListBox ItemsSource="{Binding Zostavy}" SelectedItem="{Binding Vybrana}" BorderThickness="0"
+                         Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="2,4">
+                                <TextBlock Text="{Binding Nazov}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Popis}" Style="{StaticResource Popis}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Dostupna}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </Border>
+
+            <!-- voľby vybranej zostavy -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <Border Style="{StaticResource Karta}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Vybrana.Nazov}" Style="{StaticResource Podnadpis}" FontSize="18" />
+                            <TextBlock Text="{Binding Vybrana.Popis}" TextWrapping="Wrap" Margin="0,0,0,12" />
+                            <TextBlock Text="{Binding Poznamka}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"
+                                       Visibility="{Binding Poznamka, Converter={StaticResource NieJePrazdne}}" />
+                            <TextBlock Text="{Binding PopisVyfiltrovanych}" TextWrapping="Wrap" Margin="0,0,0,12"
+                                       Visibility="{Binding PopisVyfiltrovanych, Converter={StaticResource NieJePrazdne}}" />
+
+                            <WrapPanel IsEnabled="{Binding Dostupna}">
+                                <StackPanel Style="{StaticResource Volba}" Width="150"
+                                            Visibility="{Binding UkazObdobie, Converter={StaticResource BoolNaViditelnost}}">
+                                    <TextBlock Text="Od" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                    <DatePicker SelectedDate="{Binding Od}" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Volba}" Width="150"
+                                            Visibility="{Binding UkazObdobie, Converter={StaticResource BoolNaViditelnost}}">
+                                    <TextBlock Text="Do" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                    <DatePicker SelectedDate="{Binding Do}" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Volba}" Width="220"
+                                            Visibility="{Binding UkazZoskupenie, Converter={StaticResource BoolNaViditelnost}}">
+                                    <TextBlock Text="Zoskupiť podľa" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                    <ComboBox ItemsSource="{Binding Zoskupenia}" DisplayMemberPath="Nazov" SelectedValuePath="Hodnota"
+                                              SelectedValue="{Binding Zoskupenie}" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Volba}" Width="220"
+                                            Visibility="{Binding UkazKategoriu, Converter={StaticResource BoolNaViditelnost}}">
+                                    <TextBlock Text="Kategória" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                    <ComboBox ItemsSource="{Binding Kategorie}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                              SelectedValue="{Binding KategoriaId}" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Volba}" Width="220"
+                                            Visibility="{Binding UkazMiestnost, Converter={StaticResource BoolNaViditelnost}}">
+                                    <TextBlock Text="Miestnosť" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                    <ComboBox ItemsSource="{Binding Miestnosti}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                              SelectedValue="{Binding MiestnostId}" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Volba}" Width="220"
+                                            Visibility="{Binding UkazOsobu, Converter={StaticResource BoolNaViditelnost}}">
+                                    <TextBlock Text="Osoba" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                    <ComboBox ItemsSource="{Binding Osoby}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                              SelectedValue="{Binding OsobaId}" />
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Volba}" Width="170"
+                                            Visibility="{Binding UkazPolozku, Converter={StaticResource BoolNaViditelnost}}">
+                                    <TextBlock Text="Len položka č." Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                    <TextBox Text="{Binding PrirastkoveCislo, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </WrapPanel>
+
+                            <StackPanel IsEnabled="{Binding Dostupna}">
+                                <CheckBox Content="Vrátane vyradených položiek" IsChecked="{Binding VrataneVyradenych}" Margin="0,2,0,4"
+                                          Visibility="{Binding UkazVyradene, Converter={StaticResource BoolNaViditelnost}}" />
+                                <CheckBox Content="Každá skupina na novej strane" IsChecked="{Binding KazdaNaNovejStrane}" Margin="0,2,0,4"
+                                          Visibility="{Binding UkazNovuStranu, Converter={StaticResource BoolNaViditelnost}}" />
+                                <CheckBox Content="{Binding TextPodpisu}" IsChecked="{Binding Podpis}" Margin="0,2,0,4"
+                                          Visibility="{Binding UkazPodpis, Converter={StaticResource BoolNaViditelnost}}" />
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <TextBlock Text="Orientácia A4:" VerticalAlignment="Center" Margin="0,0,14,0" />
+                                    <RadioButton GroupName="orientacia" Content="na výšku"
+                                                 IsChecked="{Binding NaSirku, Converter={StaticResource InverzBool}}" />
+                                    <RadioButton GroupName="orientacia" Content="na šírku" IsChecked="{Binding NaSirku}" Margin="12,0,0,0" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,18,0,0" IsEnabled="{Binding Dostupna}">
+                                <Button Style="{DynamicResource AccentButtonStyle}" Padding="16,7" Command="{Binding NahladCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE8A1;" FontSize="14" Margin="0,0,8,0" />
+                                        <TextBlock Text="Náhľad…" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Padding="16,7" Margin="8,0,0,0" Command="{Binding UlozitPdfCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xEA90;" FontSize="14" Margin="0,0,8,0" />
+                                        <TextBlock Text="Uložiť ako PDF…" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Padding="16,7" Margin="8,0,0,0" Command="{Binding VytlacitCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="14" Margin="0,0,8,0" />
+                                        <TextBlock Text="Vytlačiť…" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- stĺpce -->
+                    <Border Style="{StaticResource Karta}" Margin="0,16,0,0"
+                            Visibility="{Binding UkazStlpce, Converter={StaticResource BoolNaViditelnost}}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Stĺpce a ich poradie" Style="{StaticResource Podnadpis}" />
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,0,0,8"
+                                       Text="Zaškrtnite stĺpce, ktoré sa majú vytlačiť. Poradie zmeníte šípkami pri označenom stĺpci." />
+                            <StackPanel DockPanel.Dock="Right" Margin="10,0,0,0">
+                                <Button Content="▲ Vyššie" Padding="10,4" HorizontalAlignment="Stretch" Command="{Binding HoreCommand}" />
+                                <Button Content="▼ Nižšie" Padding="10,4" Margin="0,6,0,0" HorizontalAlignment="Stretch" Command="{Binding DoleCommand}" />
+                                <Button Content="Predvolené" Padding="10,4" Margin="0,18,0,0" HorizontalAlignment="Stretch"
+                                        Command="{Binding PredvoleneStlpceCommand}" />
+                            </StackPanel>
+                            <ListBox ItemsSource="{Binding Stlpce}" SelectedItem="{Binding VybranyStlpec}" Height="250">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Content="{Binding Nazov}" IsChecked="{Binding Vybrany}" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- hlavička zostáv -->
+                    <Border Style="{StaticResource Karta}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Hlavička zostáv" Style="{StaticResource Podnadpis}" />
+                            <TextBlock Style="{StaticResource Popis}" Margin="0,0,0,8"
+                                       Text="Názov organizácie a logo sa zobrazia v hlavičke každej zostavy aj exportu do PDF. Päta obsahuje dátum tlače a číslo strany." />
+                            <TextBlock Text="Názov organizácie" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Uložiť" Padding="12,5" Margin="8,0,0,0"
+                                        Command="{Binding UlozitOrganizaciuCommand}" />
+                                <TextBox Text="{Binding NazovOrganizacie, UpdateSourceTrigger=PropertyChanged}" />
+                            </DockPanel>
+                            <TextBlock Text="Logo" Style="{StaticResource Stitok}" Margin="0,12,0,4" />
+                            <StackPanel Orientation="Horizontal">
+                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" Padding="6"
+                                        Background="White" Width="150" Height="64">
+                                    <Grid>
+                                        <Image Source="{Binding Logo}" Stretch="Uniform" />
+                                        <TextBlock Text="bez loga" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Visibility="{Binding MaLogo, Converter={StaticResource InverzBoolNaViditelnost}}" />
+                                    </Grid>
+                                </Border>
+                                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <Button Content="Vybrať obrázok…" Padding="12,5" Command="{Binding VybratLogoCommand}" />
+                                    <Button Content="Odstrániť logo" Padding="12,5" Margin="0,6,0,0" Command="{Binding OdstranitLogoCommand}"
+                                            IsEnabled="{Binding MaLogo}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</UserControl>

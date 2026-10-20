@@ -5,6 +5,7 @@
         <KeyBinding Key="N" Modifiers="Control" Command="{Binding NovaCommand}" />
         <KeyBinding Key="F2" Command="{Binding UpravitCommand}" />
         <KeyBinding Key="F5" Command="{Binding ObnovZoznamCommand}" />
+        <KeyBinding Key="P" Modifiers="Control" Command="{Binding TlacitCommand}" />
     </UserControl.InputBindings>
 
     <UserControl.Resources>
@@ -60,6 +61,13 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Style="{StaticResource Ikona}" Text="&#xEDE1;" FontSize="13" Margin="0,0,8,0" />
                     <TextBlock Text="Export…" />
+                </StackPanel>
+            </Button>
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding TlacitCommand}"
+                    ToolTip="Náhľad a tlač zobrazených (vyfiltrovaných) položiek, aj uloženie do PDF (Ctrl+P)">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Tlačiť…" />
                 </StackPanel>
             </Button>
         </WrapPanel>

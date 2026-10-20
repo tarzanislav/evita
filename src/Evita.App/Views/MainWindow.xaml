@@ -25,6 +25,9 @@
         <DataTemplate DataType="{x:Type vm:ImportExportViewModel}">
             <v:ImportExportView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TlacViewModel}">
+            <v:TlacView />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -67,9 +70,8 @@
                             <TextBlock Text="Kalendár" />
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem Tag="tlac" IsEnabled="False" ToolTipService.ShowOnDisabled="True"
-                                 ToolTip="Pripravuje sa (etapa 5)">
-                        <StackPanel Orientation="Horizontal" Opacity="0.5">
+                    <ListBoxItem Tag="tlac">
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" Margin="0,0,12,0" />
                             <TextBlock Text="Tlač a zostavy" />
                         </StackPanel>

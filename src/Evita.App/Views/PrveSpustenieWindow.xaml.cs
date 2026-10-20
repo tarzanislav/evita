@@ -11,6 +11,9 @@ public partial class PrveSpustenieWindow : Window
 
     public bool UkazkoveData { get; private set; }
 
+    /// <summary>Názov organizácie zadaný pri prvom spustení (môže byť prázdny).</summary>
+    public string NazovOrganizacie => Organizacia.Text.Trim();
+
     /// <summary>Po otvorení programu spustiť sprievodcu importom.</summary>
     public bool Import { get; private set; }
 

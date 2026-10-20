@@ -167,7 +167,7 @@ public sealed class ExportService
         return polozky.Count;
     }
 
-    private static List<Polozka> NacitajPolozky(EvitaDbContext db, IReadOnlyCollection<int>? idPoloziek)
+    internal static List<Polozka> NacitajPolozky(EvitaDbContext db, IReadOnlyCollection<int>? idPoloziek)
     {
         var dotaz = db.Polozky.AsNoTracking()
             .Include(p => p.Kategoria)

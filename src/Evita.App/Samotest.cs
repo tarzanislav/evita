@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Evita.Data;
 using Evita.Models;
+using Evita.Pomocne;
 using Evita.Services;
 using Evita.ViewModels;
 using Evita.Views;
@@ -439,13 +440,59 @@ internal static class Samotest
             // po prenose celej databázy majú položky nové interné Id
             riadky = sluzba.NacitajRiadky();
 
+            // ------------------------------------------------------------ tlačové zostavy
+            var logo = Path.Combine(exportPriecinok, "logo.png");
+            File.WriteAllBytes(logo, UkazkoveLogo());
+            NastaveniaTlace.UlozNazov("Základná škola Ukážková, Hlavná 1, Bratislava");
+            NastaveniaTlace.UlozLogo(File.ReadAllBytes(logo));
+            Over(NastaveniaTlace.Nacitaj() is { Nazov: not null, Logo.Length: > 0 }, "názov organizácie a logo pre hlavičku");
+            var zostavy = new ZostavyService();
+            var dnesTest = DateTime.Today;
+            foreach (var popisZostavy in ZostavyService.Zoznam.Where(z => z.Dostupna))
+            {
+                var moznostiZostavy = new MoznostiZostavy
+                {
+                    Druh = popisZostavy.Druh,
+                    Stlpce = popisZostavy.PredvoleneStlpce,
+                    NaSirku = ZostavyService.OdporucNaSirku(popisZostavy.Druh, popisZostavy.PredvoleneStlpce.Length),
+                    VrataneVyradenych = popisZostavy.PredvoleneVyradene,
+                    Od = popisZostavy.MaObdobie ? new DateTime(2019, 1, 1) : null,
+                    Do = popisZostavy.MaObdobie ? dnesTest : null,
+                    Zoskupenie = Zoskupenie.Miestnost,
+                    Podpis = popisZostavy.MaPodpis,
+                    KazdaNaNovejStrane = popisZostavy.MaNovuStranu,
+                    IdPoloziek = popisZostavy.Druh == DruhZostavy.Vyfiltrovane ? riadky.Where(r => r.Kategoria == "notebook").Select(r => r.Id).ToList() : null,
+                    PopisFiltra = popisZostavy.Druh == DruhZostavy.Vyfiltrovane ? "kategória notebook" : null,
+                };
+                var cestaZostavy = Path.Combine(exportPriecinok, $"zostava_{popisZostavy.Druh}.pdf");
+                zostavy.UlozPdf(moznostiZostavy, cestaZostavy);
+                var stranyZostavy = NahladDokumentu.PocetStran(NahladDokumentu.Priprav(zostavy.Vytvor(moznostiZostavy)));
+                Over(File.Exists(cestaZostavy) && new FileInfo(cestaZostavy).Length > 2000 && stranyZostavy > 0,
+                    $"zostava {popisZostavy.Nazov}: {stranyZostavy} strán");
+            }
+
+            Over(Ocakavaj<EvitaException>(() => zostavy.Vytvor(new MoznostiZostavy { Druh = DruhZostavy.Kalendar })), "zostava Kalendár zatiaľ nie je dostupná");
+            var miestnostSPolozkami = riadky.First(r => r.MiestnostId is not null).MiestnostId;
+            zostavy.UlozPdf(new MoznostiZostavy { Druh = DruhZostavy.Historia, NaSirku = true, MiestnostId = miestnostSPolozkami },
+                Path.Combine(exportPriecinok, "zostava_Historia_miestnost.pdf"));
+            zostavy.UlozPdf(new MoznostiZostavy { Druh = DruhZostavy.Historia, NaSirku = true, PrirastkoveCislo = riadky[0].PrirastkoveCislo },
+                Path.Combine(exportPriecinok, "zostava_Historia_polozka.pdf"));
+            zostavy.UlozPdf(new MoznostiZostavy
+            {
+                Druh = DruhZostavy.SuhrnnyZoznam,
+                Stlpce = new[] { StlpcePrenosu.Cislo, StlpcePrenosu.Nazov, StlpcePrenosu.Cena },
+                Zoskupenie = Zoskupenie.Kategoria,
+            }, Path.Combine(exportPriecinok, "zostava_Suhrn_kategorie.pdf"));
+            Over(Ocakavaj<EvitaException>(() => zostavy.Vytvor(new MoznostiZostavy { Druh = DruhZostavy.SuhrnnyZoznam })), "zostava bez stĺpcov je odmietnutá");
+            Krok("tlačové zostavy v poriadku");
+
             // obrazovky a okná
             var okno = new MainWindow();
             aplikacia.MainWindow = okno;
             okno.Show();
             Pumpuj();
             var model = (MainViewModel)okno.DataContext;
-            foreach (var sekcia in new[] { "dashboard", "evidencia", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "dashboard" })
+            foreach (var sekcia in new[] { "dashboard", "evidencia", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "dashboard" })
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
@@ -456,7 +503,7 @@ internal static class Samotest
                     Over(model.ImportExport.StiahnutyVzor.EndsWith(".xlsx", StringComparison.Ordinal), "obrazovka Import a export: stiahnutie vzoru");
                 }
 
-                if (sekcia is "import" or "evidencia")
+                if (sekcia is "import" or "evidencia" or "tlac")
                 {
                     Snimka(okno, "okno_" + sekcia);
                 }
@@ -511,6 +558,40 @@ internal static class Samotest
             OtvorAZatvor(new HesloWindow(false, null), "zadanie hesla");
             OtvorAZatvor(new AktualizaciaWindow(vydanie), "ponuka aktualizácie");
             Over(model.Evidencia.PopisFiltra().Contains("ucebna"), "popis filtra pre export");
+
+            // tlač: obrazovka, náhľad a PDF
+            model.Tlac.Obnov();
+            model.Tlac.NastavLogoZoSuboru(Path.Combine(exportPriecinok, "logo.png"));
+            Over(model.Tlac.MaLogo && model.Tlac.NazovOrganizacie.Length > 0, "obrazovka tlače: logo a názov organizácie");
+            model.Tlac.Vybrana = ZostavyService.Popis(DruhZostavy.PoMiestnostiach);
+            Over(model.Tlac.UkazPodpis && model.Tlac.UkazMiestnost && !model.Tlac.UkazObdobie && model.Tlac.Stlpce.Count == StlpcePrenosu.Vsetky.Count,
+                "obrazovka tlače: voľby zostavy po miestnostiach");
+            model.Tlac.VybranyStlpec = model.Tlac.Stlpce[1];
+            model.Tlac.HoreCommand.Execute(null);
+            Over(model.Tlac.Stlpce[0].Stlpec.Kluc == StlpcePrenosu.Nazov, "obrazovka tlače: zmena poradia stĺpcov");
+            var nahlad = model.Tlac.VytvorNahlad();
+            Over(nahlad is { PocetStran: > 1 }, $"náhľad zostavy po miestnostiach ({nahlad?.PocetStran} strán)");
+            nahlad!.Show();
+            Pumpuj();
+            Snimka(nahlad, "nahlad_po_miestnostiach");
+            nahlad.CestaBezDialogu = Path.Combine(exportPriecinok, "z_nahladu.pdf");
+            Over(nahlad.UlozitPdf() is { } zNahladu && File.Exists(zNahladu), "uloženie PDF z náhľadu");
+            nahlad.Close();
+            Pumpuj();
+            model.Tlac.Vybrana = ZostavyService.Popis(DruhZostavy.Vyfiltrovane);
+            Over(model.Tlac.PopisVyfiltrovanych.Contains("ucebna"), "obrazovka tlače: vyfiltrované položky podľa Evidencie");
+            model.Tlac.CestaBezDialogu = Path.Combine(exportPriecinok, "z_obrazovky.pdf");
+            model.Tlac.UlozitPdfCommand.Execute(null);
+            Over(File.Exists(model.Tlac.CestaBezDialogu), "uloženie PDF z obrazovky tlače");
+            model.Tlac.VytlacitCommand.Execute(null);
+            var nahladEvidencie = model.Evidencia.VytvorNahladTlace();
+            nahladEvidencie.Show();
+            Pumpuj();
+            Over(nahladEvidencie.PocetStran >= 1, "tlač z Evidencie");
+            Snimka(nahladEvidencie, "nahlad_evidencie");
+            nahladEvidencie.Close();
+            Pumpuj();
+            Krok("okno: náhľad tlače");
 
             // okno exportu
             var exportModel = new ExportViewModel(riadky.Take(10).Select(r => r.Id).ToList(), riadky.Take(2).Select(r => r.Id).ToList(), "test")
@@ -683,6 +764,28 @@ internal static class Samotest
                 yield return vnoreny;
             }
         }
+    }
+
+    /// <summary>Malé logo na skúšku hlavičky zostáv.</summary>
+    private static byte[] UkazkoveLogo()
+    {
+        var kresba = new System.Windows.Media.DrawingVisual();
+        using (var kontext = kresba.RenderOpen())
+        {
+            kontext.DrawRoundedRectangle(new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 103, 192)), null,
+                new Rect(0, 0, 240, 80), 14, 14);
+            var text = new System.Windows.Media.FormattedText("EviTA", System.Globalization.CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight, new System.Windows.Media.Typeface("Segoe UI"), 42, System.Windows.Media.Brushes.White, 1.0);
+            kontext.DrawText(text, new Point(62, 12));
+        }
+
+        var obrazok = new System.Windows.Media.Imaging.RenderTargetBitmap(240, 80, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+        obrazok.Render(kresba);
+        var kodovac = new System.Windows.Media.Imaging.PngBitmapEncoder();
+        kodovac.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(obrazok));
+        using var prud = new MemoryStream();
+        kodovac.Save(prud);
+        return prud.ToArray();
     }
 
     /// <summary>Uloží obrázok okna do priečinka Export (na kontrolu vzhľadu z vývojových zostavení).</summary>

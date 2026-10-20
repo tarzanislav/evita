@@ -59,6 +59,17 @@ public partial class App : Application
             var uvod = new PrveSpustenieWindow();
             uvod.ShowDialog();
             spustitImport = uvod.Import;
+            if (uvod.NazovOrganizacie.Length > 0)
+            {
+                try
+                {
+                    NastaveniaTlace.UlozNazov(uvod.NazovOrganizacie);
+                }
+                catch (Exception)
+                {
+                    // názov sa dá zadať aj neskôr v časti Tlač a zostavy
+                }
+            }
             if (uvod.UkazkoveData)
             {
                 try

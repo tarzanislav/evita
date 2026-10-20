@@ -24,6 +24,7 @@ public partial class MainViewModel : ObservableObject
         Servis = new ServisViewModel(this);
         Sviatky = new SviatkyViewModel();
         ImportExport = new ImportExportViewModel(this);
+        Tlac = new TlacViewModel(this);
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -34,6 +35,7 @@ public partial class MainViewModel : ObservableObject
     public ServisViewModel Servis { get; }
     public SviatkyViewModel Sviatky { get; }
     public ImportExportViewModel ImportExport { get; }
+    public TlacViewModel Tlac { get; }
 
     public string TitulokOkna => $"EviTA {AktualizaciaService.AktualnaVerzia} – evidencia IT techniky";
 
@@ -101,6 +103,7 @@ public partial class MainViewModel : ObservableObject
             "servis" => Servis,
             "sviatky" => Sviatky,
             "import" => ImportExport,
+            "tlac" => Tlac,
             _ => Dashboard,
         };
 

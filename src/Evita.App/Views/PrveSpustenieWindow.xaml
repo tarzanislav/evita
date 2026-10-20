@@ -6,8 +6,11 @@
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <StackPanel Margin="28">
         <TextBlock Text="Vitajte v programe EviTA" Style="{StaticResource Nadpis}" />
-        <TextBlock TextWrapping="Wrap" Margin="0,0,0,20"
+        <TextBlock TextWrapping="Wrap" Margin="0,0,0,16"
                    Text="Program je pripravený. Môžete začať s ukážkovou evidenciou a vyskúšať si všetky funkcie, alebo rovno začať vlastnú evidenciu." />
+
+        <TextBlock Text="Názov organizácie (nepovinné, zobrazí sa v hlavičke tlačových zostáv)" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+        <TextBox x:Name="Organizacia" Margin="0,0,0,20" />
 
         <Button Click="Ukazkove_Click" HorizontalContentAlignment="Left" Padding="16,12"
                 Style="{DynamicResource AccentButtonStyle}">

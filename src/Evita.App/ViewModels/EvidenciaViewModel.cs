@@ -285,6 +285,41 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         okno.ShowDialog();
     }
 
+    [RelayCommand]
+    private void Tlacit()
+    {
+        try
+        {
+            var okno = VytvorNahladTlace();
+            okno.Owner = Dialogy.Vlastnik;
+            okno.ShowDialog();
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            Dialogy.Chyba("Zostavu sa nepodarilo vytvoriť.", ex);
+        }
+    }
+
+    /// <summary>Náhľad zostavy „Vyfiltrované položky“ podľa aktuálneho filtra.</summary>
+    public NahladWindow VytvorNahladTlace()
+    {
+        var popis = ZostavyService.Popis(DruhZostavy.Vyfiltrovane);
+        var moznosti = new MoznostiZostavy
+        {
+            Druh = DruhZostavy.Vyfiltrovane,
+            Stlpce = popis.PredvoleneStlpce,
+            NaSirku = true,
+            IdPoloziek = Pohlad?.Cast<PolozkaRiadok>().Select(r => r.Id).ToList() ?? new List<int>(),
+            PopisFiltra = PopisFiltra(),
+        };
+        var sluzba = new ZostavyService();
+        return new NahladWindow(() => sluzba.Vytvor(moznosti), true, popis.Nazov, ZostavyService.NazovSuboru(DruhZostavy.Vyfiltrovane));
+    }
+
     /// <summary>Čitateľný popis zapnutých filtrov (do hlavičky exportu).</summary>
     public string PopisFiltra()
     {

@@ -46,11 +46,15 @@ názov a logo organizácie, tlač a export). Heslo automatických záloh sa z be
 - **Import** cez sprievodcu v 5 krokoch: výber súboru (Excel, CSV, JSON, XML), priradenie stĺpcov, kontrola
   s opravou priamo v tabuľke, náhľad a import s protokolom. Pred zápisom sa urobí záloha a import sa dá jedným
   kliknutím vrátiť. Duplicity sa hľadajú podľa identifikátora, sériového čísla a zhody názvu, kategórie a miestnosti.
+- **Import číselníkov** v tom istom sprievodcovi (*Doplniť kategórie, miestnosti alebo osoby*): z Excelu, CSV alebo zo
+  súboru EviTA (JSON, XML). Pridajú sa len záznamy, ktoré ešte neexistujú; meno a priezvisko môžu byť aj v jednom
+  stĺpci. V Exceli sa použije hárok s názvom číselníka (Kategórie, Miestnosti, Osoby).
 - **Prenos celej databázy** na iný počítač: úplný export JSON alebo XML naimportovaný do prázdnej evidencie
   zachová prírastkové čísla, číselníky aj históriu zmien.
 - **Vzorové súbory** sú priamo v programe (*Import a export → Vzorové súbory pre import*, aj v sprievodcovi).
   Kliknutím sa uloží do priečinka Stiahnuté: `EviTA_vzor_Excel.xlsx` (s návodom a výberovými zoznamami),
-  `EviTA_vzor_CSV.csv`, `EviTA_vzor_JSON.json` a `EviTA_vzor_XML.xml` (spolu s popisom formátu `evita.xsd`).
+  `EviTA_vzor_CSV.csv`, `EviTA_vzor_JSON.json`, `EviTA_vzor_XML.xml` (spolu s popisom formátu `evita.xsd`)
+  a `EviTA_vzor_ciselniky.xlsx` (kategórie, miestnosti a osoby, každý číselník na vlastnom hárku).
 
 ## Aktualizácie
 
@@ -76,6 +80,11 @@ V menu *Tlač a zostavy* vyberiete zostavu, nastavíte obdobie, zoskupenie, stĺ
 Každá zostava sa dá pozrieť v náhľade, vytlačiť alebo jedným kliknutím uložiť do PDF. Hlavička obsahuje názov
 organizácie a logo (nastavíte na tej istej obrazovke), päta dátum tlače a číslo strany. Zobrazené položky
 z Evidencie vytlačíte tlačidlom *Tlačiť…* alebo klávesmi Ctrl+P.
+
+Nastavenú zostavu uložíte tlačidlom **Uložiť zostavu…** pod vlastným názvom – so stĺpcami a ich poradím, filtrami
+(miestnosť, osoba, kategória), orientáciou a obdobím. Obdobie môže byť pevné (od – do) alebo napr. *minulý mesiac*
+či *tento rok* – vtedy sa pri každom použití prepočíta. Uložené zostavy sú vľavo pod zoznamom zostáv; prenášajú sa
+aj s exportom konfigurácie programu.
 
 ## Kde sú dáta
 

@@ -183,8 +183,8 @@
                         </DataGridTextColumn>
                         <DataGridTextColumn x:Name="StlpecPole1" Header="Názov" Binding="{Binding Pole1}" Width="220" />
                         <DataGridTextColumn x:Name="StlpecPole2" Header="Budova" Binding="{Binding Pole2}" Width="180" />
-                        <DataGridTextColumn x:Name="StlpecPole3" Header="Poznámka" Binding="{Binding Pole3}" Width="*" MinWidth="160" />
-                        <DataGridTextColumn Header="Aktívna" Binding="{Binding Aktivna}" Width="90" />
+                        <DataGridTextColumn x:Name="StlpecPole3" Header="Poznámka" Binding="{Binding Pole3}" Width="200" />
+                        <DataGridTextColumn Header="Aktívna" Binding="{Binding Aktivna}" Width="100" />
                     </DataGrid.Columns>
                 </DataGrid>
                 <DataGrid x:Name="TabulkaRiadkov" ItemsSource="{Binding PohladRiadkov}" AutoGenerateColumns="False" CanUserAddRows="False"

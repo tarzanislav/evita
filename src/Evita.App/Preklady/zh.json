@@ -394,6 +394,8 @@
  "Kurzy sa nepodarilo stiahnuť – skontrolujte pripojenie k internetu.": "无法下载汇率——请检查网络连接。",
  "Kód": "代码",
  "Kód na štítku": "标签上的代码",
+ "Kód sa nepodarilo vytvoriť.": "无法生成代码。",
+ "Kód sa nepodarilo vytvoriť: {0}": "无法生成代码：{0}",
  "Kód sa teraz nedá spracovať.": "现在无法处理该代码。",
  "Kód {0} majú {1} položky ({2}). Naskenujte štítok EviTA alebo sériové číslo, prípadne položku označte ručne.": "有 {1} 个项目使用代码 {0}（{2}）。请扫描 EviTA 标签或序列号，或手动标记项目。",
  "Kód {0} sa v evidencii nenašiel.": "登记中未找到代码 {0}。",

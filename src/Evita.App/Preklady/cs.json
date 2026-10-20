@@ -394,6 +394,8 @@
  "Kurzy sa nepodarilo stiahnuť – skontrolujte pripojenie k internetu.": "Kurzy se nepodařilo stáhnout – zkontrolujte připojení k internetu.",
  "Kód": "Kód",
  "Kód na štítku": "Kód na štítku",
+ "Kód sa nepodarilo vytvoriť.": "Kód se nepodařilo vytvořit.",
+ "Kód sa nepodarilo vytvoriť: {0}": "Kód se nepodařilo vytvořit: {0}",
  "Kód sa teraz nedá spracovať.": "Kód teď nelze zpracovat.",
  "Kód {0} majú {1} položky ({2}). Naskenujte štítok EviTA alebo sériové číslo, prípadne položku označte ručne.": "Kód {0} mají {1} položky ({2}). Naskenujte štítek EviTA nebo sériové číslo, případně položku označte ručně.",
  "Kód {0} sa v evidencii nenašiel.": "Kód {0} nebyl v evidenci nalezen.",

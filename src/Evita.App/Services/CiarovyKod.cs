@@ -60,24 +60,117 @@ public static class CiarovyKod
     public static bool DaSaZapisatDoCode128(string text) => text.Length > 0 && text.All(z => z is >= ' ' and <= '~');
 
     /// <summary>Kód ako obrázok v odtieňoch sivej, 1 bod na modul, bez okrajov a bez textu.</summary>
+    /// <remarks>
+    /// Volá priamo C rozhranie ZXing.dll, aby sa text odovzdal v UTF-8 (aj s diakritikou) – .NET obal ho posiela
+    /// v kódovaní Windows. Pamäť vrátenú knižnicou vždy uvoľní tou istou knižnicou.
+    /// </remarks>
     private static (byte[] Data, int Sirka, int Vyska) Vytvor(ZXingCpp.BarcodeFormat format, string text, string? moznosti)
     {
+        IntPtr nastavenia = IntPtr.Zero, kod = IntPtr.Zero, zapis = IntPtr.Zero, obraz = IntPtr.Zero;
         try
         {
-            using var nastavenia = new ZXingCpp.CreatorOptions(format, moznosti);
+            nastavenia = Zapis.ZXing_CreatorOptions_new(format);
+            if (nastavenia == IntPtr.Zero)
+            {
+                throw new EvitaException(Chyba());
+            }
 
-            // text s diakritikou sa zapíše ako bajty UTF-8 (čítačky ich rozpoznajú)
-            using var kod = text.All(z => z < 128)
-                ? new ZXingCpp.Barcode(text, nastavenia)
-                : new ZXingCpp.Barcode(Encoding.UTF8.GetBytes(text), nastavenia);
-            using var zapis = new ZXingCpp.WriterOptions { Scale = 1, AddQuietZones = false, AddHRT = false };
-            using var obraz = kod.ToImage(zapis);
-            return (obraz.ToArray(), obraz.Width, obraz.Height);
+            if (moznosti is not null)
+            {
+                Zapis.ZXing_CreatorOptions_setOptions(nastavenia, Encoding.ASCII.GetBytes(moznosti + "\0"));
+            }
+
+            var utf8 = Encoding.UTF8.GetBytes(text);
+            if (utf8.Length == 0)
+            {
+                throw new EvitaException(Preklad.T("Kód sa nepodarilo vytvoriť."));
+            }
+
+            kod = Zapis.ZXing_CreateBarcodeFromText(utf8, utf8.Length, nastavenia);
+            if (kod == IntPtr.Zero)
+            {
+                throw new EvitaException(Chyba());
+            }
+
+            zapis = Zapis.ZXing_WriterOptions_new();
+            Zapis.ZXing_WriterOptions_setScale(zapis, 1);
+            Zapis.ZXing_WriterOptions_setAddQuietZones(zapis, false);
+            Zapis.ZXing_WriterOptions_setAddHRT(zapis, false);
+            obraz = Zapis.ZXing_WriteBarcodeToImage(kod, zapis);
+            if (obraz == IntPtr.Zero)
+            {
+                throw new EvitaException(Chyba());
+            }
+
+            var sirka = Zapis.ZXing_Image_width(obraz);
+            var vyska = Zapis.ZXing_Image_height(obraz);
+            var data = new byte[sirka * vyska];
+            Marshal.Copy(Zapis.ZXing_Image_data(obraz), data, 0, data.Length);
+            return (data, sirka, vyska);
         }
         catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
         {
             throw new EvitaException(Preklad.T("Knižnica na čiarové a QR kódy (ZXing.dll) chýba alebo je poškodená. Preinštalujte EviTA."), ex);
         }
+        finally
+        {
+            if (obraz != IntPtr.Zero)
+            {
+                Zapis.ZXing_Image_delete(obraz);
+            }
+
+            if (zapis != IntPtr.Zero)
+            {
+                Zapis.ZXing_WriterOptions_delete(zapis);
+            }
+
+            if (kod != IntPtr.Zero)
+            {
+                Zapis.ZXing_Barcode_delete(kod);
+            }
+
+            if (nastavenia != IntPtr.Zero)
+            {
+                Zapis.ZXing_CreatorOptions_delete(nastavenia);
+            }
+        }
+
+        static string Chyba()
+        {
+            var sprava = Zapis.ZXing_LastErrorMsg();
+            if (sprava == IntPtr.Zero)
+            {
+                return Preklad.T("Kód sa nepodarilo vytvoriť.");
+            }
+
+            var text = Marshal.PtrToStringUTF8(sprava) ?? "";
+            Zapis.ZXing_free(sprava);
+            return Preklad.F($"Kód sa nepodarilo vytvoriť: {text}");
+        }
+    }
+
+    /// <summary>Funkcie C rozhrania zxing-cpp na vytvorenie kódu (text v UTF-8).</summary>
+    private static class Zapis
+    {
+        private const string Kniznica = "ZXing";
+
+        [DllImport(Kniznica)] public static extern IntPtr ZXing_CreatorOptions_new(int format);
+        [DllImport(Kniznica)] public static extern void ZXing_CreatorOptions_delete(IntPtr nastavenia);
+        [DllImport(Kniznica)] public static extern void ZXing_CreatorOptions_setOptions(IntPtr nastavenia, byte[] moznosti);
+        [DllImport(Kniznica)] public static extern IntPtr ZXing_CreateBarcodeFromText(byte[] data, int dlzka, IntPtr nastavenia);
+        [DllImport(Kniznica)] public static extern void ZXing_Barcode_delete(IntPtr kod);
+        [DllImport(Kniznica)] public static extern IntPtr ZXing_WriterOptions_new();
+        [DllImport(Kniznica)] public static extern void ZXing_WriterOptions_delete(IntPtr zapis);
+        [DllImport(Kniznica)] public static extern void ZXing_WriterOptions_setScale(IntPtr zapis, int mierka);
+        [DllImport(Kniznica)] public static extern void ZXing_WriterOptions_setAddHRT(IntPtr zapis, [MarshalAs(UnmanagedType.I1)] bool text);
+        [DllImport(Kniznica)] public static extern void ZXing_WriterOptions_setAddQuietZones(IntPtr zapis, [MarshalAs(UnmanagedType.I1)] bool okraje);
+        [DllImport(Kniznica)] public static extern IntPtr ZXing_WriteBarcodeToImage(IntPtr kod, IntPtr zapis);
+        [DllImport(Kniznica)] public static extern IntPtr ZXing_Image_data(IntPtr obraz);
+        [DllImport(Kniznica)] public static extern int ZXing_Image_width(IntPtr obraz);
+        [DllImport(Kniznica)] public static extern int ZXing_Image_height(IntPtr obraz);
+        [DllImport(Kniznica)] public static extern void ZXing_Image_delete(IntPtr obraz);
+        [DllImport(Kniznica)] public static extern IntPtr ZXing_LastErrorMsg();
+        [DllImport(Kniznica)] public static extern void ZXing_free(IntPtr pamat);
     }
 
     /// <summary>QR kód ako obrázok pre okno (napr. adresa pre mobil). Rozmer je v jednotkách WPF vrátane okraja.</summary>

@@ -394,6 +394,8 @@
  "Kurzy sa nepodarilo stiahnuť – skontrolujte pripojenie k internetu.": "Az árfolyamokat nem sikerült letölteni – ellenőrizze az internetkapcsolatot.",
  "Kód": "Kód",
  "Kód na štítku": "Kód a címkén",
+ "Kód sa nepodarilo vytvoriť.": "A kódot nem sikerült létrehozni.",
+ "Kód sa nepodarilo vytvoriť: {0}": "A kódot nem sikerült létrehozni: {0}",
  "Kód sa teraz nedá spracovať.": "A kódot most nem lehet feldolgozni.",
  "Kód {0} majú {1} položky ({2}). Naskenujte štítok EviTA alebo sériové číslo, prípadne položku označte ručne.": "A(z) {0} kód {1} tételhez tartozik ({2}). Olvassa be az EviTA-címkét vagy a sorozatszámot, vagy jelölje meg a tételt kézzel.",
  "Kód {0} sa v evidencii nenašiel.": "A(z) {0} kód nem található a nyilvántartásban.",

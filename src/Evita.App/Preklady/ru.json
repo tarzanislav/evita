@@ -394,6 +394,8 @@
  "Kurzy sa nepodarilo stiahnuť – skontrolujte pripojenie k internetu.": "Не удалось загрузить курсы – проверьте подключение к интернету.",
  "Kód": "Код",
  "Kód na štítku": "Код на этикетке",
+ "Kód sa nepodarilo vytvoriť.": "Не удалось создать код.",
+ "Kód sa nepodarilo vytvoriť: {0}": "Не удалось создать код: {0}",
  "Kód sa teraz nedá spracovať.": "Сейчас код невозможно обработать.",
  "Kód {0} majú {1} položky ({2}). Naskenujte štítok EviTA alebo sériové číslo, prípadne položku označte ručne.": "Код {0} есть у {1} позиций ({2}). Отсканируйте этикетку EviTA или серийный номер либо отметьте позицию вручную.",
  "Kód {0} sa v evidencii nenašiel.": "Код {0} в учёте не найден.",

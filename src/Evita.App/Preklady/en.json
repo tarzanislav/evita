@@ -394,6 +394,8 @@
  "Kurzy sa nepodarilo stiahnuť – skontrolujte pripojenie k internetu.": "The exchange rates could not be downloaded – check your internet connection.",
  "Kód": "Code",
  "Kód na štítku": "Code on the label",
+ "Kód sa nepodarilo vytvoriť.": "The code could not be created.",
+ "Kód sa nepodarilo vytvoriť: {0}": "The code could not be created: {0}",
  "Kód sa teraz nedá spracovať.": "The code cannot be processed now.",
  "Kód {0} majú {1} položky ({2}). Naskenujte štítok EviTA alebo sériové číslo, prípadne položku označte ručne.": "{1} items have the code {0} ({2}). Scan the EviTA label or the serial number, or mark the item manually.",
  "Kód {0} sa v evidencii nenašiel.": "Code {0} was not found in the inventory.",

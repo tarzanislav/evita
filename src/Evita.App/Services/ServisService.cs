@@ -99,6 +99,11 @@ public sealed class ServisService
                 JsonSerializer.Serialize(popis, new JsonSerializerOptions { WriteIndented = true }));
 
             var ciel = Path.Combine(priecinok, nazov + ".zip");
+            for (var poradie = 2; File.Exists(ciel); poradie++)
+            {
+                ciel = Path.Combine(priecinok, $"{nazov}_{poradie}.zip");
+            }
+
             ZipFile.CreateFromDirectory(docasnyPriecinok, ciel, CompressionLevel.Optimal, includeBaseDirectory: false);
             return ciel;
         }

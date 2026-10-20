@@ -8,12 +8,12 @@
 
         <!-- tlačidlo bez rámčeka (udalosť v bunke) -->
         <ControlTemplate x:Key="BezRamceka" TargetType="Button">
-            <ContentPresenter />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
         </ControlTemplate>
 
         <!-- udalosť v bunke mesiaca -->
         <DataTemplate x:Key="UdalostVBunke">
-            <Button Template="{StaticResource BezRamceka}" Cursor="Hand" Margin="0,0,0,2"
+            <Button Template="{StaticResource BezRamceka}" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,0,2"
                     Command="{Binding DataContext.OtvorUdalostCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     CommandParameter="{Binding}">
                 <Button.ToolTip>
@@ -50,7 +50,7 @@
 
         <!-- udalosť v týždni a v zozname (podrobnejšia) -->
         <DataTemplate x:Key="UdalostRiadok">
-            <Button Template="{StaticResource BezRamceka}" Cursor="Hand" Margin="0,0,0,6"
+            <Button Template="{StaticResource BezRamceka}" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,0,6"
                     Command="{Binding DataContext.OtvorUdalostCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     CommandParameter="{Binding}">
                 <Border x:Name="Ramik" CornerRadius="4" Padding="8,5" BorderThickness="4,0,0,0"
@@ -85,7 +85,7 @@
 
         <!-- udalosť v stĺpci týždňa (úzka) -->
         <DataTemplate x:Key="UdalostTyzden">
-            <Button Template="{StaticResource BezRamceka}" Cursor="Hand" Margin="0,0,0,5"
+            <Button Template="{StaticResource BezRamceka}" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,0,5"
                     Command="{Binding DataContext.OtvorUdalostCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     CommandParameter="{Binding}">
                 <Button.ToolTip>

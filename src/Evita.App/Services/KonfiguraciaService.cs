@@ -42,12 +42,15 @@ public static class KonfiguraciaService
         ("Export.", Preklad.N("export (formát, stĺpce, priečinok)")),
         ("Aktualizacie.Kontrolovat", Preklad.N("kontrola aktualizácií")),
         ("Kalendarium.", Preklad.N("citáty a výročia (sťahovanie z Wikipédie)")),
+        ("Skenovanie.", Preklad.N("skenovanie (zvuk, otvorenie karty, port pre mobil)")),
+        ("Stitky.", Preklad.N("formát a obsah štítkov")),
+        ("Ean.", Preklad.N("účet Icecat pre údaje podľa EAN")),
     };
 
     /// <summary>Kľúče, ktoré sa neprenášajú: heslo je zašifrované len pre tento počítač, ostatné sú interné.</summary>
     private static readonly HashSet<string> Vynechane = new(StringComparer.Ordinal)
     {
-        "Zaloha.HesloAutomatickych", "Zaloha.TypyOpravene",
+        "Zaloha.HesloAutomatickych", "Zaloha.TypyOpravene", "Skenovanie.Kamera",
     };
 
     private static readonly JsonSerializerOptions Moznosti = new()

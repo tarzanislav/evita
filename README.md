@@ -48,7 +48,7 @@ overí, že každý text v programe má preklad vo všetkých jazykoch.
 
 V časti *Nastavenia* je jazyk, miesto pre počasie, meny kurzového lístka a **export a import konfigurácie programu**
 (súbor JSON bez dát evidencie – jazyk, panely dashboardu, nastavenia kalendára a typy udalostí, pravidelné zálohy,
-názov a logo organizácie, tlač a export). Heslo automatických záloh sa z bezpečnostných dôvodov neprenáša.
+názov a logo organizácie, tlač a export, skenovanie a štítky). Heslo automatických záloh sa z bezpečnostných dôvodov neprenáša.
 
 ## Import a export
 
@@ -97,6 +97,30 @@ Nastavenú zostavu uložíte tlačidlom **Uložiť zostavu…** pod vlastným n�
 či *tento rok* – vtedy sa pri každom použití prepočíta. Uložené zostavy sú vľavo pod zoznamom zostáv; prenášajú sa
 aj s exportom konfigurácie programu.
 
+## Skenovanie, štítky a inventúra
+
+- **Čítačka čiarových a QR kódov** (USB alebo Bluetooth, správa sa ako klávesnica) funguje v celom programe: naskenovaný
+  kód otvorí kartu položky, kód viacerých položiek ich ukáže v Evidencii, neznámy kód ponúkne pridanie novej položky.
+  Rozpozná štítok EviTA (`EVITA-123`), inventárne, sériové a prírastkové číslo a EAN výrobku. Čítačku nastavenú na americkú
+  klávesnicu (píše `+ľščť` namiesto číslic) EviTA opraví sama. V textovom poli (napr. sériové číslo v karte položky) kód
+  zostane v poli a Enter presunie kurzor ďalej.
+- **Obrazovka Skenovanie a inventúra:** pole na skenovanie, posledné skeny s akciami, inventúry, tlač štítkov a nastavenia
+  (zvuk, otvorenie karty, port pre mobil, účet Icecat).
+- **Štítky s QR alebo čiarovým kódom (Code 128)** na samolepiace hárky A4 (24, 21, 40, 65, 14 štítkov a vlastný formát)
+  aj na tlačiarne štítkov (62 × 29, 50 × 30, 50 × 25, 38 × 25 mm). Obsah kódu: štítok EviTA, inventárne alebo sériové
+  číslo; text: organizácia, názov, čísla, miestnosť. Začiatok na čiastočne použitom hárku, kópie, posun tlače, náhľad,
+  tlač a PDF. Štítky sa tlačia z Evidencie (označené alebo zobrazené položky), z karty položky aj podľa miestnosti.
+- **Inventúra:** po miestnostiach – vyberiete miestnosť a skenujete. EviTA ukazuje, čo chýba, čo je v inej miestnosti
+  (jedným klikom sa presunie v evidencii), neznáme kódy a vyradené položky; položku bez štítku označíte ručne.
+  Inventúrny protokol (súhrn po miestnostiach, chýbajúce, nájdené inde, podpisy) vytlačíte alebo uložíte do PDF.
+- **Kamera počítača** (webkamera, notebook, tablet) číta kódy priamo z obrazu.
+- **Mobil ako skener:** EviTA ukáže QR kód s adresou stránky v miestnej sieti; mobil kód na zariadení odfotí alebo ho
+  napíšete a počítač ho spracuje ako kód z čítačky. Bez aplikácie v mobile, stačí prehliadač a rovnaká Wi-Fi.
+  Inštalátor povolí program vo Windows Firewall (porty 8765 – 8769, súkromná a doménová sieť).
+- **EAN výrobku** v karte položky (aj v exporte a importe): tlačidlo *Doplniť z internetu* vyhľadá výrobcu, model, názov
+  a kategóriu vo vlastnej evidencii, v katalógu IT produktov **Open Icecat** a v databáze **UPCitemdb** (bez registrácie,
+  UPCitemdb najviac 100 vyhľadaní denne). Naskenovaný neznámy EAN založí novú položku s doplnenými údajmi.
+
 ## Kde sú dáta
 
 | Čo | Kde |
@@ -129,13 +153,16 @@ Odinštalovanie programu databázu ani zálohy nemaže.
       s kalendárom a položkami, export a import konfigurácie, jazyky EN, SK, CS, PL, HU, RU, ZH s tlačidlom Language reset
 - [x] **Etapa 7 – Kalendárium:** citát dňa (zabudované a vlastné citáty, skrytie, vymazanie), výročia dňa
       z Wikipédie v jazyku programu (aj celý rok naraz, offline), vlastné výročia, export a import JSON
-- [ ] Etapa 8 – Skenovanie a údaje z internetu
+- [x] **Etapa 8 – Skenovanie a údaje z internetu:** čítačka čiarových a QR kódov v celom programe, štítky s QR
+      a čiarovým kódom na hárky A4 aj tlačiarne štítkov, inventúra skenovaním po miestnostiach s protokolom, kamera
+      počítača a mobil ako skener, EAN výrobku s doplnením údajov z Open Icecat a UPCitemdb
 - [ ] Etapa 9 – Dokončenie
 
 ## Technické informácie
 
 - C# / .NET 10 (LTS), WPF s Fluent vzhľadom Windows 11
 - SQLite cez Entity Framework Core
+- Čiarové a QR kódy: ZXing.Net; kamera cez Windows.Media.Capture
 - Inštalátor: Inno Setup, zostavuje sa automaticky cez GitHub Actions pri každej zmene vetvy `main`
 
 Štruktúra:
@@ -145,7 +172,8 @@ src/Evita.App/
   Models/       dátové triedy (položka, kategória, miestnosť, osoba, história)
   Data/         databáza (EF Core, SQLite)
   Services/     evidencia, číselníky, servis, zálohy, import a export, kalendár, úlohy, poznámky,
-                kurzy, počasie, konfigurácia, preklad, ukážkové dáta
+                kurzy, počasie, konfigurácia, preklad, ukážkové dáta, skenovanie, štítky, inventúra,
+                kamera, mobil ako skener, EAN
   Preklady/     slovníky prekladov (en, cs, pl, hu, ru, zh)
   ViewModels/   logika obrazoviek
   Views/        okná a obrazovky (XAML)

@@ -119,9 +119,10 @@ internal static partial class Samotest
         StitkyService.UlozPdf(vlastne, Path.Combine(exportPriecinok, "stitky_vlastne.pdf"));
         Over(new[] { "stitky_A4_qr.pdf", "stitky_A4_ciarove.pdf", "stitky_rola_62x29.pdf", "stitky_vlastne.pdf" }
             .All(s => new FileInfo(Path.Combine(exportPriecinok, s)).Length > 3000), "PDF so štítkami");
-        Over(StitkyService.TextKodu(udaje.First(u => u.Inventarne is null) is { } bezInv ? bezInv : udaje[0],
-                 new MoznostiStitkov { ObsahKodu = ObsahKodu.Inventarne }).StartsWith("EVITA-", StringComparison.Ordinal)
-             || udaje.All(u => u.Inventarne is not null), "položka bez inventárneho čísla dostane kód EviTA");
+        var bezInventarneho = udaje[0] with { Inventarne = null };
+        Over(StitkyService.TextKodu(bezInventarneho, new MoznostiStitkov { ObsahKodu = ObsahKodu.Inventarne }) == KodyEvita.KodPolozky(bezInventarneho.PrirastkoveCislo)
+             && StitkyService.TextKodu(udaje[0] with { Inventarne = "INV-1" }, new MoznostiStitkov { ObsahKodu = ObsahKodu.Inventarne }) == "INV-1",
+            "kód štítku: inventárne číslo, bez neho štítok EviTA");
         stitky.UlozMoznosti(new MoznostiStitkov { Sablona = "a4-3x7", Kod = DruhKodu.Ciarovy, Kopie = 5 });
         var nacitane = stitky.NacitajMoznosti();
         Over(nacitane.Sablona == "a4-3x7" && nacitane.Kod == DruhKodu.Ciarovy && nacitane.Kopie == 1, "nastavenia štítkov sa zapamätajú (bez kópií)");

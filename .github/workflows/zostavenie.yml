@@ -77,7 +77,8 @@ jobs:
           Write-Host "::notice::Samotest OK"
 
       - name: Uložiť výstupy samotestu (len vývojové vetvy)
-        if: github.ref != 'refs/heads/main'
+        # aj po neúspešnom samoteste – záznam a snímky pomôžu nájsť chybu
+        if: ${{ !cancelled() && github.ref != 'refs/heads/main' }}
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

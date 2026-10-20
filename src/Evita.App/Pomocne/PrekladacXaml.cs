@@ -30,8 +30,20 @@ public static class PrekladacXaml
 
         _zapnuty = true;
         EventManager.RegisterClassHandler(typeof(FrameworkElement), FrameworkElement.LoadedEvent, new RoutedEventHandler(PriNacitani), true);
+
+        // Loaded dostanú len prvky, ktorých podstrom má vlastnú obsluhu Loaded (optimalizácia WPF), preto preklad
+        // spúšťa aj prvé rozmiestnenie – SizeChanged dostane každý zobrazený prvok pred prvým vykreslením
+        EventManager.RegisterClassHandler(typeof(FrameworkElement), FrameworkElement.SizeChangedEvent, new SizeChangedEventHandler(PriZmeneVelkosti), true);
         EventManager.RegisterClassHandler(typeof(ToolTip), ToolTip.OpenedEvent, new RoutedEventHandler(PriNacitani), true);
         EventManager.RegisterClassHandler(typeof(ContextMenu), ContextMenu.OpenedEvent, new RoutedEventHandler(PriNacitani), true);
+    }
+
+    private static void PriZmeneVelkosti(object sender, SizeChangedEventArgs e)
+    {
+        if (sender is FrameworkElement prvok && !(bool)prvok.GetValue(PrelozeneProperty))
+        {
+            PriNacitani(sender, e);
+        }
     }
 
     private static void PriNacitani(object sender, RoutedEventArgs e)
@@ -196,7 +208,7 @@ public static class PrekladacXaml
 
         if (prvok.GetValue(vlastnost) is string text && text.Length > 0)
         {
-            var preklad = Preklad.T(text);
+            var preklad = Preklad.TAkJe(text);
             if (!ReferenceEquals(preklad, text) && preklad != text)
             {
                 prvok.SetValue(vlastnost, preklad);
@@ -303,9 +315,22 @@ public static class PrekladacXaml
 
             foreach (var text in TextyPrvku(prvok))
             {
-                if (!string.IsNullOrWhiteSpace(text) && !Preklad.MaPreklad(text) && JeSlovenskyText(text))
+                if (string.IsNullOrWhiteSpace(text))
                 {
-                    yield return text;
+                    continue;
+                }
+
+                if (!Preklad.MaPreklad(text))
+                {
+                    if (JeSlovenskyText(text))
+                    {
+                        yield return text;
+                    }
+                }
+                else if (Preklad.TAkJe(text) != text && JeViditelny(prvok))
+                {
+                    // text má preklad, ale na obrazovke zostal pôvodný – prekladač prvok nezachytil
+                    yield return "[X] " + text;
                 }
             }
 
@@ -357,6 +382,16 @@ public static class PrekladacXaml
         {
             yield return tip;
         }
+    }
+
+    private static bool JeViditelny(DependencyObject prvok)
+    {
+        while (prvok is not null and not UIElement)
+        {
+            prvok = prvok is FrameworkContentElement obsah ? obsah.Parent : null!;
+        }
+
+        return prvok is UIElement { IsVisible: true };
     }
 
     /// <summary>Text so slovenskými znakmi (á, č, ľ, ň, ô, š, ť, ž …) – v inom jazyku je to pravdepodobne nepreložený text.</summary>

@@ -84,7 +84,8 @@ public sealed class PdfZostava
         Dokument.Info.Title = titulok;
         Dokument.Info.Author = "EviTA";
         var normal = Dokument.Styles[StyleNames.Normal]!;
-        normal.Font.Name = "Segoe UI";
+        // Segoe UI nemá čínske znaky – pre čínštinu písmo Microsoft YaHei (súčasť Windows)
+        normal.Font.Name = Preklad.Aktualny.Kod == "zh" ? "Microsoft YaHei" : "Segoe UI";
         normal.Font.Size = velkostPisma;
 
         Sekcia = Dokument.AddSection();

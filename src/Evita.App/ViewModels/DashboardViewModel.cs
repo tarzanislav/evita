@@ -5,13 +5,19 @@ using CommunityToolkit.Mvvm.Input;
 using Evita.Data;
 using Evita.Models;
 using Evita.Services;
+using Kalendarium;
 
 namespace Evita.ViewModels;
+
+/// <summary>Jeden stĺpec grafu „položky podľa kategórií“.</summary>
+public sealed record StlpecGrafu(int KategoriaId, string Nazov, int Pocet, int Maximum);
 
 public partial class DashboardViewModel : ObservableObject, IObnovitelny
 {
     private readonly MainViewModel _hlavne;
     private readonly DispatcherTimer _hodiny;
+    private DateTime _zobrazenyDen;
+    private bool _nacitavamPanely;
 
     public DashboardViewModel(MainViewModel hlavne)
     {
@@ -20,7 +26,40 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         _hodiny.Tick += (_, _) => AktualizujCas();
         _hodiny.Start();
         AktualizujCas();
+        NacitajPanely();
     }
+
+    // dnešný deň – meniny a sviatky
+    [ObservableProperty] private string _meninyDnes = "";
+    [ObservableProperty] private string _meninyZajtra = "";
+    [ObservableProperty] private string _meninyOsob = "";
+    [ObservableProperty] private string _sviatokDnes = "";
+    [ObservableProperty] private bool _jeDnesVolno;
+    [ObservableProperty] private string _najblizsiVolnyDen = "";
+
+    // graf
+    [ObservableProperty] private List<StlpecGrafu> _graf = new();
+
+    // o databáze
+    [ObservableProperty] private string _velkostDatabazy = "";
+    [ObservableProperty] private string _poslednaKontrola = "";
+    [ObservableProperty] private string _kalendariumText = "";
+    public string VerziaProgramu => $"EviTA {AktualizaciaService.AktualnaVerzia}, verzia dátovej štruktúry {Databaza.VerziaSchemy}";
+
+    // ktoré panely sú zobrazené
+    [ObservableProperty] private bool _ukazDnes = true;
+    [ObservableProperty] private bool _ukazPocty = true;
+    [ObservableProperty] private bool _ukazGraf = true;
+    [ObservableProperty] private bool _ukazUpozornenia = true;
+    [ObservableProperty] private bool _ukazNaposledy = true;
+    [ObservableProperty] private bool _ukazDatabazu = true;
+
+    partial void OnUkazDnesChanged(bool value) => UlozPanely();
+    partial void OnUkazPoctyChanged(bool value) => UlozPanely();
+    partial void OnUkazGrafChanged(bool value) => UlozPanely();
+    partial void OnUkazUpozorneniaChanged(bool value) => UlozPanely();
+    partial void OnUkazNaposledyChanged(bool value) => UlozPanely();
+    partial void OnUkazDatabazuChanged(bool value) => UlozPanely();
 
     [ObservableProperty] private string _datumText = "";
     [ObservableProperty] private string _casText = "";
@@ -48,6 +87,8 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
 
     public void Obnov()
     {
+        AktualizujDen();
+        AktualizujGrafADatabazu();
         var dnes = DateTime.Today;
         var o30 = dnes.AddDays(30);
         var zaciatokMesiaca = new DateTime(dnes.Year, dnes.Month, 1);
@@ -110,6 +151,155 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     private void OtvorServis() => _hlavne.PrejdiNaSekciu("servis");
 
     [RelayCommand]
+    private void OtvorKategoriu(StlpecGrafu? stlpec)
+    {
+        if (stlpec is null)
+        {
+            return;
+        }
+
+        _hlavne.PrejdiNaSekciu("evidencia");
+        _hlavne.Evidencia.ZobrazKategoriu(stlpec.KategoriaId);
+    }
+
+    [RelayCommand]
+    private void OtvorSviatky() => _hlavne.PrejdiNaSekciu("sviatky");
+
+    /// <summary>Meniny, sviatky a najbližší voľný deň pre dnešok.</summary>
+    private void AktualizujDen()
+    {
+        var dnes = DateOnly.FromDateTime(DateTime.Today);
+        _zobrazenyDen = DateTime.Today;
+        try
+        {
+            var kalendar = KalendariumDb.Spolocna;
+            var mena = kalendar.Meniny(dnes);
+            MeninyDnes = mena.Count > 0 ? string.Join(", ", mena) : "dnes nemá meniny nikto";
+            var zajtra = kalendar.Meniny(dnes.AddDays(1));
+            MeninyZajtra = zajtra.Count > 0 ? string.Join(", ", zajtra) : "nikto";
+
+            // osoby z evidencie, ktoré majú dnes meniny
+            var hladane = mena.Select(Sk.BezDiakritiky).ToHashSet();
+            using (var db = Databaza.Otvor())
+            {
+                var oslavenci = db.Osoby.Where(o => o.Aktivna).AsEnumerable()
+                    .Where(o => hladane.Contains(Sk.BezDiakritiky(o.Meno.Trim())))
+                    .Select(o => o.CeleMeno)
+                    .ToList();
+                MeninyOsob = oslavenci.Count > 0 ? "Dnes má meniny aj: " + string.Join(", ", oslavenci) : "";
+            }
+
+            var sviatky = kalendar.SviatkyDna(dnes);
+            JeDnesVolno = sviatky.Any(sv => sv.DenPracovnehoPokoja);
+            SviatokDnes = string.Join("\n", sviatky.Select(sv =>
+                $"{char.ToUpper(sv.DruhText[0])}{sv.DruhText[1..]}: {sv.Nazov}" +
+                (sv.Druh != DruhSviatku.PamatnyDen && !sv.DenPracovnehoPokoja ? " (nie je deň pracovného pokoja)" : "")));
+
+            var najblizsi = kalendar.NajblizsiDenPracovnehoPokoja(dnes.AddDays(JeDnesVolno ? 1 : 0));
+            if (najblizsi is null)
+            {
+                NajblizsiVolnyDen = "";
+            }
+            else
+            {
+                var dni = najblizsi.Datum.DayNumber - dnes.DayNumber;
+                var kedy = dni switch { 0 => "dnes", 1 => "zajtra", _ => $"o {dni} dní" };
+                NajblizsiVolnyDen = $"Najbližší deň pracovného pokoja: {najblizsi.Nazov}, " +
+                                    $"{najblizsi.Datum.ToString("dddd d. MMMM", Sk.Kultura)} ({kedy})";
+            }
+        }
+        catch (Exception)
+        {
+            MeninyDnes = "Kalendárium nie je dostupné";
+            MeninyZajtra = "";
+            MeninyOsob = "";
+            SviatokDnes = "";
+            NajblizsiVolnyDen = "";
+        }
+    }
+
+    private void AktualizujGrafADatabazu()
+    {
+        using (var db = Databaza.Otvor())
+        {
+            var pocty = db.Polozky.Where(p => p.Stav != StavPolozky.Vyradene)
+                .GroupBy(p => p.KategoriaId)
+                .Select(g => new { g.Key, Pocet = g.Count() })
+                .ToList();
+            var nazvy = db.Kategorie.ToDictionary(k => k.Id, k => k.Nazov);
+            var maximum = pocty.Count > 0 ? pocty.Max(p => p.Pocet) : 0;
+            Graf = pocty
+                .Select(p => new StlpecGrafu(p.Key, nazvy.GetValueOrDefault(p.Key, "?"), p.Pocet, maximum))
+                .OrderByDescending(p => p.Pocet).ThenBy(p => p.Nazov, Sk.Porovnanie)
+                .ToList();
+
+            var kontrola = Databaza.Citaj(db, DiagnostikaService.KlucPoslednaKontrola)?.Split('|');
+            PoslednaKontrola = kontrola is { Length: 3 } && DateTime.TryParse(kontrola[0], out var cas)
+                ? $"Posledná kontrola: {Sk.DatumCas(cas)} ({kontrola[1].ToLower(Sk.Kultura)}) – {(kontrola[2] == "ok" ? "v poriadku" : "našli sa problémy")}"
+                : "Kontrola databázy sa ešte nerobila.";
+        }
+
+        var velkost = ServisService.VelkostDatabazy();
+        VelkostDatabazy = velkost < 1024 * 1024 ? $"{velkost / 1024.0:0.0} kB" : $"{velkost / 1024.0 / 1024.0:0.0} MB";
+
+        try
+        {
+            var kalendar = KalendariumDb.Spolocna;
+            var rok = DateTime.Today.Year;
+            KalendariumText = $"Kalendárium: {kalendar.PocetMien()} mien, {kalendar.Sviatky(rok).Count(sv => sv.Druh != DruhSviatku.PamatnyDen)} sviatkov a " +
+                              $"{kalendar.Sviatky(rok).Count(sv => sv.Druh == DruhSviatku.PamatnyDen)} pamätných dní";
+        }
+        catch (Exception)
+        {
+            KalendariumText = "Kalendárium nie je dostupné.";
+        }
+    }
+
+    private void NacitajPanely()
+    {
+        _nacitavamPanely = true;
+        try
+        {
+            using var db = Databaza.Otvor();
+            var skryte = (Databaza.Citaj(db, "Dashboard.Skryte") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+            UkazDnes = !skryte.Contains("dnes");
+            UkazPocty = !skryte.Contains("pocty");
+            UkazGraf = !skryte.Contains("graf");
+            UkazUpozornenia = !skryte.Contains("upozornenia");
+            UkazNaposledy = !skryte.Contains("naposledy");
+            UkazDatabazu = !skryte.Contains("databaza");
+        }
+        catch (Exception)
+        {
+            // pri chybe zostanú zobrazené všetky panely
+        }
+        finally
+        {
+            _nacitavamPanely = false;
+        }
+    }
+
+    private void UlozPanely()
+    {
+        if (_nacitavamPanely)
+        {
+            return;
+        }
+
+        var skryte = new List<string>();
+        if (!UkazDnes) skryte.Add("dnes");
+        if (!UkazPocty) skryte.Add("pocty");
+        if (!UkazGraf) skryte.Add("graf");
+        if (!UkazUpozornenia) skryte.Add("upozornenia");
+        if (!UkazNaposledy) skryte.Add("naposledy");
+        if (!UkazDatabazu) skryte.Add("databaza");
+
+        using var db = Databaza.Otvor();
+        Databaza.Zapis(db, "Dashboard.Skryte", string.Join(',', skryte));
+        db.SaveChanges();
+    }
+
+    [RelayCommand]
     private void OtvorEvidenciu(string? filter)
     {
         _hlavne.PrejdiNaSekciu("evidencia");
@@ -123,5 +313,10 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         DatumText = char.ToUpper(datum[0], Sk.Kultura) + datum[1..];
         CasText = teraz.ToString("H:mm:ss", Sk.Kultura);
         TyzdenText = $"{ISOWeek.GetWeekOfYear(teraz)}. týždeň";
+        if (_zobrazenyDen != default && _zobrazenyDen != teraz.Date)
+        {
+            // o polnoci sa zmenia meniny aj sviatky
+            AktualizujDen();
+        }
     }
 }

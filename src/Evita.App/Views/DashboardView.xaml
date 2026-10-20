@@ -17,25 +17,53 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
             <!-- Dnešný deň -->
-            <Border Style="{StaticResource Karta}" Margin="0,0,12,12">
+            <Border Style="{StaticResource Karta}" Margin="0,0,12,12"
+                    Visibility="{Binding UkazDnes, Converter={StaticResource BoolNaViditelnost}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.2*" />
+                        <ColumnDefinition Width="24" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="1.3*" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="{Binding DatumText}" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding TyzdenText}" Style="{StaticResource Popis}" Margin="0,4,0,0" />
-                        <TextBlock Style="{StaticResource Popis}" Margin="0,4,0,0"
-                                   Text="Meniny, sviatky, citát dňa a výročia pribudnú v etape 3." />
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding DatumText}" FontSize="22" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding TyzdenText}" Style="{StaticResource Popis}" Margin="0,2,0,0" />
+                        <TextBlock Text="{Binding CasText}" FontSize="36" FontWeight="Light" Margin="0,4,0,0" />
                     </StackPanel>
-                    <TextBlock Grid.Column="1" Text="{Binding CasText}" FontSize="40" FontWeight="Light"
-                               VerticalAlignment="Center" />
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Meniny" Style="{StaticResource Popis}" />
+                        <TextBlock Text="{Binding MeninyDnes}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Style="{StaticResource Popis}" Margin="0,4,0,0">
+                            <Run Text="Zajtra:" /> <Run Text="{Binding MeninyZajtra, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Text="{Binding MeninyOsob}" TextWrapping="Wrap" Margin="0,6,0,0" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   Visibility="{Binding MeninyOsob, Converter={StaticResource NieJePrazdne}}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="4">
+                        <TextBlock Text="Sviatky" Style="{StaticResource Popis}" />
+                        <Border CornerRadius="4" Padding="8,2" Margin="0,2,0,4" HorizontalAlignment="Left"
+                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                Visibility="{Binding JeDnesVolno, Converter={StaticResource BoolNaViditelnost}}">
+                            <TextBlock Text="Dnes je deň pracovného pokoja" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                        </Border>
+                        <TextBlock Text="{Binding SviatokDnes}" TextWrapping="Wrap" FontWeight="SemiBold"
+                                   Visibility="{Binding SviatokDnes, Converter={StaticResource NieJePrazdne}}" />
+                        <TextBlock Text="{Binding NajblizsiVolnyDen}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <Button Content="Sviatky v roku…" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="10,3"
+                                Command="{Binding OtvorSviatkyCommand}" />
+                    </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Počty -->
-            <UniformGrid Columns="4">
+            <UniformGrid Columns="4" Visibility="{Binding UkazPocty, Converter={StaticResource BoolNaViditelnost}}">
                 <Border Style="{StaticResource Dlazdica}">
                     <StackPanel>
                         <TextBlock Text="Položky v evidencii" Style="{StaticResource Popis}" />
@@ -77,9 +105,43 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Upozornenia -->
+                <!-- Graf: položky podľa kategórií -->
                 <Border Grid.Column="0" Style="{StaticResource Karta}" Margin="0,0,12,12"
-                        BorderBrush="{DynamicResource AccentFillColorDefaultBrush}" BorderThickness="2">
+                        Visibility="{Binding UkazGraf, Converter={StaticResource BoolNaViditelnost}}">
+                    <StackPanel>
+                        <TextBlock Text="Položky podľa kategórií" Style="{StaticResource Podnadpis}" />
+                        <TextBlock Text="Zatiaľ žiadne položky." Style="{StaticResource Popis}"
+                                   Visibility="{Binding Graf.Count, Converter={StaticResource NulaNaViditelnost}}" />
+                        <ItemsControl ItemsSource="{Binding Graf}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource OdkazUpozornenia}" Margin="0,0,0,3" Padding="8,4"
+                                            Command="{Binding DataContext.OtvorKategoriuCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}" ToolTip="Kliknutím zobrazíte položky tejto kategórie">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="150" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="44" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Nazov}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            <ProgressBar Grid.Column="1" Height="12" Minimum="0" VerticalAlignment="Center"
+                                                         Maximum="{Binding Maximum, Mode=OneWay}" Value="{Binding Pocet, Mode=OneWay}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Pocet}" TextAlignment="Right"
+                                                       FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Style="{StaticResource Popis}" Margin="0,6,0,0" Text="Bez vyradených položiek." />
+                    </StackPanel>
+                </Border>
+
+                <!-- Upozornenia -->
+                <Border Grid.Column="1" Style="{StaticResource Karta}" Margin="0,0,12,12" VerticalAlignment="Top"
+                        BorderBrush="{DynamicResource AccentFillColorDefaultBrush}" BorderThickness="2"
+                        Visibility="{Binding UkazUpozornenia, Converter={StaticResource BoolNaViditelnost}}">
                     <StackPanel>
                         <TextBlock Text="Upozornenia" Style="{StaticResource Podnadpis}" />
                         <TextBlock Text="Všetko je v poriadku, nič netreba riešiť." Style="{StaticResource Popis}"
@@ -127,8 +189,17 @@
                     </StackPanel>
                 </Border>
 
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
                 <!-- Naposledy -->
-                <Border Grid.Column="1" Style="{StaticResource Karta}" Margin="0,0,12,12">
+                <Border Grid.Column="0" Style="{StaticResource Karta}" Margin="0,0,12,12"
+                        Visibility="{Binding UkazNaposledy, Converter={StaticResource BoolNaViditelnost}}">
                     <StackPanel>
                         <TextBlock Text="Naposledy pridané" Style="{StaticResource Podnadpis}" />
                         <ItemsControl ItemsSource="{Binding NaposledyPridane}">
@@ -159,7 +230,37 @@
                         </ItemsControl>
                     </StackPanel>
                 </Border>
+
+                <!-- O databáze -->
+                <Border Grid.Column="1" Style="{StaticResource Karta}" Margin="0,0,12,12" VerticalAlignment="Top"
+                        Visibility="{Binding UkazDatabazu, Converter={StaticResource BoolNaViditelnost}}">
+                    <StackPanel>
+                        <TextBlock Text="O programe a databáze" Style="{StaticResource Podnadpis}" />
+                        <TextBlock Text="{Binding VerziaProgramu}" TextWrapping="Wrap" />
+                        <TextBlock TextWrapping="Wrap" Margin="0,4,0,0">
+                            <Run Text="Veľkosť databázy:" /> <Run Text="{Binding VelkostDatabazy, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Text="{Binding PoslednaKontrola}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding KalendariumText}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <Button Content="Servis…" HorizontalAlignment="Left" Margin="0,10,0,0" Padding="10,3"
+                                Command="{Binding OtvorServisCommand}" />
+                    </StackPanel>
+                </Border>
             </Grid>
+
+            <TextBlock Style="{StaticResource Popis}" Margin="0,0,12,8"
+                       Text="Pracovný kalendár pribudne v etape 6, citát dňa a výročia osobností v etape 7." />
+
+            <Expander Header="Prispôsobiť dashboard" Margin="0,0,12,12">
+                <WrapPanel Margin="8">
+                    <CheckBox Content="Dnešný deň" IsChecked="{Binding UkazDnes}" Margin="0,0,16,6" />
+                    <CheckBox Content="Počty" IsChecked="{Binding UkazPocty}" Margin="0,0,16,6" />
+                    <CheckBox Content="Položky podľa kategórií" IsChecked="{Binding UkazGraf}" Margin="0,0,16,6" />
+                    <CheckBox Content="Upozornenia" IsChecked="{Binding UkazUpozornenia}" Margin="0,0,16,6" />
+                    <CheckBox Content="Naposledy pridané a zmenené" IsChecked="{Binding UkazNaposledy}" Margin="0,0,16,6" />
+                    <CheckBox Content="O programe a databáze" IsChecked="{Binding UkazDatabazu}" Margin="0,0,16,6" />
+                </WrapPanel>
+            </Expander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

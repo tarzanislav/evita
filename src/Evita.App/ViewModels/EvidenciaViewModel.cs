@@ -127,6 +127,13 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         Aplikuj();
     }
 
+    /// <summary>Zobrazí položky jednej kategórie (z grafu na dashboarde).</summary>
+    public void ZobrazKategoriu(int kategoriaId)
+    {
+        PouziRychlyFilter(null);
+        FilterKategoria = FilterKategorie.Any(v => v.Id == kategoriaId) ? kategoriaId : 0;
+    }
+
     [RelayCommand]
     private void ZrusRychlyFilter()
     {

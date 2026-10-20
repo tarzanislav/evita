@@ -31,3 +31,13 @@ public sealed class NieJePrazdne : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>Číslo 0 → viditeľné (napr. text „žiadne položky“), inak skryté.</summary>
+public sealed class NulaNaViditelnost : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is 0 ? Visibility.Visible : Visibility.Collapsed;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}

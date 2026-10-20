@@ -26,6 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kalendarium.Core\Kalendarium.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Assets\evita.ico" />
   </ItemGroup>
 

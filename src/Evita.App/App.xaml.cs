@@ -51,6 +51,8 @@ public partial class App : Application
             SkontrolujDatabazu();
         }
 
+        PripravKalendarium();
+
         if (prveSpustenie)
         {
             var uvod = new PrveSpustenieWindow();
@@ -148,6 +150,19 @@ public partial class App : Application
         }
     }
 
+    /// <summary>Kalendárium (meniny, sviatky) – jeho chyba program nezastaví, dashboard ukáže, že nie je dostupné.</summary>
+    private static void PripravKalendarium()
+    {
+        try
+        {
+            Kalendarium.KalendariumDb.Spolocna.Inicializuj();
+        }
+        catch (Exception)
+        {
+            // bez Kalendária program funguje ďalej
+        }
+    }
+
     /// <summary>Rýchla kontrola pri štarte – pri probléme upozorní a ponúkne riešenie v časti Servis.</summary>
     private static void SkontrolujDatabazu()
     {
@@ -179,6 +194,7 @@ public partial class App : Application
             }
 
             Databaza.Inicializuj();
+            PripravKalendarium();
             new ZalohaService().AutomatickaAkTreba();
             return 0;
         }

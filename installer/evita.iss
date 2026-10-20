@@ -50,6 +50,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; spoločný priečinok s databázou – zapisovať doň môžu všetci používatelia počítača
 Name: "{commonappdata}\EviTA"; Permissions: users-modify
 Name: "{commonappdata}\EviTA\Data"; Permissions: users-modify
+; Kalendárium – spoločné dáta (meniny, sviatky) pre všetky naše programy
+Name: "{commonappdata}\Kalendarium"; Permissions: users-modify
 
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

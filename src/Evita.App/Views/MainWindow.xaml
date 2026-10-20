@@ -19,6 +19,9 @@
         <DataTemplate DataType="{x:Type vm:ServisViewModel}">
             <v:ServisView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SviatkyViewModel}">
+            <v:SviatkyView />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -96,6 +99,12 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE716;" Margin="0,0,12,0" />
                             <TextBlock Text="Osoby" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="sviatky">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE787;" Margin="0,0,12,0" />
+                            <TextBlock Text="Sviatky" />
                         </StackPanel>
                     </ListBoxItem>
 

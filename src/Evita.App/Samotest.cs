@@ -29,6 +29,10 @@ internal static class Samotest
                 Path.Combine(Path.GetTempPath(), "EviTA_samotest_" + Guid.NewGuid().ToString("N")));
         }
 
+        // Kalendárium tiež v dočasnom priečinku – skutočného sa test nedotkne
+        Environment.SetEnvironmentVariable("KALENDARIUM_DIR",
+            Path.Combine(Environment.GetEnvironmentVariable("EVITA_DATA_DIR")!, "Kalendarium"));
+
         Directory.CreateDirectory(Databaza.Priecinok);
         var subor = Path.Combine(Databaza.Priecinok, "samotest.log");
         var vysledok = 1;
@@ -43,6 +47,40 @@ internal static class Samotest
 
             Databaza.Inicializuj();
             Krok("databáza vytvorená");
+
+            // Kalendárium: meniny a sviatky
+            var kalendar = Kalendarium.KalendariumDb.Spolocna;
+            if (File.Exists(kalendar.Cesta))
+            {
+                File.Delete(kalendar.Cesta);
+            }
+
+            kalendar.Inicializuj();
+            kalendar.Inicializuj(); // druhé spustenie nesmie nič zdvojiť
+            Over(kalendar.PocetMien() == 467, $"kalendár mien má 467 mien (má {kalendar.PocetMien()})");
+            Over(string.Join(",", kalendar.Meniny(new DateOnly(2026, 10, 20))) == "Vendelín", "meniny 20. 10.: Vendelín");
+            Over(string.Join(",", kalendar.Meniny(new DateOnly(2026, 12, 24))) == "Adam,Eva", "meniny 24. 12.: Adam, Eva");
+            Over(kalendar.Meniny(new DateOnly(2026, 1, 1)).Count == 0, "1. 1. nemá meniny nikto");
+            Over(string.Join(",", kalendar.Meniny(new DateOnly(2028, 2, 29))) == "Radomír", "meniny 29. 2.: Radomír");
+            Over(Kalendarium.KalendariumDb.VelkonocnaNedela(2025) == new DateOnly(2025, 4, 20), "Veľká noc 2025");
+            Over(Kalendarium.KalendariumDb.VelkonocnaNedela(2026) == new DateOnly(2026, 4, 5), "Veľká noc 2026");
+            Over(Kalendarium.KalendariumDb.VelkonocnaNedela(2027) == new DateOnly(2027, 3, 28), "Veľká noc 2027");
+            int DniPokoja(int rok) => kalendar.Sviatky(rok).Where(x => x.DenPracovnehoPokoja).Select(x => x.Datum).Distinct().Count();
+            Over(DniPokoja(2025) == 14, $"2025: 14 dní pracovného pokoja (je {DniPokoja(2025)})");
+            Over(DniPokoja(2026) == 11, $"2026: 11 dní pracovného pokoja (je {DniPokoja(2026)})");
+            Over(DniPokoja(2027) == 13, $"2027: 13 dní pracovného pokoja (je {DniPokoja(2027)})");
+            Over(kalendar.JeSviatokVolno(new DateOnly(2025, 11, 17)) && !kalendar.JeSviatokVolno(new DateOnly(2026, 11, 17)), "17. november od 2026 nie je voľno");
+            Over(!kalendar.JeSviatokVolno(new DateOnly(2026, 5, 8)) && kalendar.JeSviatokVolno(new DateOnly(2027, 5, 8)), "8. máj: v 2026 výnimka, v 2027 voľno");
+            Over(!kalendar.JeSviatokVolno(new DateOnly(2026, 9, 1)) && !kalendar.JeSviatokVolno(new DateOnly(2026, 10, 28)), "1. 9. a 28. 10. nie sú voľno");
+            Over(kalendar.JeSviatokVolno(new DateOnly(2026, 4, 3)) && kalendar.JeSviatokVolno(new DateOnly(2026, 4, 6)), "Veľký piatok a Veľkonočný pondelok 2026");
+            Over(kalendar.NajblizsiDenPracovnehoPokoja(new DateOnly(2026, 10, 20)) is { Nazov: "Sviatok Všetkých svätých" } najblizsi
+                 && najblizsi.Datum == new DateOnly(2026, 11, 1), "najbližší deň pracovného pokoja po 20. 10. 2026");
+            var november = kalendar.SviatkyDna(new DateOnly(2026, 11, 17)).Single(x => x.Druh == Kalendarium.DruhSviatku.StatnySviatok);
+            kalendar.NastavDenPracovnehoPokoja(november.Id, 2026, true);
+            Over(kalendar.JeSviatokVolno(new DateOnly(2026, 11, 17)), "ručná zmena dňa pracovného pokoja");
+            kalendar.ZrusZmenu(november.Id, 2026);
+            Over(!kalendar.JeSviatokVolno(new DateOnly(2026, 11, 17)), "zrušenie ručnej zmeny");
+            Krok("Kalendárium v poriadku");
 
             var servis = new ServisService();
             var sluzba = new PolozkaService();
@@ -124,6 +162,11 @@ internal static class Samotest
             Over(zalohy.JeCasNaZalohu(nastavenia), "bez zálohy je čas na zálohu");
             var pocet = sluzba.NacitajRiadky().Count;
             var obycajna = zalohy.Zalohuj(TypZalohy.Rucna);
+            using (var zip = new ICSharpCode.SharpZipLib.Zip.ZipFile(obycajna))
+            {
+                Over(zip.GetEntry("kalendarium.db") is not null, "záloha obsahuje aj Kalendárium");
+            }
+
             Over(File.Exists(obycajna) && !zalohy.JeZasifrovana(obycajna), "ručná záloha ZIP");
             Over(!zalohy.JeCasNaZalohu(nastavenia), "po zálohe ešte nie je čas na ďalšiu");
             Over(zalohy.PrecitajInfo(obycajna, null).Polozky == pocet, "popis zálohy sedí");
@@ -238,13 +281,34 @@ internal static class Samotest
             okno.Show();
             Pumpuj();
             var model = (MainViewModel)okno.DataContext;
-            foreach (var sekcia in new[] { "dashboard", "evidencia", "kategorie", "miestnosti", "osoby", "servis", "dashboard" })
+            foreach (var sekcia in new[] { "dashboard", "evidencia", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "dashboard" })
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
                 PrejdiZalozky(okno);
                 Krok($"obrazovka: {sekcia}");
             }
+
+            Over(model.Dashboard.MeninyDnes.Length > 0 && model.Dashboard.MeninyDnes != "Kalendárium nie je dostupné", "dashboard: meniny");
+            Over(model.Dashboard.NajblizsiVolnyDen.Length > 0, "dashboard: najbližší deň pracovného pokoja");
+            Over(model.Dashboard.Graf.Count > 0 && model.Dashboard.Graf.Sum(g => g.Pocet) == sluzba.NacitajRiadky().Count(r => !r.Vyradena),
+                "dashboard: graf kategórií sedí s počtom položiek");
+            model.Dashboard.UkazGraf = false;
+            Over(!new DashboardViewModel(model).UkazGraf, "dashboard: skrytý panel sa zapamätá");
+            model.Dashboard.UkazGraf = true;
+            model.Dashboard.OtvorKategoriuCommand.Execute(model.Dashboard.Graf[0]);
+            Pumpuj();
+            Over(model.Evidencia.FilterKategoria == model.Dashboard.Graf[0].KategoriaId && model.Evidencia.Pohlad!.Count == model.Dashboard.Graf[0].Pocet,
+                "klik na graf zobrazí položky kategórie");
+
+            // sviatky: prepnutie dňa pracovného pokoja v tabuľke
+            model.Sviatky.Rok = 2026;
+            model.Sviatky.Obnov();
+            var riadokNovembra = model.Sviatky.Riadky.Single(r => r.Sviatok.Datum == new DateOnly(2026, 11, 17));
+            riadokNovembra.DenPracovnehoPokoja = true;
+            Over(kalendar.JeSviatokVolno(new DateOnly(2026, 11, 17)), "zmena v tabuľke sviatkov sa uloží");
+            model.Sviatky.VratitPodlaZakonaCommand.Execute(null);
+            Over(!kalendar.JeSviatokVolno(new DateOnly(2026, 11, 17)), "vrátenie pravidiel zo zákona");
 
             model.Dashboard.OtvorEvidenciuCommand.Execute("zaruky");
             Pumpuj();

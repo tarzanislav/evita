@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Kalendárium – zdieľaná lokálna databáza „príjemných dát“ (meniny, sviatky, neskôr citáty a výročia).
+    Knižnicu môžu používať všetky naše programy; nezávisí od WPF ani od EviTA.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Kalendarium</RootNamespace>
+    <AssemblyName>Kalendarium.Core</AssemblyName>
+    <Version>0.1.0</Version>
+    <Description>Kalendárium – meniny, sviatky a ďalšie dáta pre programy</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\meniny_sk.json" LogicalName="Kalendarium.meniny_sk.json" />
+    <None Include="Data\meniny_sk_LICENSE.txt" />
+  </ItemGroup>
+
+</Project>

@@ -366,7 +366,24 @@ public sealed class ZalohaService
                 };
                 ciel = CislovanaCesta(priecinok, $"{predpona}{cas:yyyy-MM-dd_HHmmss}", ".zip");
 
-                ZapisZip(ciel, heslo, cas, ("evita.db", kopia), ("info.json", info));
+                // Kalendárium (meniny, sviatky a vlastné dáta) – ak je dostupné, ide do zálohy tiež
+                var subory = new List<(string, string)> { ("evita.db", kopia), ("info.json", info) };
+                try
+                {
+                    var kalendarium = Kalendarium.KalendariumDb.Spolocna;
+                    if (kalendarium.Existuje)
+                    {
+                        var kopiaKalendaria = Path.Combine(docasny, "kalendarium.db");
+                        kalendarium.SkopirujDo(kopiaKalendaria);
+                        subory.Add(("kalendarium.db", kopiaKalendaria));
+                    }
+                }
+                catch (Exception)
+                {
+                    // záloha evidencie je dôležitejšia ako záloha Kalendária
+                }
+
+                ZapisZip(ciel, heslo, cas, subory.ToArray());
 
                 Zaznamenaj(new ZaznamZalohy
                 {

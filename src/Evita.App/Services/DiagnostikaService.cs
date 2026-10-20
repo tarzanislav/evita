@@ -14,6 +14,9 @@ public sealed class DiagnostikaService
 {
     private const string Upozornenie = "UPOZORNENIE: ";
 
+    /// <summary>Kľúč v nastaveniach: čas, nástroj a výsledok poslednej kontroly integrity.</summary>
+    public const string KlucPoslednaKontrola = "Kontrola.Posledna";
+
     /// <summary>Tabuľky v poradí, v akom sa kopírujú pri záchrane (najprv tie, na ktoré sa odkazuje).</summary>
     private static readonly string[] Tabulky =
     {
@@ -240,9 +243,24 @@ public sealed class DiagnostikaService
         }
 
         var ok = riadky.Count == 1 && riadky[0] == "ok";
+        ZapisKontrolu(nastroj, ok);
         return new VysledokKontroly(nastroj, ok, ok
             ? new List<string> { "Databáza je v poriadku." }
             : riadky.Select(r => Upozornenie + r).Prepend("Databáza môže byť poškodená. Odporúča sa obnova zo zálohy alebo záchrana dát.").ToList());
+    }
+
+    private static void ZapisKontrolu(string nastroj, bool ok)
+    {
+        try
+        {
+            using var db = Databaza.Otvor();
+            Databaza.Zapis(db, KlucPoslednaKontrola, $"{DateTime.Now:yyyy-MM-ddTHH:mm:ss}|{nastroj}|{(ok ? "ok" : "chyba")}");
+            db.SaveChanges();
+        }
+        catch (Exception)
+        {
+            // záznam o kontrole nie je dôležitý
+        }
     }
 
     private static (int Pocet, int Stratene, string Sprava) PrenesTabulku(SqliteConnection spojenie, string tabulka)

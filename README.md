@@ -13,6 +13,32 @@ Pri prvom spustení si vyberiete, či chcete začať s **ukážkovými dátami**
 s **prázdnou databázou**, alebo **naimportovať existujúcu evidenciu** zo súboru. Ukážkové dáta neskôr vymažete
 v časti *Servis → Databáza → Vymazať dáta a začať nanovo*.
 
+## Jazyky
+
+Program je v **angličtine** (predvolený jazyk), **slovenčine, češtine, poľštine, maďarčine, ruštine a čínštine**.
+Jazyk zmeníte v časti *Nastavenia → Jazyk programu*; tlačidlo **Language reset** vráti angličtinu. Zmena sa prejaví
+po reštarte programu. Prekladá sa celé rozhranie, správy, tlačové zostavy, PDF a hlavičky exportov; import rozpozná
+stĺpce v ktoromkoľvek jazyku. Dáta evidencie (názvy položiek, miestností, osôb) sa neprekladajú – počiatočné
+kategórie a typy udalostí, ktoré ste nepremenovali, sa po zmene jazyka premenujú do nového jazyka.
+
+Preklady sú v `src/Evita.App/Preklady/<jazyk>.json` (kľúčom je slovenský text). Skript `nastroje/preklady.py kontrola`
+overí, že každý text v programe má preklad vo všetkých jazykoch.
+
+## Dashboard, úlohy a poznámky
+
+- **Dashboard:** dnešný deň s meninami a sviatkami, úlohy (To Do), **počasie** pre zvolené mesto alebo obec
+  (Open-Meteo, predpoveď na 5 dní), **kurzový lístok** ECB s vývojom za 30 dní a prepočtom mien, pripnuté poznámky,
+  kalendár na 7 dní, počty, upozornenia. Panely sa dajú skryť (*Prispôsobiť dashboard*).
+- **Úlohy:** samostatný zoznam úloh s prioritou, termínom, popisom a voliteľným naviazaním na položku evidencie.
+- **Poznámky:** poznámkový blok s farbami, pripnutím a vyhľadávaním; poznámku možno prepojiť s dňom v kalendári,
+  s udalosťou alebo s položkou evidencie (zobrazí sa v kalendári aj v karte položky).
+
+## Nastavenia a konfigurácia
+
+V časti *Nastavenia* je jazyk, miesto pre počasie, meny kurzového lístka a **export a import konfigurácie programu**
+(súbor JSON bez dát evidencie – jazyk, panely dashboardu, nastavenia kalendára a typy udalostí, pravidelné zálohy,
+názov a logo organizácie, tlač a export). Heslo automatických záloh sa z bezpečnostných dôvodov neprenáša.
+
 ## Import a export
 
 - **Export** (menu *Import a export*, alebo tlačidlo *Export* v Evidencii pre vyfiltrované či označené položky):
@@ -79,6 +105,8 @@ Odinštalovanie programu databázu ani zálohy nemaže.
       s typmi a farbami, opakovaním, pripomienkou a naviazaním na položku, miestnosť alebo osobu; automatické termíny
       (záruky, revízie, zálohy, inventúra); prehľad dňa pri spustení; upozornenie pred udalosťou; panel na dashboarde;
       záložka Udalosti v karte položky; tlač kalendára a export `.ics` pre Outlook a Google Kalendár
+- [x] **Verzia 0.7 – Dashboard a jazyky:** kurzový lístok, počasie, úlohy (To Do), poznámkový blok prepojený
+      s kalendárom a položkami, export a import konfigurácie, jazyky EN, SK, CS, PL, HU, RU, ZH s tlačidlom Language reset
 - [ ] Etapa 7 – Kalendárium (citáty, výročia)
 - [ ] Etapa 8 – Skenovanie a údaje z internetu
 - [ ] Etapa 9 – Dokončenie
@@ -95,8 +123,11 @@ Odinštalovanie programu databázu ani zálohy nemaže.
 src/Evita.App/
   Models/       dátové triedy (položka, kategória, miestnosť, osoba, história)
   Data/         databáza (EF Core, SQLite)
-  Services/     evidencia, číselníky, servis, zálohy, import a export, ukážkové dáta
+  Services/     evidencia, číselníky, servis, zálohy, import a export, kalendár, úlohy, poznámky,
+                kurzy, počasie, konfigurácia, preklad, ukážkové dáta
+  Preklady/     slovníky prekladov (en, cs, pl, hu, ru, zh)
   ViewModels/   logika obrazoviek
   Views/        okná a obrazovky (XAML)
 installer/      skript inštalátora
+nastroje/       pomocné skripty (kontrola prekladov)
 ```

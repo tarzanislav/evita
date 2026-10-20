@@ -162,8 +162,8 @@
                               HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Dátum a čas" Binding="{Binding Cas, StringFormat='d. M. yyyy H:mm'}" Width="130" />
-                            <DataGridTextColumn Header="Akcia" Binding="{Binding Akcia}" Width="95" />
-                            <DataGridTextColumn Header="Pole" Binding="{Binding Pole}" Width="120" />
+                            <DataGridTextColumn Header="Akcia" Binding="{Binding Akcia, Converter={StaticResource PrelozText}}" Width="95" />
+                            <DataGridTextColumn Header="Pole" Binding="{Binding Pole, Converter={StaticResource PrelozText}}" Width="120" />
                             <DataGridTextColumn Header="Pôvodne" Binding="{Binding StaraHodnota}" Width="*" />
                             <DataGridTextColumn Header="Nová hodnota" Binding="{Binding NovaHodnota}" Width="*" />
                             <DataGridTextColumn Header="Používateľ" Binding="{Binding Pouzivatel}" Width="100" />

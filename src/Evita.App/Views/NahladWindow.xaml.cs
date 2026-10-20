@@ -26,7 +26,7 @@ public partial class NahladWindow : Window
         _naSirku = naSirku;
         _nazovSuboru = nazovSuboru;
         InitializeComponent();
-        Title = $"Náhľad – {titulok}";
+        Title = Preklad.F($"Náhľad – {titulok}");
         Zvacsenie.SelectedIndex = 6;
         NacitajStrany();
     }
@@ -54,12 +54,8 @@ public partial class NahladWindow : Window
 
         _sirkaStrany = strany.Count > 0 ? strany[0].Sirka : 800;
         Stranky.ItemsSource = strany;
-        Info.Text = PocetStran switch
-        {
-            1 => "1 strana",
-            >= 2 and <= 4 => $"{PocetStran} strany",
-            _ => $"{PocetStran} strán",
-        } + (_naSirku ? " · A4 na šírku" : " · A4 na výšku");
+        Info.Text = Preklad.Pocet(PocetStran, "{0} strana", "{0} strany", "{0} strán") + " · "
+                    + (_naSirku ? Preklad.T("A4 na šírku") : Preklad.T("A4 na výšku"));
     }
 
     private void NastavMierku()
@@ -99,7 +95,7 @@ public partial class NahladWindow : Window
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Tlač sa nepodarila.", ex);
+            Dialogy.Chyba(Preklad.T("Tlač sa nepodarila."), ex);
         }
     }
 
@@ -135,7 +131,7 @@ public partial class NahladWindow : Window
 
             var dialog = new SaveFileDialog
             {
-                Title = "Uložiť zostavu ako PDF",
+                Title = Preklad.T("Uložiť zostavu ako PDF"),
                 Filter = "PDF (*.pdf)|*.pdf",
                 FileName = nazovSuboru,
                 InitialDirectory = priecinok,
@@ -168,12 +164,12 @@ public partial class NahladWindow : Window
         }
         catch (IOException ex)
         {
-            Dialogy.Upozornenie($"PDF sa nedá uložiť. Ak je súbor otvorený v inom programe, zatvorte ho a skúste znova.\n\n{ex.Message}");
+            Dialogy.Upozornenie(Preklad.F($"PDF sa nedá uložiť. Ak je súbor otvorený v inom programe, zatvorte ho a skúste znova.\n\n{ex.Message}"));
             return null;
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("PDF sa nepodarilo uložiť.", ex);
+            Dialogy.Chyba(Preklad.T("PDF sa nepodarilo uložiť."), ex);
             return null;
         }
     }

@@ -52,19 +52,19 @@ public static class Databaza
     public const string KlucPoslednePrirastkove = "PrirastkoveCislo.Posledne";
     public const string KlucUkazkoveData = "UkazkoveData";
 
-    /// <summary>Počiatočné typy udalostí kalendára s farbami (dajú sa upraviť a doplniť).</summary>
+    /// <summary>Počiatočné typy udalostí kalendára s farbami (dajú sa upraviť a doplniť). Do databázy sa zapíšu v jazyku programu.</summary>
     public static readonly (string Nazov, string Farba)[] PociatocneTypyUdalosti =
     {
-        ("servis", "#E67E22"), ("revízia", "#C0392B"), ("nákup", "#27AE60"), ("inventúra", "#8E44AD"),
-        ("porada", "#2E86C1"), ("školenie", "#16A085"), ("obdobie", "#D4AC0D"), ("iné", "#7F8C8D"),
+        (Preklad.N("servis"), "#E67E22"), (Preklad.N("revízia"), "#C0392B"), (Preklad.N("nákup"), "#27AE60"), (Preklad.N("inventúra"), "#8E44AD"),
+        (Preklad.N("porada"), "#2E86C1"), (Preklad.N("školenie"), "#16A085"), (Preklad.N("obdobie"), "#D4AC0D"), (Preklad.N("iné"), "#7F8C8D"),
     };
 
-    /// <summary>Počiatočný zoznam kategórií (zobrazuje sa vždy abecedne).</summary>
+    /// <summary>Počiatočný zoznam kategórií (zobrazuje sa vždy abecedne). Do databázy sa zapíšu v jazyku programu.</summary>
     public static readonly string[] PociatocneKategorie =
     {
-        "All-in-One", "interaktívna tabuľa", "kopírka", "multiboard", "multifunkcia",
-        "notebook", "PC", "príslušenstvo", "projektor", "router", "skener",
-        "slúchadlá", "switch", "tablet", "tlačiareň",
+        Preklad.N("All-in-One"), Preklad.N("interaktívna tabuľa"), Preklad.N("kopírka"), Preklad.N("multiboard"), Preklad.N("multifunkcia"),
+        Preklad.N("notebook"), Preklad.N("PC"), Preklad.N("príslušenstvo"), Preklad.N("projektor"), Preklad.N("router"), Preklad.N("skener"),
+        Preklad.N("slúchadlá"), Preklad.N("switch"), Preklad.N("tablet"), Preklad.N("tlačiareň"),
     };
 
     /// <summary>Iný priečinok s dátami (na testovanie). Bežne nie je nastavený.</summary>
@@ -106,9 +106,10 @@ public static class Databaza
 
             if (!db.Kategorie.Any())
             {
+                // názvy v jazyku programu (pri prvom spustení angličtina)
                 foreach (var nazov in PociatocneKategorie)
                 {
-                    db.Kategorie.Add(new Kategoria { Nazov = nazov });
+                    db.Kategorie.Add(new Kategoria { Nazov = Preklad.TAkJe(nazov) });
                 }
             }
 
@@ -147,7 +148,7 @@ public static class Databaza
         var poradie = 0;
         foreach (var (nazov, farba) in PociatocneTypyUdalosti)
         {
-            db.TypyUdalosti.Add(new TypUdalosti { Nazov = nazov, Farba = farba, Poradie = poradie++ });
+            db.TypyUdalosti.Add(new TypUdalosti { Nazov = Preklad.TAkJe(nazov), Farba = farba, Poradie = poradie++ });
         }
 
         db.SaveChanges();
@@ -166,7 +167,7 @@ public static class Databaza
         if (verzia > VerziaSchemy)
         {
             throw new EvitaException(
-                $"Databáza pochádza z novšej verzie programu EviTA (verzia štruktúry {verzia}). Nainštalujte najnovšiu verziu programu.");
+                Preklad.F($"Databáza pochádza z novšej verzie programu EviTA (verzia štruktúry {verzia}). Nainštalujte najnovšiu verziu programu."));
         }
 
         if (verzia == VerziaSchemy)

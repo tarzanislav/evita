@@ -25,34 +25,34 @@ public partial class UdalostEditViewModel : ObservableObject
         Udalost? u = null;
         if (id is int upravovana)
         {
-            u = _sluzba.Nacitaj(upravovana) ?? throw new EvitaException("Udalosť už neexistuje.");
+            u = _sluzba.Nacitaj(upravovana) ?? throw new EvitaException(Preklad.T("Udalosť už neexistuje."));
             _id = u.Id;
         }
 
         Typy = _sluzba.Typy().Where(t => t.Aktivny || t.Id == u?.TypUdalostiId).ToList();
-        Miestnosti = ciselniky.Volby(TypCiselnika.Miestnosti, u?.MiestnostId, "(žiadna)");
-        Osoby = ciselniky.Volby(TypCiselnika.Osoby, u?.OsobaId, "(nikto)");
+        Miestnosti = ciselniky.Volby(TypCiselnika.Miestnosti, u?.MiestnostId, Preklad.T("(žiadna)"));
+        Osoby = ciselniky.Volby(TypCiselnika.Osoby, u?.OsobaId, Preklad.T("(nikto)"));
 
         if (u is null)
         {
             JeNova = true;
-            Titulok = "Nová udalosť";
+            Titulok = Preklad.T("Nová udalosť");
             var zaciatok = (den ?? DateTime.Today).Date;
             _datumOd = zaciatok;
             _datumDo = zaciatok;
             _casOd = "8:00";
             _casDo = "9:00";
-            _typId = Typy.FirstOrDefault(t => t.Nazov == "iné")?.Id ?? Typy.FirstOrDefault()?.Id ?? 0;
+            _typId = KalendarService.NajdiTyp(Typy, "iné")?.Id ?? Typy.FirstOrDefault()?.Id ?? 0;
             if (polozkaId is int p)
             {
                 using var db = Databaza.Otvor();
                 _polozkaCislo = db.Polozky.Where(x => x.Id == p).Select(x => (int?)x.PrirastkoveCislo).FirstOrDefault()?.ToString() ?? "";
-                _typId = Typy.FirstOrDefault(t => t.Nazov == "servis")?.Id ?? _typId;
+                _typId = KalendarService.NajdiTyp(Typy, "servis")?.Id ?? _typId;
             }
         }
         else
         {
-            Titulok = $"Udalosť – {u.Nazov}";
+            Titulok = Preklad.F($"Udalosť – {u.Nazov}");
             _nazov = u.Nazov;
             _popis = u.Popis ?? "";
             _typId = u.TypUdalostiId;
@@ -142,26 +142,26 @@ public partial class UdalostEditViewModel : ObservableObject
 
     public IReadOnlyList<VolbaHodnoty<OpakovanieUdalosti>> Opakovania { get; } = new VolbaHodnoty<OpakovanieUdalosti>[]
     {
-        new(OpakovanieUdalosti.Ziadne, "neopakuje sa"),
-        new(OpakovanieUdalosti.Denne, "denne"),
-        new(OpakovanieUdalosti.Tyzdenne, "týždenne"),
-        new(OpakovanieUdalosti.Mesacne, "mesačne"),
-        new(OpakovanieUdalosti.Rocne, "ročne"),
+        new(OpakovanieUdalosti.Ziadne, Preklad.T("neopakuje sa")),
+        new(OpakovanieUdalosti.Denne, Preklad.T("denne")),
+        new(OpakovanieUdalosti.Tyzdenne, Preklad.T("týždenne")),
+        new(OpakovanieUdalosti.Mesacne, Preklad.T("mesačne")),
+        new(OpakovanieUdalosti.Rocne, Preklad.T("ročne")),
     };
 
     public IReadOnlyList<VolbaHodnoty<PripomienkaUdalosti>> Pripomienky { get; } = new VolbaHodnoty<PripomienkaUdalosti>[]
     {
-        new(PripomienkaUdalosti.Ziadna, "bez pripomienky"),
-        new(PripomienkaUdalosti.VDen, "v deň udalosti"),
-        new(PripomienkaUdalosti.DenVopred, "deň vopred"),
-        new(PripomienkaUdalosti.TyzdenVopred, "týždeň vopred"),
+        new(PripomienkaUdalosti.Ziadna, Preklad.T("bez pripomienky")),
+        new(PripomienkaUdalosti.VDen, Preklad.T("v deň udalosti")),
+        new(PripomienkaUdalosti.DenVopred, Preklad.T("deň vopred")),
+        new(PripomienkaUdalosti.TyzdenVopred, Preklad.T("týždeň vopred")),
     };
 
     public IReadOnlyList<VolbaHodnoty<StavUdalosti>> Stavy { get; } = new VolbaHodnoty<StavUdalosti>[]
     {
-        new(StavUdalosti.Naplanovane, "naplánované"),
-        new(StavUdalosti.Hotovo, "hotovo"),
-        new(StavUdalosti.Zrusene, "zrušené"),
+        new(StavUdalosti.Naplanovane, Preklad.T("naplánované")),
+        new(StavUdalosti.Hotovo, Preklad.T("hotovo")),
+        new(StavUdalosti.Zrusene, Preklad.T("zrušené")),
     };
 
     [ObservableProperty] private string _nazov = "";
@@ -224,7 +224,7 @@ public partial class UdalostEditViewModel : ObservableObject
 
         if (!int.TryParse(PolozkaCislo.Trim(), out var cislo))
         {
-            PolozkaText = "zadajte prírastkové číslo položky";
+            PolozkaText = Preklad.T("zadajte prírastkové číslo položky");
             return;
         }
 
@@ -232,7 +232,7 @@ public partial class UdalostEditViewModel : ObservableObject
         var p = db.Polozky.Where(x => x.PrirastkoveCislo == cislo).Select(x => new { x.Id, x.Nazov }).FirstOrDefault();
         if (p is null)
         {
-            PolozkaText = "položka s týmto číslom neexistuje";
+            PolozkaText = Preklad.T("položka s týmto číslom neexistuje");
             return;
         }
 
@@ -265,7 +265,7 @@ public partial class UdalostEditViewModel : ObservableObject
     {
         if (DatumOd is not { } od)
         {
-            throw new EvitaException("Zadajte dátum udalosti.");
+            throw new EvitaException(Preklad.T("Zadajte dátum udalosti."));
         }
 
         var zaciatok = od.Date;
@@ -274,7 +274,7 @@ public partial class UdalostEditViewModel : ObservableObject
         {
             if (!SkusCas(CasOd, out var casOd))
             {
-                throw new EvitaException("Čas začiatku zadajte v tvare 8:00.");
+                throw new EvitaException(Preklad.T("Čas začiatku zadajte v tvare 8:00."));
             }
 
             zaciatok += casOd;
@@ -288,7 +288,7 @@ public partial class UdalostEditViewModel : ObservableObject
             }
             else
             {
-                throw new EvitaException("Čas konca zadajte v tvare 9:30.");
+                throw new EvitaException(Preklad.T("Čas konca zadajte v tvare 9:30."));
             }
         }
         else if (koniec == zaciatok)
@@ -298,7 +298,7 @@ public partial class UdalostEditViewModel : ObservableObject
 
         if (!string.IsNullOrWhiteSpace(PolozkaCislo) && _polozkaId is null)
         {
-            throw new EvitaException("Položka s takým prírastkovým číslom neexistuje. Opravte číslo alebo ho vymažte.");
+            throw new EvitaException(Preklad.T("Položka s takým prírastkovým číslom neexistuje. Opravte číslo alebo ho vymažte."));
         }
 
         return new Udalost
@@ -338,7 +338,7 @@ public partial class UdalostEditViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Udalosť sa nepodarilo uložiť.", ex);
+            Dialogy.Chyba(Preklad.T("Udalosť sa nepodarilo uložiť."), ex);
         }
     }
 
@@ -350,8 +350,8 @@ public partial class UdalostEditViewModel : ObservableObject
             return;
         }
 
-        var opakovana = Opakuje ? "\n\nUdalosť sa opakuje – vymažú sa všetky jej opakovania." : "";
-        if (!Dialogy.Potvrd($"Vymazať udalosť „{Nazov}“?{opakovana}"))
+        var opakovana = Opakuje ? Preklad.T("\n\nUdalosť sa opakuje – vymažú sa všetky jej opakovania.") : "";
+        if (!Dialogy.Potvrd(Preklad.F($"Vymazať udalosť „{Nazov}“?{opakovana}")))
         {
             return;
         }

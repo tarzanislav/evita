@@ -91,38 +91,38 @@ public sealed class ZostavyService
     private const string Model = StlpcePrenosu.Model;
     private const string DatumPridania = StlpcePrenosu.DatumPridania;
 
-    public static IReadOnlyList<PopisZostavy> Zoznam { get; } = new PopisZostavy[]
+    public static IReadOnlyList<PopisZostavy> Zoznam => new PopisZostavy[]
     {
-        new(DruhZostavy.SuhrnnyZoznam, "Súhrnný zoznam",
-            "Všetky položky zoskupené podľa kategórie, miestnosti alebo pridelenia s počtami za skupinu a celkovým súhrnom.",
+        new(DruhZostavy.SuhrnnyZoznam, Preklad.T("Súhrnný zoznam"),
+            Preklad.T("Všetky položky zoskupené podľa kategórie, miestnosti alebo pridelenia s počtami za skupinu a celkovým súhrnom."),
             new[] { Cislo, Nazov, Miestnost, Pridelene, Seriove, Stav, Cena }),
-        new(DruhZostavy.Vyfiltrovane, "Vyfiltrované položky",
-            "Presne to, čo je práve zobrazené v evidencii, s popisom použitého filtra.",
+        new(DruhZostavy.Vyfiltrovane, Preklad.T("Vyfiltrované položky"),
+            Preklad.T("Presne to, čo je práve zobrazené v evidencii, s popisom použitého filtra."),
             new[] { Cislo, Nazov, Kategoria, Miestnost, Pridelene, Vyrobca, Model, Seriove, Stav }, MaVyradene: false),
-        new(DruhZostavy.PoMiestnostiach, "Po miestnostiach",
-            "Každá miestnosť na novej strane, voliteľne s riadkami na podpis – inventúrny zoznam miestnosti.",
+        new(DruhZostavy.PoMiestnostiach, Preklad.T("Po miestnostiach"),
+            Preklad.T("Každá miestnosť na novej strane, voliteľne s riadkami na podpis – inventúrny zoznam miestnosti."),
             new[] { Cislo, Nazov, Kategoria, Pridelene, Seriove, Inventarne, Stav }, MaPodpis: true, MaNovuStranu: true),
-        new(DruhZostavy.PoKategoriach, "Po kategóriách",
-            "Každá kategória ako samostatná skupina s počtom kusov.",
+        new(DruhZostavy.PoKategoriach, Preklad.T("Po kategóriách"),
+            Preklad.T("Každá kategória ako samostatná skupina s počtom kusov."),
             new[] { Cislo, Nazov, Miestnost, Pridelene, Vyrobca, Model, Seriove, Stav }, MaNovuStranu: true),
-        new(DruhZostavy.PodlaPridelenia, "Podľa pridelenia",
-            "Každá osoba na novej strane, voliteľne ako zoznam zverenej techniky s podpisom.",
+        new(DruhZostavy.PodlaPridelenia, Preklad.T("Podľa pridelenia"),
+            Preklad.T("Každá osoba na novej strane, voliteľne ako zoznam zverenej techniky s podpisom."),
             new[] { Cislo, Nazov, Kategoria, Miestnost, Seriove, Inventarne }, MaPodpis: true, MaNovuStranu: true),
-        new(DruhZostavy.Prirastkovy, "Prírastkový zoznam",
-            "Položky pridané v zvolenom období, zoradené podľa prírastkového čísla.",
+        new(DruhZostavy.Prirastkovy, Preklad.T("Prírastkový zoznam"),
+            Preklad.T("Položky pridané v zvolenom období, zoradené podľa prírastkového čísla."),
             new[] { Cislo, DatumPridania, Nazov, Kategoria, Miestnost, Seriove, Inventarne, Cena }, MaObdobie: true, PredvoleneVyradene: true),
-        new(DruhZostavy.PodlaDatumuPridania, "Podľa dátumu pridania",
-            "Položky pridané od – do, zoradené podľa dátumu pridania.",
+        new(DruhZostavy.PodlaDatumuPridania, Preklad.T("Podľa dátumu pridania"),
+            Preklad.T("Položky pridané od – do, zoradené podľa dátumu pridania."),
             new[] { DatumPridania, Cislo, Nazov, Kategoria, Miestnost, Pridelene, Cena }, MaObdobie: true, PredvoleneVyradene: true),
-        new(DruhZostavy.Vyradene, "Vyradené položky",
-            "Položky vyradené v zvolenom období s dátumom a dôvodom vyradenia.",
+        new(DruhZostavy.Vyradene, Preklad.T("Vyradené položky"),
+            Preklad.T("Položky vyradené v zvolenom období s dátumom a dôvodom vyradenia."),
             new[] { Cislo, Nazov, Kategoria, Seriove, Inventarne, StlpcePrenosu.DatumVyradenia, StlpcePrenosu.DovodVyradenia, Cena },
             MaObdobie: true, MaVyradene: false),
-        new(DruhZostavy.Historia, "História zmien",
-            "Zmeny za obdobie, voliteľne len pre jednu položku, miestnosť alebo osobu.",
+        new(DruhZostavy.Historia, Preklad.T("História zmien"),
+            Preklad.T("Zmeny za obdobie, voliteľne len pre jednu položku, miestnosť alebo osobu."),
             Array.Empty<string>(), MaObdobie: true, MaVyradene: false, MaVolbuStlpcov: false),
-        new(DruhZostavy.Kalendar, "Kalendár",
-            "Mesačný kalendár (každý mesiac na jednej strane) alebo zoznam udalostí a úloh za obdobie.",
+        new(DruhZostavy.Kalendar, Preklad.T("Kalendár"),
+            Preklad.T("Mesačný kalendár (každý mesiac na jednej strane) alebo zoznam udalostí a úloh za obdobie."),
             Array.Empty<string>(), MaObdobie: true, MaVyradene: false, MaVolbuStlpcov: false),
     };
 
@@ -145,7 +145,7 @@ public sealed class ZostavyService
     {
         if (!Popis(m.Druh).Dostupna)
         {
-            throw new EvitaException(Popis(m.Druh).Poznamka ?? "Táto zostava zatiaľ nie je dostupná.");
+            throw new EvitaException(Popis(m.Druh).Poznamka ?? Preklad.T("Táto zostava zatiaľ nie je dostupná."));
         }
 
         if (m.Druh == DruhZostavy.Historia)
@@ -181,7 +181,7 @@ public sealed class ZostavyService
 
         if (stlpce.Count == 0)
         {
-            throw new EvitaException("Vyberte aspoň jeden stĺpec.");
+            throw new EvitaException(Preklad.T("Vyberte aspoň jeden stĺpec."));
         }
 
         using var db = Databaza.Otvor();
@@ -236,7 +236,7 @@ public sealed class ZostavyService
 
         if (polozky.Count == 0)
         {
-            zostava.Text("Zostave nezodpovedá žiadna položka.", sedy: true);
+            zostava.Text(Preklad.T("Zostave nezodpovedá žiadna položka."), sedy: true);
             return zostava.Dokument;
         }
 
@@ -272,15 +272,15 @@ public sealed class ZostavyService
 
                     if (m.Podpis && zoskupenie == Zoskupenie.Miestnost)
                     {
-                        zostava.Text($"Inventúra miestnosti {nazov}. Skutočný stav súhlasí so zoznamom (rozdiely sú vyznačené).", sedy: true)
+                        zostava.Text(Preklad.F($"Inventúra miestnosti {nazov}. Skutočný stav súhlasí so zoznamom (rozdiely sú vyznačené)."), sedy: true)
                             .Format.SpaceBefore = Unit.FromPoint(10);
-                        zostava.Podpis("Inventúru vykonal(a) – meno a podpis", "Zodpovedná osoba – meno a podpis", "Dátum");
+                        zostava.Podpis(Preklad.T("Inventúru vykonal(a) – meno a podpis"), Preklad.T("Zodpovedná osoba – meno a podpis"), Preklad.T("Dátum"));
                     }
                     else if (m.Podpis && zoskupenie == Zoskupenie.Pridelenie && clenovia[0].Osoba is { } osoba)
                     {
-                        zostava.Text($"Potvrdzujem, že som prevzal(a) uvedenú techniku do užívania a zodpovedám za ňu. ({osoba.CeleMeno})", sedy: true)
+                        zostava.Text(Preklad.F($"Potvrdzujem, že som prevzal(a) uvedenú techniku do užívania a zodpovedám za ňu. ({osoba.CeleMeno})"), sedy: true)
                             .Format.SpaceBefore = Unit.FromPoint(10);
-                        zostava.Podpis($"Prevzal(a): {osoba.CeleMeno}", "Odovzdal(a) – meno a podpis", "Dátum");
+                        zostava.Podpis(Preklad.F($"Prevzal(a): {osoba.CeleMeno}"), Preklad.T("Odovzdal(a) – meno a podpis"), Preklad.T("Dátum"));
                     }
                 }
 
@@ -290,10 +290,10 @@ public sealed class ZostavyService
                     zostava.NovaStrana();
                 }
 
-                zostava.NadpisSkupiny("Súhrn", PocetASuma(polozky.Count, polozky.Sum(p => p.Cena ?? 0)));
-                var hlavickySuhrnu = new[] { NazovSkupiny(zoskupenie), "Počet", "Cena spolu" };
+                zostava.NadpisSkupiny(Preklad.T("Súhrn"), PocetASuma(polozky.Count, polozky.Sum(p => p.Cena ?? 0)));
+                var hlavickySuhrnu = new[] { NazovSkupiny(zoskupenie), Preklad.T("Počet"), Preklad.T("Cena spolu") };
                 var riadkySuhrnu = suhrn.Select(s => new[] { s.Skupina, s.Pocet.ToString(Sk.Kultura), PdfZostava.Suma(s.Suma) }).ToList();
-                riadkySuhrnu.Add(new[] { "Spolu", polozky.Count.ToString(Sk.Kultura), PdfZostava.Suma(polozky.Sum(p => p.Cena ?? 0)) });
+                riadkySuhrnu.Add(new[] { Preklad.T("Spolu"), polozky.Count.ToString(Sk.Kultura), PdfZostava.Suma(polozky.Sum(p => p.Cena ?? 0)) });
                 var sirkaSuhrnu = Math.Min(zostava.SirkaTabulky, 14);
                 zostava.Tabulka(hlavickySuhrnu, new[] { false, true, true }, riadkySuhrnu,
                     new[] { sirkaSuhrnu - 6, 2.5, 3.5 });
@@ -302,17 +302,17 @@ public sealed class ZostavyService
 
             case DruhZostavy.PodlaDatumuPridania:
                 Tabulka(polozky.OrderBy(p => p.DatumPridania).ThenBy(p => p.PrirastkoveCislo).ToList());
-                zostava.Spolu("Spolu: " + PocetASuma(polozky.Count, polozky.Sum(p => p.Cena ?? 0)));
+                zostava.Spolu(Preklad.F($"Spolu: {PocetASuma(polozky.Count, polozky.Sum(p => p.Cena ?? 0))}"));
                 break;
 
             case DruhZostavy.Vyradene:
                 Tabulka(polozky.OrderBy(p => p.DatumVyradenia).ThenBy(p => p.PrirastkoveCislo).ToList());
-                zostava.Spolu("Spolu: " + PocetASuma(polozky.Count, polozky.Sum(p => p.Cena ?? 0)));
+                zostava.Spolu(Preklad.F($"Spolu: {PocetASuma(polozky.Count, polozky.Sum(p => p.Cena ?? 0))}"));
                 break;
 
             default:
                 Tabulka(polozky);
-                zostava.Spolu("Spolu: " + PocetASuma(polozky.Count, polozky.Sum(p => p.Cena ?? 0)));
+                zostava.Spolu(Preklad.F($"Spolu: {PocetASuma(polozky.Count, polozky.Sum(p => p.Cena ?? 0))}"));
                 break;
         }
 
@@ -343,7 +343,7 @@ public sealed class ZostavyService
         if (m.PrirastkoveCislo is { } cislo)
         {
             dotaz = dotaz.Where(h => h.PrirastkoveCislo == cislo);
-            obmedzenia.Add($"položka č. {cislo}");
+            obmedzenia.Add(Preklad.F($"položka č. {cislo}"));
         }
 
         if (m.MiestnostId is > 0)
@@ -352,7 +352,7 @@ public sealed class ZostavyService
             var idPoloziek = db.Polozky.Where(p => p.MiestnostId == m.MiestnostId).Select(p => p.Id).ToList();
             dotaz = dotaz.Where(h => idPoloziek.Contains(h.PolozkaId)
                                      || (h.Pole == "Miestnosť" && (h.StaraHodnota == nazov || h.NovaHodnota == nazov)));
-            obmedzenia.Add($"miestnosť {nazov}");
+            obmedzenia.Add(Preklad.F($"miestnosť {nazov}"));
         }
 
         if (m.OsobaId is > 0)
@@ -361,24 +361,24 @@ public sealed class ZostavyService
             var idPoloziek = db.Polozky.Where(p => p.OsobaId == m.OsobaId).Select(p => p.Id).ToList();
             dotaz = dotaz.Where(h => idPoloziek.Contains(h.PolozkaId)
                                      || (h.Pole == "Pridelené" && (h.StaraHodnota == osoba || h.NovaHodnota == osoba)));
-            obmedzenia.Add($"osoba {osoba}");
+            obmedzenia.Add(Preklad.F($"osoba {osoba}"));
         }
 
         var zmeny = dotaz.OrderBy(h => h.Cas).ThenBy(h => h.Id).ToList();
         var podtitulok = Obdobie(m) + (obmedzenia.Count > 0 ? " · " + string.Join(", ", obmedzenia) : "")
-                         + $" · {zmeny.Count} záznamov · vytlačené {Sk.DatumCas(DateTime.Now)}";
+                         + Preklad.F($" · {zmeny.Count} záznamov · vytlačené {Sk.DatumCas(DateTime.Now)}");
         var zostava = new PdfZostava(Popis(DruhZostavy.Historia).Nazov, podtitulok, m.NaSirku);
         if (zmeny.Count == 0)
         {
-            zostava.Text("V zvolenom období nie sú žiadne zmeny.", sedy: true);
+            zostava.Text(Preklad.T("V zvolenom období nie sú žiadne zmeny."), sedy: true);
             return zostava.Dokument;
         }
 
-        var hlavicky = new[] { "Čas", "Č.", "Položka", "Akcia", "Pole", "Pôvodná hodnota", "Nová hodnota", "Používateľ" };
+        var hlavicky = new[] { Preklad.T("Čas"), Preklad.T("Č."), Preklad.T("Položka"), Preklad.T("Akcia"), Preklad.T("Pole"), Preklad.T("Pôvodná hodnota"), Preklad.T("Nová hodnota"), Preklad.T("Používateľ") };
         var riadky = zmeny.Select(h => new[]
         {
-            h.Cas.ToString("d.M.yyyy H:mm", Sk.Kultura), h.PrirastkoveCislo.ToString(Sk.Kultura), h.NazovPolozky, h.Akcia,
-            h.Pole ?? "", Bez(h.StaraHodnota), Bez(h.NovaHodnota), h.Pouzivatel,
+            Sk.DatumCas(h.Cas), h.PrirastkoveCislo.ToString(Sk.Kultura), h.NazovPolozky, Preklad.TAkJe(h.Akcia),
+            Preklad.TAkJe(h.Pole ?? ""), Bez(h.StaraHodnota), Bez(h.NovaHodnota), h.Pouzivatel,
         }).ToList();
         zostava.Tabulka(hlavicky, new[] { false, true, false, false, false, false, false, false }, riadky, zostava.Sirky(hlavicky, riadky));
         return zostava.Dokument;
@@ -399,9 +399,9 @@ public sealed class ZostavyService
 
         var prazdna = zoskupenie switch
         {
-            Zoskupenie.Kategoria => "(bez kategórie)",
-            Zoskupenie.Miestnost => "(bez miestnosti)",
-            _ => "(nepridelené)",
+            Zoskupenie.Kategoria => Preklad.T("(bez kategórie)"),
+            Zoskupenie.Miestnost => Preklad.T("(bez miestnosti)"),
+            _ => Preklad.T("(nepridelené)"),
         };
 
         // osoby podľa priezviska, ostatné podľa názvu; prázdna skupina na koniec
@@ -416,9 +416,9 @@ public sealed class ZostavyService
 
     private static string NazovSkupiny(Zoskupenie zoskupenie) => zoskupenie switch
     {
-        Zoskupenie.Kategoria => "Kategória",
-        Zoskupenie.Miestnost => "Miestnosť",
-        _ => "Pridelené",
+        Zoskupenie.Kategoria => Preklad.T("Kategória"),
+        Zoskupenie.Miestnost => Preklad.T("Miestnosť"),
+        _ => Preklad.T("Pridelené"),
     };
 
     private static string PocetASuma(int pocet, decimal suma) =>
@@ -426,10 +426,10 @@ public sealed class ZostavyService
 
     private static string Obdobie(MoznostiZostavy m) => (m.Od, m.Do) switch
     {
-        ({ } od, { } po) => $"obdobie {Sk.Datum(od)} – {Sk.Datum(po)}",
-        ({ } od, null) => $"od {Sk.Datum(od)}",
-        (null, { } po) => $"do {Sk.Datum(po)}",
-        _ => "celé obdobie",
+        ({ } od, { } po) => Preklad.F($"obdobie {Sk.Datum(od)} – {Sk.Datum(po)}"),
+        ({ } od, null) => Preklad.F($"od {Sk.Datum(od)}"),
+        (null, { } po) => Preklad.F($"do {Sk.Datum(po)}"),
+        _ => Preklad.T("celé obdobie"),
     };
 
     private static string Podtitulok(MoznostiZostavy m, int pocet)
@@ -443,21 +443,21 @@ public sealed class ZostavyService
 
         if (m.Druh == DruhZostavy.Vyfiltrovane)
         {
-            casti.Add(string.IsNullOrWhiteSpace(m.PopisFiltra) ? "bez filtra" : "filter: " + m.PopisFiltra);
+            casti.Add(string.IsNullOrWhiteSpace(m.PopisFiltra) ? Preklad.T("bez filtra") : Preklad.F($"filter: {m.PopisFiltra}"));
         }
 
         if (m.Druh == DruhZostavy.SuhrnnyZoznam)
         {
-            casti.Add("zoskupené podľa: " + NazovSkupiny(m.Zoskupenie).ToLowerInvariant());
+            casti.Add(Preklad.F($"zoskupené podľa: {NazovSkupiny(m.Zoskupenie).ToLower(Sk.Kultura)}"));
         }
 
         if (popis.MaVyradene)
         {
-            casti.Add(m.VrataneVyradenych ? "vrátane vyradených" : "bez vyradených");
+            casti.Add(m.VrataneVyradenych ? Preklad.T("vrátane vyradených") : Preklad.T("bez vyradených"));
         }
 
         casti.Add(ExportService.PocetPoloziek(pocet));
-        casti.Add("vytlačené " + Sk.DatumCas(DateTime.Now));
+        casti.Add(Preklad.F($"vytlačené {Sk.DatumCas(DateTime.Now)}"));
         return string.Join(" · ", casti);
     }
 }

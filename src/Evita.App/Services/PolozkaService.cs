@@ -26,6 +26,15 @@ public sealed class PolozkaService
     public const string AkciaVymazanie = "vymazanie";
     public const string AkciaImport = "import";
 
+    /// <summary>Akcie a názvy polí v histórii sa ukladajú po slovensky a zobrazujú preložené (tu sú kvôli zoznamu textov na preklad).</summary>
+    internal static readonly string[] TextyHistorie =
+    {
+        Preklad.N("vytvorenie"), Preklad.N("zmena"), Preklad.N("vyradenie"), Preklad.N("obnovenie"), Preklad.N("vymazanie"), Preklad.N("import"),
+        Preklad.N("Názov"), Preklad.N("Kategória"), Preklad.N("Miestnosť"), Preklad.N("Pridelené"), Preklad.N("Výrobca"), Preklad.N("Model"),
+        Preklad.N("Sériové číslo"), Preklad.N("Inventárne číslo"), Preklad.N("Stav"), Preklad.N("Dátum nákupu"), Preklad.N("Cena"),
+        Preklad.N("Záruka do"), Preklad.N("Ďalšia revízia"), Preklad.N("Dátum vyradenia"), Preklad.N("Dôvod vyradenia"), Preklad.N("Poznámka"),
+    };
+
     private static string Pouzivatel => Environment.UserName;
 
     public List<PolozkaRiadok> NacitajRiadky()
@@ -90,7 +99,7 @@ public sealed class PolozkaService
     {
         if (pocet < 1 || pocet > 500)
         {
-            throw new EvitaException("Počet kusov musí byť od 1 do 500.");
+            throw new EvitaException(Preklad.T("Počet kusov musí byť od 1 do 500."));
         }
 
         using var db = Databaza.Otvor();
@@ -135,7 +144,7 @@ public sealed class PolozkaService
                 Cas = teraz,
                 Pouzivatel = Pouzivatel,
                 Akcia = AkciaVytvorenie,
-                NovaHodnota = pocet > 1 ? $"hromadné pridanie {pocet} ks" : null,
+                NovaHodnota = pocet > 1 ? Preklad.F($"hromadné pridanie {pocet} ks") : null,
             });
         }
 
@@ -151,12 +160,12 @@ public sealed class PolozkaService
     {
         using var db = Databaza.Otvor();
         var p = db.Polozky.FirstOrDefault(x => x.Id == upravena.Id)
-            ?? throw new EvitaException("Položka medzičasom zanikla (bola vymazaná).");
+            ?? throw new EvitaException(Preklad.T("Položka medzičasom zanikla (bola vymazaná)."));
 
         if (p.Verzia != upravena.Verzia)
         {
             throw new EvitaException(
-                "Položku medzičasom zmenil niekto iný. Zatvorte okno, obnovte zoznam a urobte úpravu znova.");
+                Preklad.T("Položku medzičasom zmenil niekto iný. Zatvorte okno, obnovte zoznam a urobte úpravu znova."));
         }
 
         var pred = Popis(db, p);

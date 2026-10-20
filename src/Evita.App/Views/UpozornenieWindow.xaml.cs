@@ -14,7 +14,7 @@ public partial class UpozornenieWindow : Window
     {
         InitializeComponent();
         var minuty = Math.Max(0, (int)Math.Round((vyskyt.Zaciatok - DateTime.Now).TotalMinutes));
-        Kedy.Text = minuty == 0 ? $"Teraz · {vyskyt.Zaciatok:H:mm}" : $"O {minuty} min · {vyskyt.Zaciatok:H:mm}";
+        Kedy.Text = minuty == 0 ? Preklad.F($"Teraz · {vyskyt.Zaciatok:H:mm}") : Preklad.F($"O {minuty} min · {vyskyt.Zaciatok:H:mm}");
         Nazov.Text = vyskyt.Nazov;
         Detail.Text = string.Join(" · ", new[] { vyskyt.Typ, vyskyt.Naviazanie }.Where(t => !string.IsNullOrWhiteSpace(t)));
         Pruh.BorderBrush = (System.Windows.Media.Brush)new FarbaNaStetec().Convert(vyskyt.Farba, typeof(System.Windows.Media.Brush), null!, Sk.Kultura);

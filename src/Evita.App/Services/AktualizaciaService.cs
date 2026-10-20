@@ -81,7 +81,7 @@ public sealed class AktualizaciaService
             if (odpoved.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 throw new EvitaException(
-                    "Na GitHube sa nenašlo žiadne verejné vydanie programu. Repozitár je pravdepodobne súkromný alebo ešte nemá vydanie.");
+                    Preklad.T("Na GitHube sa nenašlo žiadne verejné vydanie programu. Repozitár je pravdepodobne súkromný alebo ešte nemá vydanie."));
             }
 
             odpoved.EnsureSuccessStatusCode();
@@ -89,11 +89,11 @@ public sealed class AktualizaciaService
         }
         catch (HttpRequestException ex)
         {
-            throw new EvitaException($"Nepodarilo sa spojiť s GitHubom. Skontrolujte pripojenie na internet.\n\n{ex.Message}");
+            throw new EvitaException(Preklad.F($"Nepodarilo sa spojiť s GitHubom. Skontrolujte pripojenie na internet.\n\n{ex.Message}"));
         }
         catch (TaskCanceledException) when (!zrusenie.IsCancellationRequested)
         {
-            throw new EvitaException("GitHub neodpovedal včas. Skúste to neskôr.");
+            throw new EvitaException(Preklad.T("GitHub neodpovedal včas. Skúste to neskôr."));
         }
 
         ZapisKontrolu();
@@ -185,13 +185,13 @@ public sealed class AktualizaciaService
         }
         catch (HttpRequestException ex)
         {
-            throw new EvitaException($"Novú verziu sa nepodarilo stiahnuť.\n\n{ex.Message}");
+            throw new EvitaException(Preklad.F($"Novú verziu sa nepodarilo stiahnuť.\n\n{ex.Message}"));
         }
 
         if (verzia.SuborVelkost > 0 && new FileInfo(ciel).Length != verzia.SuborVelkost)
         {
             File.Delete(ciel);
-            throw new EvitaException("Stiahnutý súbor nemá správnu veľkosť. Skúste aktualizáciu znova.");
+            throw new EvitaException(Preklad.T("Stiahnutý súbor nemá správnu veľkosť. Skúste aktualizáciu znova."));
         }
 
         if (verzia.Sha256 is not null)
@@ -205,7 +205,7 @@ public sealed class AktualizaciaService
             if (!string.Equals(sucet, verzia.Sha256, StringComparison.OrdinalIgnoreCase))
             {
                 File.Delete(ciel);
-                throw new EvitaException("Kontrolný súčet stiahnutého súboru nesedí. Skúste aktualizáciu znova.");
+                throw new EvitaException(Preklad.T("Kontrolný súčet stiahnutého súboru nesedí. Skúste aktualizáciu znova."));
             }
         }
 

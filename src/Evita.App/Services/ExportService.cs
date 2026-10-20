@@ -41,14 +41,14 @@ public sealed class ExportService
     public const string KlucStlpce = "Export.Stlpce";
     public const string Titulok = "Evidencia IT techniky";
 
-    public static IReadOnlyList<PopisFormatu> Formaty { get; } = new PopisFormatu[]
+    public static IReadOnlyList<PopisFormatu> Formaty => new PopisFormatu[]
     {
-        new(FormatExportu.Excel, "Excel (.xlsx)", "Ďalšia práca v Exceli – formátovaná hlavička, zapnutý filter, ukotvený prvý riadok, dátumy a sumy ako čísla."),
-        new(FormatExportu.Csv, "CSV (.csv)", "Prenos do iných programov – UTF-8 s diakritikou, oddeľovač bodkočiarka, slovenský Excel ho otvorí správne."),
-        new(FormatExportu.Json, "JSON (.json)", "Výmena dát a prenos do inej EviTA – úplná štruktúra vrátane číselníkov, voliteľne aj s históriou zmien."),
-        new(FormatExportu.Xml, "XML (.xml)", "Výmena dát s inými systémami – rovnaká štruktúra ako JSON, vedľa sa uloží popis formátu evita.xsd."),
-        new(FormatExportu.Html, "HTML (.html)", "Prezeranie v prehliadači alebo zverejnenie – jeden súbor s formátovanou tabuľkou, dá sa aj vytlačiť."),
-        new(FormatExportu.Pdf, "PDF (.pdf)", "Archivácia a odoslanie – tabuľka na stránkach A4 s číslami strán."),
+        new(FormatExportu.Excel, "Excel (.xlsx)", Preklad.T("Ďalšia práca v Exceli – formátovaná hlavička, zapnutý filter, ukotvený prvý riadok, dátumy a sumy ako čísla.")),
+        new(FormatExportu.Csv, "CSV (.csv)", Preklad.T("Prenos do iných programov – UTF-8 s diakritikou, oddeľovač bodkočiarka, slovenský Excel ho otvorí správne.")),
+        new(FormatExportu.Json, "JSON (.json)", Preklad.T("Výmena dát a prenos do inej EviTA – úplná štruktúra vrátane číselníkov, voliteľne aj s históriou zmien.")),
+        new(FormatExportu.Xml, "XML (.xml)", Preklad.T("Výmena dát s inými systémami – rovnaká štruktúra ako JSON, vedľa sa uloží popis formátu evita.xsd.")),
+        new(FormatExportu.Html, "HTML (.html)", Preklad.T("Prezeranie v prehliadači alebo zverejnenie – jeden súbor s formátovanou tabuľkou, dá sa aj vytlačiť.")),
+        new(FormatExportu.Pdf, "PDF (.pdf)", Preklad.T("Archivácia a odoslanie – tabuľka na stránkach A4 s číslami strán.")),
     };
 
     public static string Pripona(FormatExportu format) => format switch
@@ -104,7 +104,7 @@ public sealed class ExportService
         var stlpce = StlpcePrenosu.Vsetky.Where(s => moznosti.Stlpce.Contains(s.Kluc)).ToList();
         if (MaVolbuStlpcov(moznosti.Format) && stlpce.Count == 0)
         {
-            throw new EvitaException("Vyberte aspoň jeden stĺpec.");
+            throw new EvitaException(Preklad.T("Vyberte aspoň jeden stĺpec."));
         }
 
         var priecinok = Path.GetDirectoryName(Path.GetFullPath(moznosti.Cesta));
@@ -124,10 +124,10 @@ public sealed class ExportService
                 case FormatExportu.Excel:
                 {
                     using var zosit = new XLWorkbook();
-                    PridajHarok(zosit, "Položky", stlpce, Riadky(polozky, stlpce));
+                    PridajHarok(zosit, Preklad.T("Položky"), stlpce, Riadky(polozky, stlpce));
                     if (moznosti.HarokPreKategoriu)
                     {
-                        foreach (var skupina in polozky.GroupBy(p => p.Kategoria?.Nazov ?? "nezaradené")
+                        foreach (var skupina in polozky.GroupBy(p => p.Kategoria?.Nazov ?? Preklad.T("nezaradené"))
                                      .OrderBy(g => g.Key, Sk.Porovnanie))
                         {
                             PridajHarok(zosit, skupina.Key, stlpce, Riadky(skupina.ToList(), stlpce));
@@ -157,11 +157,11 @@ public sealed class ExportService
         }
         catch (IOException ex)
         {
-            throw new EvitaException($"Súbor sa nedá uložiť. Ak je otvorený v inom programe (napr. v Exceli), zatvorte ho a skúste znova.\n\n{ex.Message}");
+            throw new EvitaException(Preklad.F($"Súbor sa nedá uložiť. Ak je otvorený v inom programe (napr. v Exceli), zatvorte ho a skúste znova.\n\n{ex.Message}"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new EvitaException($"Do zvoleného priečinka nemáte právo zapisovať. Vyberte iný priečinok.\n\n{ex.Message}");
+            throw new EvitaException(Preklad.F($"Do zvoleného priečinka nemáte právo zapisovať. Vyberte iný priečinok.\n\n{ex.Message}"));
         }
 
         return polozky.Count;
@@ -193,16 +193,11 @@ public sealed class ExportService
         }
 
         casti.Add(PocetPoloziek(pocet));
-        casti.Add("vytvorené " + Sk.DatumCas(DateTime.Now));
+        casti.Add(Preklad.F($"vytvorené {Sk.DatumCas(DateTime.Now)}"));
         return string.Join(" · ", casti);
     }
 
-    public static string PocetPoloziek(int pocet) => pocet switch
-    {
-        1 => "1 položka",
-        >= 2 and <= 4 => $"{pocet} položky",
-        _ => $"{pocet} položiek",
-    };
+    public static string PocetPoloziek(int pocet) => Preklad.Pocet(pocet, "{0} položka", "{0} položky", "{0} položiek");
 
     internal static List<object?[]> Riadky(IEnumerable<Polozka> polozky, IReadOnlyList<StlpecPrenosu> stlpce) =>
         polozky.Select(p => stlpce.Select(s => StlpcePrenosu.Hodnota(p, s.Kluc)).ToArray()).ToList();
@@ -285,7 +280,7 @@ public sealed class ExportService
         var zaklad = sb.ToString().Trim('\'', ' ');
         if (zaklad.Length == 0)
         {
-            zaklad = "Hárok";
+            zaklad = Preklad.T("Hárok");
         }
 
         zaklad = zaklad.Length > 31 ? zaklad[..31] : zaklad;

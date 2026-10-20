@@ -110,3 +110,13 @@ public sealed class HodnotyNaKrivku : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>Text uložený v databáze po slovensky (napr. akcia a pole v histórii) → text v jazyku programu.</summary>
+public sealed class PrelozText : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is string text ? Evita.Services.Preklad.TAkJe(text) : value;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}

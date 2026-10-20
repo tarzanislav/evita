@@ -36,7 +36,7 @@ public sealed class ZdrojImportu
 public static class CitacSuborov
 {
     public const string FilterSuborov =
-        "Všetky podporované (*.xlsx;*.csv;*.txt;*.json;*.xml)|*.xlsx;*.csv;*.txt;*.json;*.xml|Excel (*.xlsx)|*.xlsx|CSV (*.csv;*.txt)|*.csv;*.txt|JSON (*.json)|*.json|XML (*.xml)|*.xml";
+        Preklad.T("Všetky podporované (*.xlsx;*.csv;*.txt;*.json;*.xml)|*.xlsx;*.csv;*.txt;*.json;*.xml|Excel (*.xlsx)|*.xlsx|CSV (*.csv;*.txt)|*.csv;*.txt|JSON (*.json)|*.json|XML (*.xml)|*.xml");
 
     static CitacSuborov()
     {
@@ -48,7 +48,7 @@ public static class CitacSuborov
     {
         if (!File.Exists(cesta))
         {
-            throw new EvitaException($"Súbor neexistuje:\n{cesta}");
+            throw new EvitaException(Preklad.F($"Súbor neexistuje:\n{cesta}"));
         }
 
         var pripona = Path.GetExtension(cesta).ToLowerInvariant();
@@ -60,9 +60,9 @@ public static class CitacSuborov
                 ".csv" or ".txt" => Csv(cesta),
                 ".json" => Json(cesta),
                 ".xml" => Xml(cesta),
-                ".xls" => throw new EvitaException("Starý formát Excelu .xls sa nedá načítať. Otvorte súbor v Exceli a uložte ho ako .xlsx (Súbor → Uložiť ako → Zošit programu Excel)."),
-                ".zip" => throw new EvitaException("Zálohu EviTA (ZIP) obnovíte v časti Servis → Obnova."),
-                _ => throw new EvitaException($"Formát súboru {pripona} sa nedá importovať. Použite Excel (.xlsx), CSV, JSON alebo XML."),
+                ".xls" => throw new EvitaException(Preklad.T("Starý formát Excelu .xls sa nedá načítať. Otvorte súbor v Exceli a uložte ho ako .xlsx (Súbor → Uložiť ako → Zošit programu Excel).")),
+                ".zip" => throw new EvitaException(Preklad.T("Zálohu EviTA (ZIP) obnovíte v časti Servis → Obnova.")),
+                _ => throw new EvitaException(Preklad.F($"Formát súboru {pripona} sa nedá importovať. Použite Excel (.xlsx), CSV, JSON alebo XML.")),
             };
 
             OrezPrazdne(zdroj);
@@ -74,11 +74,11 @@ public static class CitacSuborov
         }
         catch (IOException ex)
         {
-            throw new EvitaException($"Súbor sa nedá otvoriť. Ak je otvorený v inom programe, zatvorte ho a skúste znova.\n\n{ex.Message}");
+            throw new EvitaException(Preklad.F($"Súbor sa nedá otvoriť. Ak je otvorený v inom programe, zatvorte ho a skúste znova.\n\n{ex.Message}"));
         }
         catch (Exception ex)
         {
-            throw new EvitaException($"Súbor sa nepodarilo prečítať: {ex.GetBaseException().Message}");
+            throw new EvitaException(Preklad.F($"Súbor sa nepodarilo prečítať: {ex.GetBaseException().Message}"));
         }
     }
 
@@ -91,14 +91,14 @@ public static class CitacSuborov
         var harky = zosit.Worksheets.Where(h => h.Visibility == XLWorksheetVisibility.Visible).ToList();
         if (harky.Count == 0)
         {
-            throw new EvitaException("Zošit neobsahuje žiadny viditeľný hárok.");
+            throw new EvitaException(Preklad.T("Zošit neobsahuje žiadny viditeľný hárok."));
         }
 
         var harok = harky.FirstOrDefault(h => StlpcePrenosu.Normalizuj(h.Name) == "polozky") ?? harky[0];
         var zdroj = new ZdrojImportu { Cesta = cesta, Format = "Excel" };
         if (harky.Count > 1)
         {
-            zdroj.Upozornenia.Add($"Zošit má {harky.Count} hárkov, načítal sa hárok „{harok.Name}“.");
+            zdroj.Upozornenia.Add(Preklad.F($"Zošit má {harky.Count} hárkov, načítal sa hárok „{harok.Name}“."));
         }
 
         var poslednyRiadok = harok.LastRowUsed()?.RowNumber() ?? 0;
@@ -132,7 +132,7 @@ public static class CitacSuborov
 
         for (var c = 1; c <= poslednyStlpec; c++)
         {
-            zdroj.Hlavicky.Add(TextBunky(harok.Cell(riadokHlavicky, c))?.Trim() is { Length: > 0 } h ? h : $"Stĺpec {c}");
+            zdroj.Hlavicky.Add(TextBunky(harok.Cell(riadokHlavicky, c))?.Trim() is { Length: > 0 } h ? h : Preklad.F($"Stĺpec {c}"));
         }
 
         for (var r = riadokHlavicky + 1; r <= poslednyRiadok; r++)
@@ -173,7 +173,7 @@ public static class CitacSuborov
 
         if (hodnota.IsBoolean)
         {
-            return hodnota.GetBoolean() ? "áno" : "nie";
+            return hodnota.GetBoolean() ? Preklad.T("áno") : Preklad.T("nie");
         }
 
         if (hodnota.IsText)
@@ -193,7 +193,7 @@ public static class CitacSuborov
         var zdroj = new ZdrojImportu { Cesta = cesta, Format = "CSV" };
         if (kodovanie != "UTF-8")
         {
-            zdroj.Upozornenia.Add($"Súbor nie je v kódovaní UTF-8, načítal sa v kódovaní {kodovanie}.");
+            zdroj.Upozornenia.Add(Preklad.F($"Súbor nie je v kódovaní UTF-8, načítal sa v kódovaní {kodovanie}."));
         }
 
         var oddelovac = UrciOddelovac(text);
@@ -207,7 +207,7 @@ public static class CitacSuborov
         var pocet = zaznamy.Skip(hlavicka).Max(z => z.Count);
         for (var c = 0; c < pocet; c++)
         {
-            zdroj.Hlavicky.Add(c < zaznamy[hlavicka].Count && zaznamy[hlavicka][c].Trim() is { Length: > 0 } h ? h : $"Stĺpec {c + 1}");
+            zdroj.Hlavicky.Add(c < zaznamy[hlavicka].Count && zaznamy[hlavicka][c].Trim() is { Length: > 0 } h ? h : Preklad.F($"Stĺpec {c + 1}"));
         }
 
         for (var z = hlavicka + 1; z < zaznamy.Count; z++)
@@ -386,7 +386,7 @@ public static class CitacSuborov
                 }
                 catch (JsonException ex)
                 {
-                    zdroj.Upozornenia.Add($"Číselníky alebo história v súbore sa nedali prečítať ({ex.Message}). Načítajú sa len položky.");
+                    zdroj.Upozornenia.Add(Preklad.F($"Číselníky alebo história v súbore sa nedali prečítať ({ex.Message}). Načítajú sa len položky."));
                 }
             }
             else
@@ -399,7 +399,7 @@ public static class CitacSuborov
 
         if (zoznam is not { } pole || pole.ValueKind != JsonValueKind.Array)
         {
-            throw new EvitaException("V súbore JSON sa nenašiel zoznam položiek. Pozrite si vzorový súbor EviTA_vzor_JSON.json.");
+            throw new EvitaException(Preklad.T("V súbore JSON sa nenašiel zoznam položiek. Pozrite si vzorový súbor EviTA_vzor_JSON.json."));
         }
 
         var objekty = pole.EnumerateArray().Where(o => o.ValueKind == JsonValueKind.Object)
@@ -426,8 +426,8 @@ public static class CitacSuborov
     {
         JsonValueKind.String => hodnota.GetString(),
         JsonValueKind.Number => hodnota.GetRawText(),
-        JsonValueKind.True => "áno",
-        JsonValueKind.False => "nie",
+        JsonValueKind.True => Preklad.T("áno"),
+        JsonValueKind.False => Preklad.T("nie"),
         JsonValueKind.Null or JsonValueKind.Undefined => null,
         _ => hodnota.GetRawText(),
     };
@@ -437,7 +437,7 @@ public static class CitacSuborov
     private static ZdrojImportu Xml(string cesta)
     {
         var dokument = XDocument.Load(cesta);
-        var koren = dokument.Root ?? throw new EvitaException("Súbor XML je prázdny.");
+        var koren = dokument.Root ?? throw new EvitaException(Preklad.T("Súbor XML je prázdny."));
         var zdroj = new ZdrojImportu { Cesta = cesta, Format = "XML" };
 
         List<XElement> prvky;
@@ -453,7 +453,7 @@ public static class CitacSuborov
             prvky = NajdiOpakovane(koren);
             if (prvky.Count == 0)
             {
-                throw new EvitaException("V súbore XML sa nenašiel zoznam položiek. Pozrite si vzorový súbor EviTA_vzor_XML.xml.");
+                throw new EvitaException(Preklad.T("V súbore XML sa nenašiel zoznam položiek. Pozrite si vzorový súbor EviTA_vzor_XML.xml."));
             }
         }
 
@@ -502,17 +502,17 @@ public static class CitacSuborov
                 pocet++;
                 if (pocet <= 3)
                 {
-                    zdroj.Upozornenia.Add($"Súbor sa odchyľuje od popisu formátu evita.xsd: {e.Message}");
+                    zdroj.Upozornenia.Add(Preklad.F($"Súbor sa odchyľuje od popisu formátu evita.xsd: {e.Message}"));
                 }
             });
             if (pocet > 3)
             {
-                zdroj.Upozornenia.Add($"… a ďalších {pocet - 3} odchýlok od popisu formátu.");
+                zdroj.Upozornenia.Add(Preklad.F($"… a ďalších {pocet - 3} odchýlok od popisu formátu."));
             }
         }
         catch (Exception ex)
         {
-            zdroj.Upozornenia.Add($"Kontrola podľa evita.xsd sa nedala vykonať: {ex.Message}");
+            zdroj.Upozornenia.Add(Preklad.F($"Kontrola podľa evita.xsd sa nedala vykonať: {ex.Message}"));
         }
     }
 

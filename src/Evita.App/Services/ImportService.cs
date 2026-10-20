@@ -78,11 +78,11 @@ public sealed partial class RiadokImportu : ObservableObject
 
     public string VysledokText => Vysledok switch
     {
-        StavRiadku.Ok => "v poriadku",
-        StavRiadku.Upozornenie => "upozornenie",
-        StavRiadku.MoznaDuplicita => "možná duplicita",
-        StavRiadku.Duplicita => "už je v evidencii",
-        _ => "chyba",
+        StavRiadku.Ok => Preklad.T("v poriadku"),
+        StavRiadku.Upozornenie => Preklad.T("upozornenie"),
+        StavRiadku.MoznaDuplicita => Preklad.T("možná duplicita"),
+        StavRiadku.Duplicita => Preklad.T("už je v evidencii"),
+        _ => Preklad.T("chyba"),
     };
 
     /// <summary>Hodnota v riadku sa zmenila – treba ho znova skontrolovať.</summary>
@@ -248,23 +248,23 @@ public sealed class KontrolaImportu
 
         if (string.IsNullOrWhiteSpace(r.Nazov))
         {
-            chyby.Add("chýba názov");
+            chyby.Add(Preklad.T("chýba názov"));
         }
 
         if (!Prevod.SkusCeleCislo(r.Cislo, out var cislo))
         {
             if (cela)
             {
-                chyby.Add($"prírastkové číslo „{r.Cislo}“ nie je kladné celé číslo");
+                chyby.Add(Preklad.F($"prírastkové číslo „{r.Cislo}“ nie je kladné celé číslo"));
             }
             else
             {
-                upozornenia.Add($"prírastkové číslo „{r.Cislo}“ sa nerozpoznalo");
+                upozornenia.Add(Preklad.F($"prírastkové číslo „{r.Cislo}“ sa nerozpoznalo"));
             }
         }
         else if (cela && cislo is null)
         {
-            chyby.Add("chýba prírastkové číslo (pri prenose celej databázy je povinné)");
+            chyby.Add(Preklad.T("chýba prírastkové číslo (pri prenose celej databázy je povinné)"));
         }
 
         foreach (var stlpec in StlpcePrenosu.Vsetky.Where(s => s.Typ is TypStlpca.Datum or TypStlpca.DatumCas))
@@ -272,18 +272,18 @@ public sealed class KontrolaImportu
             var hodnota = r.Hodnota(stlpec.Kluc);
             if (!Prevod.SkusDatum(hodnota, out _))
             {
-                chyby.Add($"nerozpoznaný dátum v stĺpci {stlpec.Nazov}: „{hodnota}“");
+                chyby.Add(Preklad.F($"nerozpoznaný dátum v stĺpci {stlpec.Nazov}: „{hodnota}“"));
             }
         }
 
         if (!Sk.SkusPrecitatSumu(r.Cena, out _))
         {
-            chyby.Add($"nerozpoznaná cena „{r.Cena}“");
+            chyby.Add(Preklad.F($"nerozpoznaná cena „{r.Cena}“"));
         }
 
         if (!Prevod.SkusStav(r.Stav, out var stav))
         {
-            chyby.Add($"neznámy stav „{r.Stav}“ (povolené: v prevádzke, v sklade, v oprave, vyradené)");
+            chyby.Add(Preklad.F($"neznámy stav „{r.Stav}“ (povolené: v prevádzke, v sklade, v oprave, vyradené)"));
         }
 
         Guid? guid = null;
@@ -295,18 +295,18 @@ public sealed class KontrolaImportu
             }
             else
             {
-                upozornenia.Add("identifikátor (GUID) sa nerozpoznal, položka dostane nový");
+                upozornenia.Add(Preklad.T("identifikátor (GUID) sa nerozpoznal, položka dostane nový"));
             }
         }
 
         if (string.IsNullOrWhiteSpace(r.Kategoria))
         {
-            upozornenia.Add($"chýba kategória – položka sa zaradí do kategórie „{Nezaradene}“");
+            upozornenia.Add(Preklad.F($"chýba kategória – položka sa zaradí do kategórie „{Nezaradene}“"));
         }
 
         if (stav != StavPolozky.Vyradene && (!string.IsNullOrWhiteSpace(r.DatumVyradenia) || !string.IsNullOrWhiteSpace(r.DovodVyradenia)))
         {
-            upozornenia.Add("dátum a dôvod vyradenia sa použijú len pri stave vyradené");
+            upozornenia.Add(Preklad.T("dátum a dôvod vyradenia sa použijú len pri stave vyradené"));
         }
 
         var seriove = NormalizujSeriove(r.Seriove);
@@ -318,7 +318,7 @@ public sealed class KontrolaImportu
                 {
                     if (cislaVSubore.TryGetValue(c, out var prvy))
                     {
-                        chyby.Add($"prírastkové číslo {c} je v súbore už v riadku {prvy}");
+                        chyby.Add(Preklad.F($"prírastkové číslo {c} je v súbore už v riadku {prvy}"));
                     }
                     else
                     {
@@ -330,7 +330,7 @@ public sealed class KontrolaImportu
                 {
                     if (guidyVSubore.TryGetValue(g, out var prvy))
                     {
-                        chyby.Add($"rovnaký identifikátor je v súbore už v riadku {prvy}");
+                        chyby.Add(Preklad.F($"rovnaký identifikátor je v súbore už v riadku {prvy}"));
                     }
                     else
                     {
@@ -342,23 +342,23 @@ public sealed class KontrolaImportu
             {
                 if (guid is Guid g && _guidy.Contains(g))
                 {
-                    duplicita = "už je v evidencii (rovnaký identifikátor)";
+                    duplicita = Preklad.T("už je v evidencii (rovnaký identifikátor)");
                 }
                 else if (seriove is not null && _seriove.Contains(seriove))
                 {
-                    duplicita = $"už je v evidencii (sériové číslo {r.Seriove!.Trim()})";
+                    duplicita = Preklad.F($"už je v evidencii (sériové číslo {r.Seriove!.Trim()})");
                 }
                 else if (guid is Guid g2 && guidyVSubore.TryGetValue(g2, out var prvyG))
                 {
-                    duplicita = $"rovnaká položka je v súbore už v riadku {prvyG}";
+                    duplicita = Preklad.F($"rovnaká položka je v súbore už v riadku {prvyG}");
                 }
                 else if (seriove is not null && serioveVSubore.TryGetValue(seriove, out var prvyS))
                 {
-                    duplicita = $"rovnaké sériové číslo je v súbore už v riadku {prvyS}";
+                    duplicita = Preklad.F($"rovnaké sériové číslo je v súbore už v riadku {prvyS}");
                 }
                 else if (_kluce.TryGetValue(Kluc(r.Nazov, string.IsNullOrWhiteSpace(r.Kategoria) ? Nezaradene : r.Kategoria, r.Miestnost), out var existujuce))
                 {
-                    moznaDuplicita = $"pravdepodobná duplicita – rovnaký názov, kategória a miestnosť ako položka č. {existujuce}";
+                    moznaDuplicita = Preklad.F($"pravdepodobná duplicita – rovnaký názov, kategória a miestnosť ako položka č. {existujuce}");
                 }
 
                 // do porovnania v rámci súboru idú len riadky, ktoré sa naozaj importujú
@@ -424,10 +424,10 @@ public sealed class KontrolaImportu
             }
         }
 
-        Dovod(riadky.Count(r => r.Vysledok == StavRiadku.Chyba), "chyba v riadku (dá sa opraviť v kroku Kontrola)");
-        Dovod(riadky.Count(r => r.Vysledok == StavRiadku.Duplicita), "položka už je v evidencii alebo je v súbore dvakrát");
-        Dovod(riadky.Count(r => r.Vysledok == StavRiadku.MoznaDuplicita && !r.Importovat), "pravdepodobná duplicita, ktorú ste nevybrali");
-        Dovod(riadky.Count(r => r.Vysledok is StavRiadku.Ok or StavRiadku.Upozornenie && !r.Importovat), "vynechané ručne");
+        Dovod(riadky.Count(r => r.Vysledok == StavRiadku.Chyba), Preklad.T("chyba v riadku (dá sa opraviť v kroku Kontrola)"));
+        Dovod(riadky.Count(r => r.Vysledok == StavRiadku.Duplicita), Preklad.T("položka už je v evidencii alebo je v súbore dvakrát"));
+        Dovod(riadky.Count(r => r.Vysledok == StavRiadku.MoznaDuplicita && !r.Importovat), Preklad.T("pravdepodobná duplicita, ktorú ste nevybrali"));
+        Dovod(riadky.Count(r => r.Vysledok is StavRiadku.Ok or StavRiadku.Upozornenie && !r.Importovat), Preklad.T("vynechané ručne"));
 
         var kategorie = pridat.Select(r => string.IsNullOrWhiteSpace(r.Kategoria) ? Nezaradene : r.Kategoria.Trim());
         var miestnosti = pridat.Where(r => !string.IsNullOrWhiteSpace(r.Miestnost)).Select(r => r.Miestnost!.Trim());
@@ -562,9 +562,10 @@ public sealed class ImportService
                 continue;
             }
 
-            if (!typy.TryGetValue(string.IsNullOrWhiteSpace(u.Typ) ? "iné" : u.Typ.Trim(), out var typ))
+            var nazovTypu = string.IsNullOrWhiteSpace(u.Typ) ? (KalendarService.NajdiTyp(typy.Values, "iné")?.Nazov ?? Preklad.T("iné")) : u.Typ.Trim();
+            if (!typy.TryGetValue(nazovTypu, out var typ))
             {
-                typ = new TypUdalosti { Nazov = string.IsNullOrWhiteSpace(u.Typ) ? "iné" : u.Typ.Trim(), Poradie = poradie++ };
+                typ = new TypUdalosti { Nazov = nazovTypu, Poradie = poradie++ };
                 db.TypyUdalosti.Add(typ);
                 typy[typ.Nazov] = typ;
             }
@@ -702,7 +703,7 @@ public sealed class ImportService
     /// <summary>Vráti databázu do stavu pred posledným importom (obnovou zo zálohy, ktorá sa urobila pred ním).</summary>
     public void VratPoslednyImport()
     {
-        var posledny = PoslednyImport() ?? throw new EvitaException("Nie je čo vrátiť – záloha pred posledným importom sa nenašla.");
+        var posledny = PoslednyImport() ?? throw new EvitaException(Preklad.T("Nie je čo vrátiť – záloha pred posledným importom sa nenašla."));
         new ZalohaService().Obnov(posledny.Zaloha, null);
     }
 
@@ -712,7 +713,7 @@ public sealed class ImportService
         var vybrane = riadky.Where(r => r.Importovat && r.MozeImportovat).ToList();
         if (vybrane.Count == 0)
         {
-            throw new EvitaException("Nie je vybraná žiadna položka na import.");
+            throw new EvitaException(Preklad.T("Nie je vybraná žiadna položka na import."));
         }
 
         if (druh == DruhImportu.CelaDatabaza)
@@ -721,13 +722,12 @@ public sealed class ImportService
             if (kontrola.Polozky.Any())
             {
                 throw new EvitaException(
-                    "Prenos celej databázy sa dá urobiť len do prázdnej evidencie. Najprv vymažte dáta (Servis → Vymazať dáta a začať nanovo), " +
-                    "alebo zvoľte doplnenie položiek do evidencie.");
+                    Preklad.T("Prenos celej databázy sa dá urobiť len do prázdnej evidencie. Najprv vymažte dáta (Servis → Vymazať dáta a začať nanovo), alebo zvoľte doplnenie položiek do evidencie."));
             }
         }
 
         var nazovSuboru = zdroj.NazovSuboru;
-        var zaloha = new ZalohaService().Zalohuj(TypZalohy.PredImportom, poznamka: $"Automatická záloha pred importom zo súboru {nazovSuboru}");
+        var zaloha = new ZalohaService().Zalohuj(TypZalohy.PredImportom, poznamka: Preklad.F($"Automatická záloha pred importom zo súboru {nazovSuboru}"));
         var teraz = DateTime.Now;
         var pouzivatel = Environment.UserName;
 
@@ -959,8 +959,8 @@ public sealed class ImportService
                 Pouzivatel = pouzivatel,
                 Akcia = PolozkaService.AkciaImport,
                 NovaHodnota = druh == DruhImportu.CelaDatabaza
-                    ? $"prenos celej databázy zo súboru {nazovSuboru}"
-                    : $"importované zo súboru {nazovSuboru}, riadok {riadok.CisloRiadku}" + (povodne is int c ? $", pôvodné prírastkové číslo {c}" : ""),
+                    ? Preklad.F($"prenos celej databázy zo súboru {nazovSuboru}")
+                    : Preklad.F($"importované zo súboru {nazovSuboru}, riadok {riadok.CisloRiadku}") + (povodne is int c ? Preklad.F($", pôvodné prírastkové číslo {c}") : ""),
             });
         }
 
@@ -978,82 +978,82 @@ public sealed class ImportService
 
         // protokol
         var sb = new StringBuilder();
-        sb.AppendLine("EviTA – protokol importu");
+        sb.AppendLine(Preklad.T("EviTA – protokol importu"));
         sb.AppendLine(new string('=', 60));
-        sb.AppendLine($"Čas:                 {Sk.DatumCas(teraz)}");
-        sb.AppendLine($"Súbor:               {zdroj.Cesta}");
-        sb.AppendLine($"Druh importu:        {(druh == DruhImportu.Zlucenie ? "doplnenie položiek do evidencie" : "prenos celej databázy do prázdnej")}");
-        sb.AppendLine($"Záloha pred importom: {zaloha}");
-        sb.AppendLine($"Riadkov v súbore:    {riadky.Count}");
-        sb.AppendLine($"Pridané:             {ExportService.PocetPoloziek(nove.Count)} (prírastkové čísla {cisla.Min()} – {cisla.Max()})");
-        sb.AppendLine($"Preskočené:          {riadky.Count - nove.Count}");
+        sb.AppendLine(Preklad.F($"Čas:                 {Sk.DatumCas(teraz)}"));
+        sb.AppendLine(Preklad.F($"Súbor:               {zdroj.Cesta}"));
+        sb.AppendLine(Preklad.F($"Druh importu:        {(druh == DruhImportu.Zlucenie ? Preklad.T("doplnenie položiek do evidencie") : Preklad.T("prenos celej databázy do prázdnej"))}"));
+        sb.AppendLine(Preklad.F($"Záloha pred importom: {zaloha}"));
+        sb.AppendLine(Preklad.F($"Riadkov v súbore:    {riadky.Count}"));
+        sb.AppendLine(Preklad.F($"Pridané:             {ExportService.PocetPoloziek(nove.Count)} (prírastkové čísla {cisla.Min()} – {cisla.Max()})"));
+        sb.AppendLine(Preklad.F($"Preskočené:          {riadky.Count - nove.Count}"));
         if (noveKategorie.Count > 0)
         {
-            sb.AppendLine($"Nové kategórie:      {string.Join(", ", noveKategorie)}");
+            sb.AppendLine(Preklad.F($"Nové kategórie:      {string.Join(", ", noveKategorie)}"));
         }
 
         if (noveMiestnosti.Count > 0)
         {
-            sb.AppendLine($"Nové miestnosti:     {string.Join(", ", noveMiestnosti)}");
+            sb.AppendLine(Preklad.F($"Nové miestnosti:     {string.Join(", ", noveMiestnosti)}"));
         }
 
         if (noveOsoby.Count > 0)
         {
-            sb.AppendLine($"Nové osoby:          {string.Join(", ", noveOsoby)}");
+            sb.AppendLine(Preklad.F($"Nové osoby:          {string.Join(", ", noveOsoby)}"));
         }
 
         if (prenesenaHistoria > 0)
         {
-            sb.AppendLine($"Prenesená história:  {prenesenaHistoria} záznamov");
+            sb.AppendLine(Preklad.F($"Prenesená história:  {prenesenaHistoria} záznamov"));
         }
 
         if (preneseneUdalosti > 0)
         {
-            sb.AppendLine($"Udalosti kalendára:  {preneseneUdalosti}");
+            sb.AppendLine(Preklad.F($"Udalosti kalendára:  {preneseneUdalosti}"));
         }
 
         if (preneseneUlohy > 0)
         {
-            sb.AppendLine($"Úlohy:               {preneseneUlohy}");
+            sb.AppendLine(Preklad.F($"Úlohy:               {preneseneUlohy}"));
         }
 
         if (prenesenePoznamky > 0)
         {
-            sb.AppendLine($"Poznámky:            {prenesenePoznamky}");
+            sb.AppendLine(Preklad.F($"Poznámky:            {prenesenePoznamky}"));
         }
 
         foreach (var upozornenie in zdroj.Upozornenia)
         {
-            sb.AppendLine($"Upozornenie:         {upozornenie}");
+            sb.AppendLine(Preklad.F($"Upozornenie:         {upozornenie}"));
         }
 
         var preskocene = riadky.Where(r => !(r.Importovat && r.MozeImportovat)).ToList();
         if (preskocene.Count > 0)
         {
             sb.AppendLine();
-            sb.AppendLine("Preskočené riadky");
+            sb.AppendLine(Preklad.T("Preskočené riadky"));
             sb.AppendLine(new string('-', 60));
             foreach (var r in preskocene)
             {
-                var dovod = r.Problem.Length > 0 ? r.Problem : "vynechané ručne";
+                var dovod = r.Problem.Length > 0 ? r.Problem : Preklad.T("vynechané ručne");
                 if (r.Vysledok is StavRiadku.MoznaDuplicita or StavRiadku.Ok or StavRiadku.Upozornenie)
                 {
-                    dovod = "nevybrané – " + dovod;
+                    dovod = Preklad.F($"nevybrané – {dovod}");
                 }
 
-                sb.AppendLine($"riadok {r.CisloRiadku}: {r.Nazov} – {dovod}");
+                sb.AppendLine(Preklad.F($"riadok {r.CisloRiadku}: {r.Nazov} – {dovod}"));
             }
         }
 
         sb.AppendLine();
-        sb.AppendLine("Pridané položky");
+        sb.AppendLine(Preklad.T("Pridané položky"));
         sb.AppendLine(new string('-', 60));
         foreach (var (riadok, polozka, povodne) in nove.OrderBy(x => x.Polozka.PrirastkoveCislo))
         {
-            var text = $"č. {polozka.PrirastkoveCislo}  {polozka.Nazov}  (riadok {riadok.CisloRiadku}";
+            var text = Preklad.F($"č. {polozka.PrirastkoveCislo}  {polozka.Nazov}  (riadok {riadok.CisloRiadku}");
             if (druh == DruhImportu.Zlucenie && povodne is int c)
             {
-                text += $", pôvodné č. {c}";
+                text += Preklad.F($", pôvodné č. {c}");
             }
 
             text += ")";

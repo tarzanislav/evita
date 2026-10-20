@@ -1,5 +1,6 @@
 using System.Windows;
 using Evita.Pomocne;
+using Evita.Services;
 
 namespace Evita.Views;
 
@@ -15,14 +16,13 @@ public partial class HesloWindow : Window
         _nove = nove;
         if (nove)
         {
-            Nadpis.Text = "Nové heslo zálohy";
-            Popis.Text = popis ?? $"Záloha bude zašifrovaná (AES-256). Heslo musí mať aspoň {MinimalnaDlzka} znakov. " +
-                         "Bez hesla sa zo zálohy nedá nič obnoviť – heslo si dobre uschovajte.";
+            Nadpis.Text = Preklad.T("Nové heslo zálohy");
+            Popis.Text = popis ?? Preklad.F($"Záloha bude zašifrovaná (AES-256). Heslo musí mať aspoň {MinimalnaDlzka} znakov. Bez hesla sa zo zálohy nedá nič obnoviť – heslo si dobre uschovajte.");
         }
         else
         {
-            Nadpis.Text = "Záloha je chránená heslom";
-            Popis.Text = popis ?? "Zadajte heslo, ktoré ste použili pri vytváraní zálohy.";
+            Nadpis.Text = Preklad.T("Záloha je chránená heslom");
+            Popis.Text = popis ?? Preklad.T("Zadajte heslo, ktoré ste použili pri vytváraní zálohy.");
             PanelOpakovanie.Visibility = Visibility.Collapsed;
         }
 
@@ -60,15 +60,15 @@ public partial class HesloWindow : Window
         string? chyba = null;
         if (Heslo1.Password.Length == 0)
         {
-            chyba = "Zadajte heslo.";
+            chyba = Preklad.T("Zadajte heslo.");
         }
         else if (_nove && Heslo1.Password.Length < MinimalnaDlzka)
         {
-            chyba = $"Heslo musí mať aspoň {MinimalnaDlzka} znakov.";
+            chyba = Preklad.F($"Heslo musí mať aspoň {MinimalnaDlzka} znakov.");
         }
         else if (_nove && Heslo1.Password != Heslo2.Password)
         {
-            chyba = "Heslá sa nezhodujú.";
+            chyba = Preklad.T("Heslá sa nezhodujú.");
         }
 
         if (chyba is not null)

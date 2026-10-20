@@ -52,7 +52,7 @@ public sealed record InfoOZalohe(
 /// <summary>Záloha je zašifrovaná a treba zadať heslo.</summary>
 public sealed class HesloPotrebneException : Exception
 {
-    public HesloPotrebneException() : base("Záloha je chránená heslom.")
+    public HesloPotrebneException() : base(Preklad.T("Záloha je chránená heslom."))
     {
     }
 }
@@ -79,12 +79,13 @@ public sealed class ZalohaService
 
     public static string NazovPeriody(PeriodaZaloh perioda) => perioda switch
     {
-        PeriodaZaloh.Denne => "denne",
-        PeriodaZaloh.Tyzdenne => "týždenne",
-        PeriodaZaloh.Mesacne => "mesačne",
-        _ => "ročne",
+        PeriodaZaloh.Denne => Preklad.T("denne"),
+        PeriodaZaloh.Tyzdenne => Preklad.T("týždenne"),
+        PeriodaZaloh.Mesacne => Preklad.T("mesačne"),
+        _ => Preklad.T("ročne"),
     };
 
+    /// <summary>Typ zálohy, ako sa ukladá do záznamu záloh a do zálohy (vždy po slovensky – je to kľúč, zobrazuje sa preložený).</summary>
     public static string NazovTypu(TypZalohy typ) => typ switch
     {
         TypZalohy.Rucna => "ručná",
@@ -96,6 +97,16 @@ public sealed class ZalohaService
         _ => "pred operáciou",
     };
 
+    /// <summary>Uložené typy záloh (na preklad pri zobrazení).</summary>
+    internal static readonly string[] TypyNaPreklad =
+    {
+        Preklad.N("ručná"), Preklad.N("automatická"), Preklad.N("pred aktualizáciou"), Preklad.N("pred obnovou"),
+        Preklad.N("pred vymazaním dát"), Preklad.N("pred importom"), Preklad.N("pred operáciou"),
+    };
+
+    /// <summary>Typ zálohy v jazyku programu.</summary>
+    public static string PrelozenyTyp(string? typ) => Preklad.TAkJe(typ ?? "");
+
     /// <summary>
     /// Celý popis typu pre záznam záloh: „ručná záloha“, „ručná záloha s heslom“, „automatická záloha s heslom“,
     /// „záloha pred aktualizáciou“, „obnova zo zálohy“ …
@@ -104,12 +115,12 @@ public sealed class ZalohaService
     {
         var popis = zaznam.Typ switch
         {
-            "ručná" => "ručná záloha",
-            "automatická" => "automatická záloha",
-            "obnova" => "obnova zo zálohy",
-            _ => "záloha " + zaznam.Typ,
+            "ručná" => Preklad.T("ručná záloha"),
+            "automatická" => Preklad.T("automatická záloha"),
+            "obnova" => Preklad.T("obnova zo zálohy"),
+            _ => Preklad.F($"záloha {PrelozenyTyp(zaznam.Typ)}"),
         };
-        return zaznam.Zasifrovana ? popis + " s heslom" : popis;
+        return zaznam.Zasifrovana ? Preklad.F($"{popis} s heslom") : popis;
     }
 
     // ------------------------------------------------------------------ nastavenia
@@ -131,22 +142,22 @@ public sealed class ZalohaService
     {
         if (nastavenia.Ponechat is < 1 or > 999)
         {
-            throw new EvitaException("Počet ponechaných záloh musí byť od 1 do 999.");
+            throw new EvitaException(Preklad.T("Počet ponechaných záloh musí byť od 1 do 999."));
         }
 
         if (!TimeSpan.TryParseExact(nastavenia.Cas.Trim(), new[] { @"h\:mm", @"hh\:mm" }, null, out var cas) || cas.TotalHours >= 24)
         {
-            throw new EvitaException("Čas zálohy zadajte v tvare hodiny:minúty, napríklad 20:00.");
+            throw new EvitaException(Preklad.T("Čas zálohy zadajte v tvare hodiny:minúty, napríklad 20:00."));
         }
 
         if (string.IsNullOrWhiteSpace(nastavenia.Priecinok))
         {
-            throw new EvitaException("Zadajte priečinok na zálohy.");
+            throw new EvitaException(Preklad.T("Zadajte priečinok na zálohy."));
         }
 
         if (nastavenia.AutomatickaSHeslom && !JeHesloAutomatickychNastavene())
         {
-            throw new EvitaException("Pre automatické zálohy s heslom najprv nastavte heslo (tlačidlo „Nastaviť heslo…“).");
+            throw new EvitaException(Preklad.T("Pre automatické zálohy s heslom najprv nastavte heslo (tlačidlo „Nastaviť heslo…“)."));
         }
 
         try
@@ -155,7 +166,7 @@ public sealed class ZalohaService
         }
         catch (Exception ex)
         {
-            throw new EvitaException($"Do priečinka „{nastavenia.Priecinok}“ sa nedá zapisovať: {ex.Message}");
+            throw new EvitaException(Preklad.F($"Do priečinka „{nastavenia.Priecinok}“ sa nedá zapisovať: {ex.Message}"));
         }
 
         var casText = cas.ToString(@"hh\:mm");
@@ -309,9 +320,9 @@ public sealed class ZalohaService
                         Cesta = priecinok,
                         Uspech = false,
                         Zasifrovana = true,
-                        Chyba = "Heslo pre automatické zálohy nie je dostupné na tomto počítači. Nastavte ho znova v Servis → Zálohy.",
+                        Chyba = Preklad.T("Heslo pre automatické zálohy nie je dostupné na tomto počítači. Nastavte ho znova v Servis → Zálohy."),
                     });
-                    throw new EvitaException("Heslo pre automatické zálohy nie je dostupné. Nastavte ho znova v Servis → Zálohy.");
+                    throw new EvitaException(Preklad.T("Heslo pre automatické zálohy nie je dostupné. Nastavte ho znova v Servis → Zálohy."));
                 }
             }
 
@@ -433,7 +444,7 @@ public sealed class ZalohaService
                     // ak nejde zapísať ani záznam, pôvodná chyba je dôležitejšia
                 }
 
-                throw new EvitaException($"Zálohu sa nepodarilo vytvoriť: {ex.GetBaseException().Message}");
+                throw new EvitaException(Preklad.F($"Zálohu sa nepodarilo vytvoriť: {ex.GetBaseException().Message}"));
             }
             finally
             {
@@ -496,7 +507,7 @@ public sealed class ZalohaService
                         var vysledok = prikaz.ExecuteScalar() as string;
                         if (vysledok != "ok")
                         {
-                            throw new EvitaException($"Databáza v zálohe je poškodená ({vysledok}). Vyberte inú zálohu.");
+                            throw new EvitaException(Preklad.F($"Databáza v zálohe je poškodená ({vysledok}). Vyberte inú zálohu."));
                         }
                     }
 
@@ -510,14 +521,14 @@ public sealed class ZalohaService
 
                 if (verziaZalohy > Databaza.VerziaSchemy)
                 {
-                    throw new EvitaException("Záloha pochádza z novšej verzie programu EviTA. Najprv nainštalujte najnovšiu verziu programu.");
+                    throw new EvitaException(Preklad.T("Záloha pochádza z novšej verzie programu EviTA. Najprv nainštalujte najnovšiu verziu programu."));
                 }
 
                 // bezpečnostná záloha súčasného stavu
                 string? bezpecnostna = null;
                 try
                 {
-                    bezpecnostna = Zalohuj(TypZalohy.PredObnovou, poznamka: "Automatická záloha pred obnovou zo zálohy");
+                    bezpecnostna = Zalohuj(TypZalohy.PredObnovou, poznamka: Preklad.T("Automatická záloha pred obnovou zo zálohy"));
                 }
                 catch (Exception)
                 {
@@ -748,11 +759,11 @@ public sealed class ZalohaService
             return;
         }
 
-        var program = Environment.ProcessPath ?? throw new EvitaException("Nepodarilo sa zistiť umiestnenie programu.");
+        var program = Environment.ProcessPath ?? throw new EvitaException(Preklad.T("Nepodarilo sa zistiť umiestnenie programu."));
         var argumenty = new List<string>
         {
             "/Create", "/F", "/TN", NazovUlohyPlanovaca,
-            "/TR", $"\"{program}\" --zaloha",
+            "/TR", Preklad.F($"\"{program}\" --zaloha"),
             "/ST", nastavenia.Cas,
         };
         argumenty.AddRange(nastavenia.Perioda switch
@@ -766,7 +777,7 @@ public sealed class ZalohaService
         var (kod, vystup) = SpustiSchtasks(argumenty.ToArray());
         if (kod != 0)
         {
-            throw new EvitaException($"Úlohu v Plánovači úloh Windows sa nepodarilo vytvoriť.\n\n{vystup.Trim()}");
+            throw new EvitaException(Preklad.F($"Úlohu v Plánovači úloh Windows sa nepodarilo vytvoriť.\n\n{vystup.Trim()}"));
         }
     }
 
@@ -784,7 +795,7 @@ public sealed class ZalohaService
             start.ArgumentList.Add(argument);
         }
 
-        using var proces = Process.Start(start) ?? throw new EvitaException("Plánovač úloh Windows sa nepodarilo spustiť.");
+        using var proces = Process.Start(start) ?? throw new EvitaException(Preklad.T("Plánovač úloh Windows sa nepodarilo spustiť."));
         var vystup = proces.StandardOutput.ReadToEnd() + proces.StandardError.ReadToEnd();
         proces.WaitForExit(20000);
         return (proces.ExitCode, vystup);
@@ -827,7 +838,7 @@ public sealed class ZalohaService
     {
         if (!File.Exists(zip))
         {
-            throw new EvitaException("Súbor zálohy neexistuje.");
+            throw new EvitaException(Preklad.T("Súbor zálohy neexistuje."));
         }
 
         Directory.CreateDirectory(docasny);
@@ -838,12 +849,12 @@ public sealed class ZalohaService
         }
         catch (Exception)
         {
-            throw new EvitaException("Súbor nie je platná záloha EviTA (nedá sa otvoriť ako ZIP).");
+            throw new EvitaException(Preklad.T("Súbor nie je platná záloha EviTA (nedá sa otvoriť ako ZIP)."));
         }
 
         using (subor)
         {
-            var databaza = subor.GetEntry("evita.db") ?? throw new EvitaException("Súbor nie je záloha EviTA (chýba v ňom databáza).");
+            var databaza = subor.GetEntry("evita.db") ?? throw new EvitaException(Preklad.T("Súbor nie je záloha EviTA (chýba v ňom databáza)."));
             var popis = subor.GetEntry("info.json");
             var zasifrovana = databaza.IsCrypted;
 
@@ -875,7 +886,7 @@ public sealed class ZalohaService
             }
             catch (ZipException) when (zasifrovana)
             {
-                throw new EvitaException("Nesprávne heslo zálohy.");
+                throw new EvitaException(Preklad.T("Nesprávne heslo zálohy."));
             }
 
             string? Text(string nazov) =>
@@ -888,7 +899,7 @@ public sealed class ZalohaService
             {
                 if (!string.Equals(sucet, KontrolnySucet(Path.Combine(docasny, "evita.db")), StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new EvitaException("Kontrolný súčet databázy v zálohe nesedí – súbor je poškodený. Vyberte inú zálohu.");
+                    throw new EvitaException(Preklad.T("Kontrolný súčet databázy v zálohe nesedí – súbor je poškodený. Vyberte inú zálohu."));
                 }
             }
 

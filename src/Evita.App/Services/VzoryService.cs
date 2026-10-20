@@ -26,12 +26,12 @@ public static class VzoryService
     private static readonly string[] StareSubory = { "vzor_import.xlsx", "vzor_import.csv", "vzor_import.json", "vzor_import.xml" };
 
     /// <summary>Vzory v poradí a s názvami formátov ako pri exporte.</summary>
-    public static IReadOnlyList<VzorovySubor> Zoznam { get; } = new VzorovySubor[]
+    public static IReadOnlyList<VzorovySubor> Zoznam => new VzorovySubor[]
     {
-        new("Excel (.xlsx)", "s návodom a výberovými zoznamami", Excel),
-        new("CSV (.csv)", "UTF-8, oddeľovač bodkočiarka", Csv),
-        new("JSON (.json)", "úplná štruktúra s číselníkmi", Json),
-        new("XML (.xml)", "spolu s popisom formátu evita.xsd", Xml),
+        new("Excel (.xlsx)", Preklad.T("s návodom a výberovými zoznamami"), Excel),
+        new("CSV (.csv)", Preklad.T("UTF-8, oddeľovač bodkočiarka"), Csv),
+        new("JSON (.json)", Preklad.T("úplná štruktúra s číselníkmi"), Json),
+        new("XML (.xml)", Preklad.T("spolu s popisom formátu evita.xsd"), Xml),
     };
 
     /// <summary>Priečinok Stiahnuté (pri teste v testovacom priečinku).</summary>
@@ -123,9 +123,9 @@ public static class VzoryService
         // Excel s výberovými zoznamami a návodom
         using (var zosit = new XLWorkbook())
         {
-            var harok = ExportService.PridajHarok(zosit, "Položky", stlpce, riadky);
+            var harok = ExportService.PridajHarok(zosit, Preklad.T("Položky"), stlpce, riadky);
 
-            var zoznamy = zosit.Worksheets.Add("Zoznamy");
+            var zoznamy = zosit.Worksheets.Add(Preklad.T("Zoznamy"));
             var kategorie = NazvyKategorii();
             for (var i = 0; i < kategorie.Count; i++)
             {
@@ -144,24 +144,24 @@ public static class VzoryService
             var vyberKategorie = harok.Range(2, stlpecKategorie, 2000, stlpecKategorie).CreateDataValidation();
             vyberKategorie.List(zoznamy.Range(1, 1, kategorie.Count, 1), true);
             vyberKategorie.ErrorStyle = XLErrorStyle.Information;
-            vyberKategorie.ErrorTitle = "Nová kategória";
-            vyberKategorie.ErrorMessage = "Kategória nie je v zozname. Pri importe sa vytvorí nová.";
+            vyberKategorie.ErrorTitle = Preklad.T("Nová kategória");
+            vyberKategorie.ErrorMessage = Preklad.T("Kategória nie je v zozname. Pri importe sa vytvorí nová.");
 
             var stlpecStavu = stlpce.FindIndex(s => s.Kluc == StlpcePrenosu.Stav) + 1;
             var vyberStavu = harok.Range(2, stlpecStavu, 2000, stlpecStavu).CreateDataValidation();
             vyberStavu.List(zoznamy.Range(1, 2, stavy.Count, 2), true);
             vyberStavu.ErrorStyle = XLErrorStyle.Stop;
-            vyberStavu.ErrorTitle = "Neznámy stav";
-            vyberStavu.ErrorMessage = "Vyberte stav zo zoznamu: v prevádzke, v sklade, v oprave, vyradené.";
+            vyberStavu.ErrorTitle = Preklad.T("Neznámy stav");
+            vyberStavu.ErrorMessage = Preklad.T("Vyberte stav zo zoznamu: v prevádzke, v sklade, v oprave, vyradené.");
 
-            var navod = zosit.Worksheets.Add("Návod");
-            navod.Cell(1, 1).Value = "Ako vyplniť súbor na import do EviTA";
+            var navod = zosit.Worksheets.Add(Preklad.T("Návod"));
+            navod.Cell(1, 1).Value = Preklad.T("Ako vyplniť súbor na import do EviTA");
             navod.Cell(1, 1).Style.Font.Bold = true;
             navod.Cell(1, 1).Style.Font.FontSize = 14;
-            navod.Cell(2, 1).Value = "Na hárku Položky je jedna položka v každom riadku. Povinný je len názov.";
-            navod.Cell(3, 1).Value = "Ukážkové riadky prepíšte vlastnými údajmi. Stĺpce, ktoré nepotrebujete, môžete vymazať; názvy stĺpcov nemeňte.";
-            navod.Cell(4, 1).Value = "Dátumy píšte ako 20.10.2026, ceny ako 1089,00. Kategóriu a stav vyberiete zo zoznamu v bunke.";
-            string[] hlavicka = { "Stĺpec", "Povinný", "Popis", "Príklad" };
+            navod.Cell(2, 1).Value = Preklad.T("Na hárku Položky je jedna položka v každom riadku. Povinný je len názov.");
+            navod.Cell(3, 1).Value = Preklad.T("Ukážkové riadky prepíšte vlastnými údajmi. Stĺpce, ktoré nepotrebujete, môžete vymazať; názvy stĺpcov nemeňte.");
+            navod.Cell(4, 1).Value = Preklad.T("Dátumy píšte ako 20.10.2026, ceny ako 1089,00. Kategóriu a stav vyberiete zo zoznamu v bunke.");
+            string[] hlavicka = { Preklad.T("Stĺpec"), Preklad.T("Povinný"), Preklad.T("Popis"), Preklad.T("Príklad") };
             for (var c = 0; c < hlavicka.Length; c++)
             {
                 navod.Cell(6, c + 1).Value = hlavicka[c];
@@ -171,7 +171,7 @@ public static class VzoryService
             foreach (var s in StlpcePrenosu.Vsetky)
             {
                 navod.Cell(riadok, 1).Value = s.Nazov;
-                navod.Cell(riadok, 2).Value = s.Povinny ? "áno" : "nie";
+                navod.Cell(riadok, 2).Value = s.Povinny ? Preklad.T("áno") : Preklad.T("nie");
                 navod.Cell(riadok, 3).Value = s.Popis;
                 navod.Cell(riadok, 4).Value = s.Priklad;
                 riadok++;
@@ -250,48 +250,48 @@ public static class VzoryService
 
     private static List<Polozka> Ukazky()
     {
-        var kancelaria = new Miestnost { Nazov = "Kancelária 101", Budova = "A" };
-        var sekretariat = new Miestnost { Nazov = "Sekretariát", Budova = "A" };
-        var ucebna = new Miestnost { Nazov = "Učebňa 12", Budova = "B" };
-        var sklad = new Miestnost { Nazov = "Sklad", Budova = "B" };
-        var novak = new Osoba { Meno = "Ján", Priezvisko = "Novák", Funkcia = "účtovník" };
-        var kovacova = new Osoba { Meno = "Mária", Priezvisko = "Kováčová", Funkcia = "učiteľka" };
+        var kancelaria = new Miestnost { Nazov = Preklad.T("Kancelária 101"), Budova = "A" };
+        var sekretariat = new Miestnost { Nazov = Preklad.T("Sekretariát"), Budova = "A" };
+        var ucebna = new Miestnost { Nazov = Preklad.T("Učebňa 12"), Budova = "B" };
+        var sklad = new Miestnost { Nazov = Preklad.T("Sklad"), Budova = "B" };
+        var novak = new Osoba { Meno = "Ján", Priezvisko = "Novák", Funkcia = Preklad.T("účtovník") };
+        var kovacova = new Osoba { Meno = "Mária", Priezvisko = "Kováčová", Funkcia = Preklad.T("učiteľka") };
 
         return new List<Polozka>
         {
             new()
             {
-                PrirastkoveCislo = 1, Nazov = "Notebook Dell Latitude 5540", Kategoria = new Kategoria { Nazov = "notebook" },
+                PrirastkoveCislo = 1, Nazov = Preklad.T("Notebook Dell Latitude 5540"), Kategoria = new Kategoria { Nazov = Preklad.T("notebook") },
                 Miestnost = kancelaria, Osoba = novak, Vyrobca = "Dell", Model = "Latitude 5540", SerioveCislo = "5CD1234XYZ",
                 InventarneCislo = "INV-2026-001", Stav = StavPolozky.VPrevadzke, DatumNakupu = new DateTime(2026, 3, 15), Cena = 1089.00m,
-                ZarukaDo = new DateTime(2029, 3, 15), DatumPridania = new DateTime(2026, 3, 16), Poznamka = "nabíjačka v taške",
+                ZarukaDo = new DateTime(2029, 3, 15), DatumPridania = new DateTime(2026, 3, 16), Poznamka = Preklad.T("nabíjačka v taške"),
             },
             new()
             {
-                PrirastkoveCislo = 2, Nazov = "Tlačiareň HP LaserJet Pro M404dn", Kategoria = new Kategoria { Nazov = "tlačiareň" },
+                PrirastkoveCislo = 2, Nazov = Preklad.T("Tlačiareň HP LaserJet Pro M404dn"), Kategoria = new Kategoria { Nazov = Preklad.T("tlačiareň") },
                 Miestnost = sekretariat, Vyrobca = "HP", Model = "LaserJet Pro M404dn", SerioveCislo = "PHBQK12345",
                 InventarneCislo = "INV-2025-014", Stav = StavPolozky.VPrevadzke, DatumNakupu = new DateTime(2025, 11, 4), Cena = 289.90m,
                 ZarukaDo = new DateTime(2027, 11, 4), DalsiaRevizia = new DateTime(2027, 5, 1), DatumPridania = new DateTime(2025, 11, 5),
             },
             new()
             {
-                PrirastkoveCislo = 3, Nazov = "Projektor Epson EB-W51", Kategoria = new Kategoria { Nazov = "projektor" },
+                PrirastkoveCislo = 3, Nazov = Preklad.T("Projektor Epson EB-W51"), Kategoria = new Kategoria { Nazov = Preklad.T("projektor") },
                 Miestnost = ucebna, Osoba = kovacova, Vyrobca = "Epson", Model = "EB-W51", SerioveCislo = "X5LK0123456",
                 Stav = StavPolozky.VOprave, DatumNakupu = new DateTime(2024, 9, 2), Cena = 459.00m, ZarukaDo = new DateTime(2026, 9, 2),
-                DatumPridania = new DateTime(2024, 9, 3), Poznamka = "nesvieti lampa, v servise od 10. 10. 2026",
+                DatumPridania = new DateTime(2024, 9, 3), Poznamka = Preklad.T("nesvieti lampa, v servise od 10. 10. 2026"),
             },
             new()
             {
-                PrirastkoveCislo = 4, Nazov = "Monitor Dell P2422H", Kategoria = new Kategoria { Nazov = "príslušenstvo" },
+                PrirastkoveCislo = 4, Nazov = Preklad.T("Monitor Dell P2422H"), Kategoria = new Kategoria { Nazov = Preklad.T("príslušenstvo") },
                 Miestnost = sklad, Vyrobca = "Dell", Model = "P2422H", SerioveCislo = "CN-0ABC12-34567", Stav = StavPolozky.VSklade,
                 DatumNakupu = new DateTime(2026, 1, 20), Cena = 179.00m, ZarukaDo = new DateTime(2029, 1, 20), DatumPridania = new DateTime(2026, 1, 21),
             },
             new()
             {
-                PrirastkoveCislo = 5, Nazov = "PC Lenovo ThinkCentre M70q", Kategoria = new Kategoria { Nazov = "PC" },
+                PrirastkoveCislo = 5, Nazov = Preklad.T("PC Lenovo ThinkCentre M70q"), Kategoria = new Kategoria { Nazov = "PC" },
                 Miestnost = ucebna, Vyrobca = "Lenovo", Model = "ThinkCentre M70q Gen 2", SerioveCislo = "MJ0ABCDE",
                 Stav = StavPolozky.Vyradene, DatumNakupu = new DateTime(2019, 8, 26), Cena = 649.00m, ZarukaDo = new DateTime(2022, 8, 26),
-                DatumPridania = new DateTime(2019, 8, 27), DatumVyradenia = new DateTime(2026, 6, 30), DovodVyradenia = "poškodená základná doska",
+                DatumPridania = new DateTime(2019, 8, 27), DatumVyradenia = new DateTime(2026, 6, 30), DovodVyradenia = Preklad.T("poškodená základná doska"),
             },
         };
     }

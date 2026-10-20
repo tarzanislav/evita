@@ -15,9 +15,9 @@ public partial class HromadnaZmenaViewModel : ObservableObject
     {
         _idPoloziek = idPoloziek;
         var ciselniky = new CiselnikService();
-        Miestnosti = ciselniky.Volby(TypCiselnika.Miestnosti, null, "(nezadaná)");
-        Osoby = ciselniky.Volby(TypCiselnika.Osoby, null, "(nikto)");
-        Popis = $"Zmena sa použije na {idPoloziek.Count} označených položiek. Každá zmena sa zapíše do histórie.";
+        Miestnosti = ciselniky.Volby(TypCiselnika.Miestnosti, null, Preklad.T("(nezadaná)"));
+        Osoby = ciselniky.Volby(TypCiselnika.Osoby, null, Preklad.T("(nikto)"));
+        Popis = Preklad.F($"Zmena sa použije na {idPoloziek.Count} označených položiek. Každá zmena sa zapíše do histórie.");
     }
 
     public string Popis { get; }
@@ -43,7 +43,7 @@ public partial class HromadnaZmenaViewModel : ObservableObject
     {
         if (!ZmenitMiestnost && !ZmenitOsobu && !ZmenitStav)
         {
-            Dialogy.Upozornenie("Zaškrtnite, čo chcete zmeniť.");
+            Dialogy.Upozornenie(Preklad.T("Zaškrtnite, čo chcete zmeniť."));
             return;
         }
 
@@ -81,7 +81,7 @@ public partial class HromadnaZmenaViewModel : ObservableObject
             });
         });
 
-        Dialogy.Info($"Zmenených položiek: {zmenene}.");
+        Dialogy.Info(Preklad.F($"Zmenených položiek: {zmenene}."));
         Zatvorit?.Invoke(true);
     }
 

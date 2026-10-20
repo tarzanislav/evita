@@ -57,7 +57,7 @@ public sealed class ServisService
     /// </summary>
     public string VymazatData(bool ponechatMiestnosti, bool ponechatOsoby)
     {
-        var zaloha = _zalohy.Zalohuj(TypZalohy.PredVymazanim, poznamka: "Automatická záloha pred vymazaním dát");
+        var zaloha = _zalohy.Zalohuj(TypZalohy.PredVymazanim, poznamka: Preklad.T("Automatická záloha pred vymazaním dát"));
 
         using (var db = Databaza.Otvor())
         using (var transakcia = db.Database.BeginTransaction())

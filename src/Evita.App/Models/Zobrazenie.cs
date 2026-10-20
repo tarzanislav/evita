@@ -1,3 +1,5 @@
+using Evita.Services;
+
 namespace Evita.Models;
 
 /// <summary>Položka výberového zoznamu (ComboBox). Id 0 = nič / všetky, -1 = nezadané.</summary>
@@ -7,16 +9,20 @@ public sealed record VolbaStavu(StavPolozky Stav, string Nazov);
 
 public static class StavyPoloziek
 {
-    public static string Nazov(StavPolozky stav) => stav switch
+    /// <summary>Názov stavu po slovensky (kľúč prekladu).</summary>
+    public static string NazovSk(StavPolozky stav) => stav switch
     {
-        StavPolozky.VPrevadzke => "v prevádzke",
-        StavPolozky.VSklade => "v sklade",
-        StavPolozky.VOprave => "v oprave",
-        StavPolozky.Vyradene => "vyradené",
+        StavPolozky.VPrevadzke => Preklad.N("v prevádzke"),
+        StavPolozky.VSklade => Preklad.N("v sklade"),
+        StavPolozky.VOprave => Preklad.N("v oprave"),
+        StavPolozky.Vyradene => Preklad.N("vyradené"),
         _ => stav.ToString(),
     };
 
-    public static IReadOnlyList<VolbaStavu> Vsetky { get; } =
+    /// <summary>Názov stavu v jazyku programu.</summary>
+    public static string Nazov(StavPolozky stav) => Preklad.T(NazovSk(stav));
+
+    public static IReadOnlyList<VolbaStavu> Vsetky =>
         Enum.GetValues<StavPolozky>().Select(s => new VolbaStavu(s, Nazov(s))).ToList();
 }
 
@@ -62,7 +68,7 @@ public sealed class CiselnikRiadok
     public string? Pole2 { get; init; }
     public string? Pole3 { get; init; }
 
-    public string AktivnaText => Aktivna ? "áno" : "nie";
+    public string AktivnaText => Aktivna ? Preklad.T("áno") : Preklad.T("nie");
 }
 
 public enum TypCiselnika

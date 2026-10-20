@@ -54,7 +54,7 @@ public static class NastaveniaTlace
     {
         if (logo is { Length: > NajvacsieLogo })
         {
-            throw new EvitaException("Logo je príliš veľké (najviac 2 MB). Zmenšite obrázok a skúste znova.");
+            throw new EvitaException(Preklad.T("Logo je príliš veľké (najviac 2 MB). Zmenšite obrázok a skúste znova."));
         }
 
         using var db = Databaza.Otvor();
@@ -106,7 +106,7 @@ public sealed class PdfZostava
         nadpis.Format.Font.Bold = true;
         nadpis.Format.SpaceAfter = Unit.FromPoint(2);
 
-        var popis = Sekcia.AddParagraph(string.IsNullOrWhiteSpace(podtitulok) ? $"vytlačené {Sk.DatumCas(Cas)}" : podtitulok);
+        var popis = Sekcia.AddParagraph(string.IsNullOrWhiteSpace(podtitulok) ? Preklad.F($"vytlačené {Sk.DatumCas(Cas)}") : podtitulok);
         popis.Format.Font.Color = Colors.DimGray;
         popis.Format.SpaceAfter = Unit.FromPoint(8);
     }
@@ -132,7 +132,7 @@ public sealed class PdfZostava
         riadok.VerticalAlignment = VerticalAlignment.Bottom;
 
         var vlavo = riadok.Cells[0];
-        var nazov = vlavo.AddParagraph(organizacia.Nazov ?? "EviTA – evidencia IT techniky");
+        var nazov = vlavo.AddParagraph(organizacia.Nazov ?? Preklad.T("EviTA – evidencia IT techniky"));
         nazov.Format.Font.Bold = true;
         nazov.Format.Font.Size = 10;
         var podnazov = vlavo.AddParagraph(Titulok);
@@ -160,7 +160,7 @@ public sealed class PdfZostava
         paticka.Format.Alignment = ParagraphAlignment.Center;
         paticka.Format.Font.Size = 7;
         paticka.Format.Font.Color = Colors.Gray;
-        paticka.AddText($"Vytlačené {Sk.DatumCas(Cas)} · EviTA · strana ");
+        paticka.AddText(Preklad.F($"Vytlačené {Sk.DatumCas(Cas)} · EviTA · strana "));
         paticka.AddPageField();
         paticka.AddText(" z ");
         paticka.AddNumPagesField();
@@ -336,8 +336,8 @@ public sealed class PdfZostava
     {
         var text = hodnota switch
         {
-            DateTime d when typ == TypStlpca.DatumCas && d.TimeOfDay != TimeSpan.Zero => d.ToString("d.M.yyyy H:mm", CultureInfo.InvariantCulture),
-            DateTime d => d.ToString("d.M.yyyy", CultureInfo.InvariantCulture),
+            DateTime d when typ == TypStlpca.DatumCas && d.TimeOfDay != TimeSpan.Zero => Sk.DatumCas(d),
+            DateTime d => Sk.Datum(d),
             decimal s => s.ToString("N2", Sk.Kultura) + " €",
             _ => Prevod.TextZobrazenia(hodnota, typ),
         };

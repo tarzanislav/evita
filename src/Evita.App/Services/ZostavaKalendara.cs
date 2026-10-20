@@ -9,7 +9,7 @@ namespace Evita.Services;
 /// <summary>Tlačová zostava kalendára: mesačná mriežka (mesiac na strane) alebo zoznam udalostí a úloh.</summary>
 internal static class ZostavaKalendara
 {
-    private static readonly string[] NazvyDni = { "Po", "Ut", "St", "Št", "Pi", "So", "Ne" };
+    private static string[] NazvyDni => new[] { Preklad.T("Po"), Preklad.T("Ut"), Preklad.T("St"), Preklad.T("Št"), Preklad.T("Pi"), Preklad.T("So"), Preklad.T("Ne") };
 
     public static Document Vytvor(MoznostiZostavy m)
     {
@@ -18,20 +18,20 @@ internal static class ZostavaKalendara
         var po = (m.Do ?? od.AddMonths(1).AddDays(-1)).Date;
         if (po < od)
         {
-            throw new EvitaException("Dátum „do“ je skôr ako dátum „od“.");
+            throw new EvitaException(Preklad.T("Dátum „do“ je skôr ako dátum „od“."));
         }
 
         if ((po - od).TotalDays > 750)
         {
-            throw new EvitaException("Kalendár sa dá vytlačiť najviac za dva roky naraz.");
+            throw new EvitaException(Preklad.T("Kalendár sa dá vytlačiť najviac za dva roky naraz."));
         }
 
         var sluzba = new KalendarService();
         var vyskyty = sluzba.Vyskyty(od.AddDays(-7), po.AddDays(7), automaticke: m.AutomatickeTerminy);
         var obdobie = $"{Sk.Datum(od)} – {Sk.Datum(po)}";
         var vObdobi = vyskyty.Where(v => v.Zaciatok.Date <= po && v.PoslednyDen >= od).ToList();
-        var podtitulok = $"obdobie {obdobie} · {vObdobi.Count} udalostí a termínov" +
-                         (m.AutomatickeTerminy ? " (vrátane automatických termínov)" : "") + $" · vytlačené {Sk.DatumCas(DateTime.Now)}";
+        var podtitulok = Preklad.F($"obdobie {obdobie} · {vObdobi.Count} udalostí a termínov") +
+                         (m.AutomatickeTerminy ? Preklad.T(" (vrátane automatických termínov)") : "") + Preklad.F($" · vytlačené {Sk.DatumCas(DateTime.Now)}");
 
         return m.KalendarZoznam
             ? Zoznam(vObdobi, podtitulok, m.NaSirku)
@@ -40,23 +40,23 @@ internal static class ZostavaKalendara
 
     private static Document Zoznam(List<VyskytUdalosti> vyskyty, string podtitulok, bool naSirku)
     {
-        var zostava = new PdfZostava("Kalendár – zoznam udalostí a úloh", podtitulok, naSirku);
+        var zostava = new PdfZostava(Preklad.T("Kalendár – zoznam udalostí a úloh"), podtitulok, naSirku);
         if (vyskyty.Count == 0)
         {
-            zostava.Text("V zvolenom období nie sú žiadne udalosti.", sedy: true);
+            zostava.Text(Preklad.T("V zvolenom období nie sú žiadne udalosti."), sedy: true);
             return zostava.Dokument;
         }
 
-        var hlavicky = new[] { "Dátum", "Čas", "Udalosť", "Typ", "Druh", "Naviazanie", "Stav" };
+        var hlavicky = new[] { Preklad.T("Dátum"), Preklad.T("Čas"), Preklad.T("Udalosť"), Preklad.T("Typ"), Preklad.T("Druh"), Preklad.T("Naviazanie"), Preklad.T("Stav") };
         var riadky = vyskyty.Select(v => new[]
         {
-            v.Zaciatok.ToString("ddd d.M.yyyy", Sk.Kultura),
-            v.ViacDni ? $"do {v.PoslednyDen:d.M.}" : v.CelyDen ? "celý deň" : v.CasText,
+            $"{v.Zaciatok.ToString("ddd", Sk.Kultura)} {Sk.Datum(v.Zaciatok)}",
+            v.ViacDni ? Preklad.F($"do {Sk.KratkyDatum(v.PoslednyDen)}") : v.CelyDen ? Preklad.T("celý deň") : v.CasText,
             v.Nazov,
             v.Typ,
             v.DruhText,
             v.Naviazanie ?? "",
-            v.Automaticky ? "automaticky" : v.StavText,
+            v.Automaticky ? Preklad.T("automaticky") : v.StavText,
         }).ToList();
         zostava.Tabulka(hlavicky, new bool[hlavicky.Length], riadky, zostava.Sirky(hlavicky, riadky),
             vyskyty.Select(v => v.Stav != StavUdalosti.Naplanovane).ToList());
@@ -65,7 +65,7 @@ internal static class ZostavaKalendara
 
     private static Document Mriezka(List<VyskytUdalosti> vyskyty, DateTime od, DateTime po, string podtitulok, bool naSirku)
     {
-        var zostava = new PdfZostava("Kalendár", podtitulok, naSirku);
+        var zostava = new PdfZostava(Preklad.T("Kalendár"), podtitulok, naSirku);
 
         // sviatky a meniny z Kalendária (ak nie je dostupné, kalendár sa vytlačí bez nich)
         var sviatky = new Dictionary<DateOnly, List<SviatokDna>>();
@@ -114,8 +114,7 @@ internal static class ZostavaKalendara
             prvaStrana = false;
             var koniecMesiaca = mesiac.AddMonths(1).AddDays(-1);
             var pocet = vyskyty.Count(v => v.Zaciatok.Date <= koniecMesiaca && v.PoslednyDen >= mesiac);
-            var nazov = mesiac.ToString("MMMM yyyy", Sk.Kultura);
-            zostava.NadpisSkupiny(char.ToUpper(nazov[0], Sk.Kultura) + nazov[1..], $"{pocet} udalostí a termínov");
+            zostava.NadpisSkupiny(Sk.MesiacRok(mesiac), Preklad.F($"{pocet} udalostí a termínov"));
 
             var tabulka = zostava.Sekcia.AddTable();
             tabulka.Borders.Width = 0.4;
@@ -132,7 +131,7 @@ internal static class ZostavaKalendara
             hlavicka.HeadingFormat = true;
             hlavicka.Format.Font.Bold = true;
             hlavicka.Shading.Color = new Color(220, 230, 241);
-            hlavicka.Cells[0].AddParagraph("týž.").Format.Font.Size = 6.5;
+            hlavicka.Cells[0].AddParagraph(Preklad.T("týž.")).Format.Font.Size = 6.5;
             for (var i = 0; i < 7; i++)
             {
                 hlavicka.Cells[i + 1].AddParagraph(NazvyDni[i]);
@@ -198,7 +197,7 @@ internal static class ZostavaKalendara
 
                     if (sviatkyDna.Count > 0 && !mimo)
                     {
-                        var odsek = bunka.AddParagraph(string.Join(", ", sviatkyDna.Select(x => x.Nazov)));
+                        var odsek = bunka.AddParagraph(string.Join(", ", sviatkyDna.Select(NazvySviatkov.Nazov)));
                         odsek.Format.Font.Size = 6;
                         odsek.Format.Font.Italic = true;
                         odsek.Format.Font.Color = new Color(46, 125, 50);
@@ -226,7 +225,7 @@ internal static class ZostavaKalendara
 
                     if (dna.Count > najviac)
                     {
-                        var dalsie = bunka.AddParagraph($"+ {dna.Count - najviac} ďalšie");
+                        var dalsie = bunka.AddParagraph(Preklad.F($"+ {dna.Count - najviac} ďalšie"));
                         dalsie.Format.Font.Size = 6;
                         dalsie.Format.Font.Color = Colors.Gray;
                     }

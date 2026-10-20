@@ -39,7 +39,7 @@ public partial class ImportViewModel : ObservableObject
 
     public ImportViewModel()
     {
-        PolaEviTA = new List<PoleEviTA> { new("", "(nepoužiť)") }
+        PolaEviTA = new List<PoleEviTA> { new("", Preklad.T("(nepoužiť)")) }
             .Concat(StlpcePrenosu.Vsetky.Select(s => new PoleEviTA(s.Kluc, s.Povinny ? s.Nazov + " *" : s.Nazov)))
             .ToList();
     }
@@ -62,11 +62,11 @@ public partial class ImportViewModel : ObservableObject
 
     public string NadpisKroku => Krok switch
     {
-        1 => "Krok 1 z 5 – súbor a druh importu",
-        2 => "Krok 2 z 5 – priradenie stĺpcov",
-        3 => "Krok 3 z 5 – kontrola údajov",
-        4 => "Krok 4 z 5 – náhľad výsledku",
-        _ => "Krok 5 z 5 – hotovo",
+        1 => Preklad.T("Krok 1 z 5 – súbor a druh importu"),
+        2 => Preklad.T("Krok 2 z 5 – priradenie stĺpcov"),
+        3 => Preklad.T("Krok 3 z 5 – kontrola údajov"),
+        4 => Preklad.T("Krok 4 z 5 – náhľad výsledku"),
+        _ => Preklad.T("Krok 5 z 5 – hotovo"),
     };
 
     /// <summary>Import zmenil dáta (hlavné okno má obnoviť zoznamy).</summary>
@@ -89,7 +89,7 @@ public partial class ImportViewModel : ObservableObject
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Vyberte súbor na import",
+            Title = Preklad.T("Vyberte súbor na import"),
             Filter = CitacSuborov.FilterSuborov,
         };
         if (!string.IsNullOrEmpty(Cesta) && Path.GetDirectoryName(Cesta) is { } priecinok && Directory.Exists(priecinok))
@@ -119,7 +119,7 @@ public partial class ImportViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Vzorový súbor sa nepodarilo uložiť do priečinka Stiahnuté.", ex);
+            Dialogy.Chyba(Preklad.T("Vzorový súbor sa nepodarilo uložiť do priečinka Stiahnuté."), ex);
         }
     }
 
@@ -228,7 +228,7 @@ public partial class ImportViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Pri spracovaní súboru nastala chyba.", ex);
+            Dialogy.Chyba(Preklad.T("Pri spracovaní súboru nastala chyba."), ex);
         }
     }
 
@@ -236,7 +236,7 @@ public partial class ImportViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(Cesta))
         {
-            Dialogy.Info("Vyberte súbor, ktorý chcete importovať.");
+            Dialogy.Info(Preklad.T("Vyberte súbor, ktorý chcete importovať."));
             return;
         }
 
@@ -246,9 +246,7 @@ public partial class ImportViewModel : ObservableObject
             if (db.Polozky.Any())
             {
                 Dialogy.Upozornenie(
-                    "Prenos celej databázy sa dá urobiť len do prázdnej evidencie, aby sa zachovali pôvodné prírastkové čísla.\n\n" +
-                    "Ak chcete evidenciu nahradiť, najprv vymažte dáta (Servis → Vymazať dáta a začať nanovo). " +
-                    "Ak chcete položky len pridať k existujúcim, zvoľte Doplniť položky do evidencie.");
+                    Preklad.T("Prenos celej databázy sa dá urobiť len do prázdnej evidencie, aby sa zachovali pôvodné prírastkové čísla.\n\nAk chcete evidenciu nahradiť, najprv vymažte dáta (Servis → Vymazať dáta a začať nanovo). Ak chcete položky len pridať k existujúcim, zvoľte Doplniť položky do evidencie."));
                 return;
             }
         }
@@ -262,7 +260,7 @@ public partial class ImportViewModel : ObservableObject
 
         if (zdroj.Riadky.Count == 0)
         {
-            Dialogy.Info("V súbore sa nenašli žiadne riadky s údajmi.");
+            Dialogy.Info(Preklad.T("V súbore sa nenašli žiadne riadky s údajmi."));
             return;
         }
 
@@ -271,15 +269,15 @@ public partial class ImportViewModel : ObservableObject
         Priradenia = zdroj.Hlavicky.Select((h, i) => new PriradenieStlpca(h, zdroj.Ukazka(i), priradenie[i])).ToList();
 
         var info = new StringBuilder();
-        info.Append($"{zdroj.Format}, {zdroj.Riadky.Count} riadkov, {zdroj.Hlavicky.Count} stĺpcov");
+        info.Append(Preklad.F($"{zdroj.Format}, {zdroj.Riadky.Count} riadkov, {zdroj.Hlavicky.Count} stĺpcov"));
         if (zdroj.Balik is not null)
         {
-            info.Append(" – export z programu EviTA, stĺpce sú priradené automaticky");
+            info.Append(Preklad.T(" – export z programu EviTA, stĺpce sú priradené automaticky"));
         }
 
         info.Append('.');
         var rozpoznane = priradenie.Count(k => k is not null);
-        info.Append($" Rozpoznaných stĺpcov: {rozpoznane} z {zdroj.Hlavicky.Count}.");
+        info.Append(Preklad.F($" Rozpoznaných stĺpcov: {rozpoznane} z {zdroj.Hlavicky.Count}."));
         foreach (var upozornenie in zdroj.Upozornenia)
         {
             info.Append("\n• ").Append(upozornenie);
@@ -299,7 +297,7 @@ public partial class ImportViewModel : ObservableObject
 
         if (!Priradenia.Any(p => p.Kluc == StlpcePrenosu.Nazov))
         {
-            Dialogy.Upozornenie("Priraďte stĺpec, v ktorom je názov položky (pole Názov je povinné).");
+            Dialogy.Upozornenie(Preklad.T("Priraďte stĺpec, v ktorom je názov položky (pole Názov je povinné)."));
             return;
         }
 
@@ -388,28 +386,28 @@ public partial class ImportViewModel : ObservableObject
     private void AktualizujSuhrn()
     {
         int Pocet(StavRiadku stav) => Riadky.Count(r => r.Vysledok == stav);
-        var casti = new List<string> { $"{Riadky.Count} riadkov", $"v poriadku {Pocet(StavRiadku.Ok)}" };
+        var casti = new List<string> { Preklad.F($"{Riadky.Count} riadkov"), Preklad.F($"v poriadku {Pocet(StavRiadku.Ok)}") };
         if (Pocet(StavRiadku.Upozornenie) is > 0 and var u)
         {
-            casti.Add($"s upozornením {u}");
+            casti.Add(Preklad.F($"s upozornením {u}"));
         }
 
         if (Pocet(StavRiadku.MoznaDuplicita) is > 0 and var m)
         {
-            casti.Add($"možné duplicity {m}");
+            casti.Add(Preklad.F($"možné duplicity {m}"));
         }
 
         if (Pocet(StavRiadku.Duplicita) is > 0 and var d)
         {
-            casti.Add($"už v evidencii {d}");
+            casti.Add(Preklad.F($"už v evidencii {d}"));
         }
 
         if (Pocet(StavRiadku.Chyba) is > 0 and var ch)
         {
-            casti.Add($"s chybou {ch}");
+            casti.Add(Preklad.F($"s chybou {ch}"));
         }
 
-        SuhrnKontroly = string.Join(" · ", casti) + $"  —  vybrané na import: {Riadky.Count(r => r.Importovat && r.MozeImportovat)}";
+        SuhrnKontroly = string.Join(" · ", casti) + Preklad.F($"  —  vybrané na import: {Riadky.Count(r => r.Importovat && r.MozeImportovat)}");
     }
 
     private void PripravNahlad()
@@ -422,39 +420,39 @@ public partial class ImportViewModel : ObservableObject
         var nahlad = _kontrola.Nahlad(Riadky);
         if (nahlad.Pridat == 0)
         {
-            Dialogy.Info("Na import nie je vybraná žiadna položka. Opravte chybné riadky alebo zaškrtnite riadky, ktoré chcete importovať.");
+            Dialogy.Info(Preklad.T("Na import nie je vybraná žiadna položka. Opravte chybné riadky alebo zaškrtnite riadky, ktoré chcete importovať."));
             return;
         }
 
-        NahladPridat = $"Pribudne {ExportService.PocetPoloziek(nahlad.Pridat)}" +
+        NahladPridat = Preklad.F($"Pribudne {ExportService.PocetPoloziek(nahlad.Pridat)}") +
                        (nahlad.CisloOd is { } od && nahlad.CisloDo is { } po
                            ? Druh == DruhImportu.Zlucenie
-                               ? $" s prírastkovými číslami {od} – {po}."
-                               : $" s pôvodnými prírastkovými číslami {od} – {po}."
+                               ? Preklad.F($" s prírastkovými číslami {od} – {po}.")
+                               : Preklad.F($" s pôvodnými prírastkovými číslami {od} – {po}.")
                            : ".");
 
         NahladPreskocit = nahlad.Preskocit == 0
-            ? "Nepreskočí sa žiadny riadok."
-            : $"Preskočí sa {nahlad.Preskocit} riadkov:\n" + string.Join("\n", nahlad.Dovody.Select(d => "• " + d));
+            ? Preklad.T("Nepreskočí sa žiadny riadok.")
+            : Preklad.F($"Preskočí sa {nahlad.Preskocit} riadkov:\n") + string.Join("\n", nahlad.Dovody.Select(d => "• " + d));
 
         var ciselniky = new List<string>();
         if (nahlad.NoveKategorie.Count > 0)
         {
-            ciselniky.Add($"Nové kategórie ({nahlad.NoveKategorie.Count}): {string.Join(", ", nahlad.NoveKategorie)}");
+            ciselniky.Add(Preklad.F($"Nové kategórie ({nahlad.NoveKategorie.Count}): {string.Join(", ", nahlad.NoveKategorie)}"));
         }
 
         if (nahlad.NoveMiestnosti.Count > 0)
         {
-            ciselniky.Add($"Nové miestnosti ({nahlad.NoveMiestnosti.Count}): {string.Join(", ", nahlad.NoveMiestnosti)}");
+            ciselniky.Add(Preklad.F($"Nové miestnosti ({nahlad.NoveMiestnosti.Count}): {string.Join(", ", nahlad.NoveMiestnosti)}"));
         }
 
         if (nahlad.NoveOsoby.Count > 0)
         {
-            ciselniky.Add($"Nové osoby ({nahlad.NoveOsoby.Count}): {string.Join(", ", nahlad.NoveOsoby)}");
+            ciselniky.Add(Preklad.F($"Nové osoby ({nahlad.NoveOsoby.Count}): {string.Join(", ", nahlad.NoveOsoby)}"));
         }
 
         NahladCiselniky = ciselniky.Count == 0
-            ? "Všetky kategórie, miestnosti a osoby už v evidencii sú."
+            ? Preklad.T("Všetky kategórie, miestnosti a osoby už v evidencii sú.")
             : string.Join("\n", ciselniky);
         Krok = 4;
     }
@@ -474,9 +472,9 @@ public partial class ImportViewModel : ObservableObject
             Vysledok = vysledok;
             ZmenyVDatach = true;
             Protokol = vysledok!.Protokol;
-            VysledokText = $"Import je hotový. Pribudlo {ExportService.PocetPoloziek(vysledok.Pridane)}" +
-                           (vysledok.CisloOd is { } od ? $" (prírastkové čísla {od} – {vysledok.CisloDo})" : "") +
-                           $", preskočených riadkov: {vysledok.Preskocene}.";
+            VysledokText = Preklad.F($"Import je hotový. Pribudlo {ExportService.PocetPoloziek(vysledok.Pridane)}") +
+                           (vysledok.CisloOd is { } od ? Preklad.F($" (prírastkové čísla {od} – {vysledok.CisloDo})") : "") +
+                           Preklad.F($", preskočených riadkov: {vysledok.Preskocene}.");
             Krok = 5;
         }
         catch (EvitaException ex)
@@ -485,7 +483,7 @@ public partial class ImportViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Import sa nepodaril. Databáza zostala bez zmeny.", ex);
+            Dialogy.Chyba(Preklad.T("Import sa nepodaril. Databáza zostala bez zmeny."), ex);
         }
     }
 
@@ -496,8 +494,8 @@ public partial class ImportViewModel : ObservableObject
     {
         var dialog = new SaveFileDialog
         {
-            Title = "Uložiť protokol importu",
-            Filter = "Textový súbor (*.txt)|*.txt",
+            Title = Preklad.T("Uložiť protokol importu"),
+            Filter = Preklad.T("Textový súbor (*.txt)|*.txt"),
             FileName = $"EviTA_protokol_importu_{DateTime.Now:yyyy-MM-dd_HHmm}.txt",
         };
         if (dialog.ShowDialog() == true)
@@ -507,7 +505,7 @@ public partial class ImportViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void VytlacitProtokol() => Tlac.Text("EviTA – protokol importu", Protokol);
+    private void VytlacitProtokol() => Tlac.Text(Preklad.T("EviTA – protokol importu"), Protokol);
 
     [RelayCommand]
     private void VratitImport()
@@ -517,7 +515,7 @@ public partial class ImportViewModel : ObservableObject
             return;
         }
 
-        if (!Dialogy.Potvrd("Vrátiť evidenciu do stavu pred týmto importom?\n\nDatabáza sa obnoví zo zálohy, ktorá sa urobila tesne pred importom."))
+        if (!Dialogy.Potvrd(Preklad.T("Vrátiť evidenciu do stavu pred týmto importom?\n\nDatabáza sa obnoví zo zálohy, ktorá sa urobila tesne pred importom.")))
         {
             return;
         }
@@ -526,8 +524,8 @@ public partial class ImportViewModel : ObservableObject
         {
             Dialogy.Cakaj(_sluzba.VratPoslednyImport);
             ImportVrateny = true;
-            VysledokText = "Import je vrátený – evidencia je v stave pred importom.";
-            Dialogy.Info("Import je vrátený. Evidencia je v stave pred importom.");
+            VysledokText = Preklad.T("Import je vrátený – evidencia je v stave pred importom.");
+            Dialogy.Info(Preklad.T("Import je vrátený. Evidencia je v stave pred importom."));
         }
         catch (EvitaException ex)
         {
@@ -535,7 +533,7 @@ public partial class ImportViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Import sa nepodarilo vrátiť.", ex);
+            Dialogy.Chyba(Preklad.T("Import sa nepodarilo vrátiť."), ex);
         }
     }
 

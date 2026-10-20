@@ -16,14 +16,14 @@ public sealed partial class SviatokRiadok : ObservableObject
         Sviatok = sviatok;
         _priZmene = priZmene;
         _denPracovnehoPokoja = sviatok.DenPracovnehoPokoja;
-        _poznamka = sviatok.ZmenenePouzivatelom ? "zmenené ručne" : "";
+        _poznamka = sviatok.ZmenenePouzivatelom ? Preklad.T("zmenené ručne") : "";
     }
 
     public SviatokDna Sviatok { get; }
-    public string Datum => Sviatok.Datum.ToString("d. M. yyyy", Sk.Kultura);
+    public string Datum => Sk.Datum(Sviatok.Datum.ToDateTime(TimeOnly.MinValue));
     public string DenVTyzdni => Sviatok.Datum.ToString("dddd", Sk.Kultura);
-    public string Nazov => Sviatok.Nazov;
-    public string Druh => Sviatok.DruhText;
+    public string Nazov => NazvySviatkov.Nazov(Sviatok);
+    public string Druh => NazvySviatkov.Druh(Sviatok);
     public bool Vikend => Sviatok.Datum.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
 
     [ObservableProperty] private bool _denPracovnehoPokoja;
@@ -31,7 +31,7 @@ public sealed partial class SviatokRiadok : ObservableObject
 
     partial void OnDenPracovnehoPokojaChanged(bool value)
     {
-        Poznamka = "zmenené ručne";
+        Poznamka = Preklad.T("zmenené ručne");
         _priZmene(this);
     }
 }
@@ -77,7 +77,7 @@ public partial class SviatkyViewModel : ObservableObject, IObnovitelny
         catch (Exception ex)
         {
             Riadky = new List<SviatokRiadok>();
-            Suhrn = $"Kalendárium nie je dostupné: {ex.GetBaseException().Message}";
+            Suhrn = Preklad.F($"Kalendárium nie je dostupné: {ex.GetBaseException().Message}");
         }
     }
 
@@ -87,11 +87,11 @@ public partial class SviatkyViewModel : ObservableObject, IObnovitelny
         var zmenene = Riadky.Where(r => r.Poznamka.Length > 0).ToList();
         if (zmenene.Count == 0)
         {
-            Dialogy.Info($"V roku {Rok} nie sú žiadne ručné zmeny.");
+            Dialogy.Info(Preklad.F($"V roku {Rok} nie sú žiadne ručné zmeny."));
             return;
         }
 
-        if (!Dialogy.Potvrd($"Zrušiť ručné zmeny pri {zmenene.Count} sviatkoch v roku {Rok} a vrátiť pravidlá zo zákona?"))
+        if (!Dialogy.Potvrd(Preklad.F($"Zrušiť ručné zmeny pri {zmenene.Count} sviatkoch v roku {Rok} a vrátiť pravidlá zo zákona?")))
         {
             return;
         }
@@ -119,6 +119,6 @@ public partial class SviatkyViewModel : ObservableObject, IObnovitelny
     {
         var volne = sviatky.Where(s => s.DenPracovnehoPokoja).Select(s => s.Datum).Distinct().ToList();
         var vPracovneDni = volne.Count(d => d.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday));
-        Suhrn = $"V roku {Rok} je {volne.Count} dní pracovného pokoja zo sviatkov, z toho {vPracovneDni} pripadá na pracovný deň.";
+        Suhrn = Preklad.F($"V roku {Rok} je {volne.Count} dní pracovného pokoja zo sviatkov, z toho {vPracovneDni} pripadá na pracovný deň.");
     }
 }

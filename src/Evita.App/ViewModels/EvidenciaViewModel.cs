@@ -38,8 +38,8 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
 
         FilterStavy = new List<Volba>
         {
-            new(FilterStavBezVyradenych, "bez vyradených"),
-            new(FilterStavVsetky, "všetky vrátane vyradených"),
+            new(FilterStavBezVyradenych, Preklad.T("bez vyradených")),
+            new(FilterStavVsetky, Preklad.T("všetky vrátane vyradených")),
         };
         FilterStavy.AddRange(StavyPoloziek.Vsetky.Select(s => new Volba((int)s.Stav + 2, s.Nazov)));
     }
@@ -115,12 +115,12 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         RychlyFilter = filter is "vyradene" or "vsetky" ? null : filter;
         RychlyFilterPopis = RychlyFilter switch
         {
-            "bezMiestnosti" => "položky bez miestnosti",
-            "bezPridelenia" => "položky bez pridelenia",
-            "zaruky" => "záruka končí do 30 dní",
-            "revizie" => "revízia do 30 dní alebo po termíne",
-            "oprava" => "položky v oprave",
-            "mesiac" => "pridané tento mesiac",
+            "bezMiestnosti" => Preklad.T("položky bez miestnosti"),
+            "bezPridelenia" => Preklad.T("položky bez pridelenia"),
+            "zaruky" => Preklad.T("záruka končí do 30 dní"),
+            "revizie" => Preklad.T("revízia do 30 dní alebo po termíne"),
+            "oprava" => Preklad.T("položky v oprave"),
+            "mesiac" => Preklad.T("pridané tento mesiac"),
             _ => "",
         };
         _nacitavam = false;
@@ -163,7 +163,7 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
     {
         if (Vybrana is not { } riadok)
         {
-            Dialogy.Info("Najprv vyberte položku v zozname.");
+            Dialogy.Info(Preklad.T("Najprv vyberte položku v zozname."));
             return;
         }
 
@@ -179,7 +179,7 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
     {
         if (Vybrana is not { } riadok)
         {
-            Dialogy.Info("Najprv vyberte položku, ktorú chcete skopírovať.");
+            Dialogy.Info(Preklad.T("Najprv vyberte položku, ktorú chcete skopírovať."));
             return;
         }
 
@@ -196,7 +196,7 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         var oznacene = OznaceneAleboVybrana();
         if (oznacene.Count == 0)
         {
-            Dialogy.Info("Označte položky, ktorým chcete naraz zmeniť miestnosť, pridelenie alebo stav. Viac položiek označíte so stlačeným Ctrl alebo Shift.");
+            Dialogy.Info(Preklad.T("Označte položky, ktorým chcete naraz zmeniť miestnosť, pridelenie alebo stav. Viac položiek označíte so stlačeným Ctrl alebo Shift."));
             return;
         }
 
@@ -216,14 +216,14 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         var oznacene = OznaceneAleboVybrana().Where(r => !r.Vyradena).ToList();
         if (oznacene.Count == 0)
         {
-            Dialogy.Info("Vyberte položky, ktoré chcete vyradiť (už vyradené sa preskočia).");
+            Dialogy.Info(Preklad.T("Vyberte položky, ktoré chcete vyradiť (už vyradené sa preskočia)."));
             return;
         }
 
         var popis = oznacene.Count == 1
-            ? $"položku {oznacene[0].PrirastkoveCislo} – {oznacene[0].Nazov}"
-            : $"{oznacene.Count} položiek";
-        var dovod = Dialogy.Vstup("Vyradenie", $"Vyradiť {popis}?\n\nDôvod vyradenia (nepovinné):");
+            ? Preklad.F($"položku {oznacene[0].PrirastkoveCislo} – {oznacene[0].Nazov}")
+            : Preklad.F($"{oznacene.Count} položiek");
+        var dovod = Dialogy.Vstup(Preklad.T("Vyradenie"), Preklad.F($"Vyradiť {popis}?\n\nDôvod vyradenia (nepovinné):"));
         if (dovod is null)
         {
             return;
@@ -239,11 +239,11 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         var oznacene = OznaceneAleboVybrana().Where(r => r.Vyradena).ToList();
         if (oznacene.Count == 0)
         {
-            Dialogy.Info("Vyberte vyradené položky, ktoré chcete vrátiť do prevádzky. Vyradené zobrazíte filtrom Stav.");
+            Dialogy.Info(Preklad.T("Vyberte vyradené položky, ktoré chcete vrátiť do prevádzky. Vyradené zobrazíte filtrom Stav."));
             return;
         }
 
-        if (!Dialogy.Potvrd($"Vrátiť {oznacene.Count} vyradených položiek do stavu „v prevádzke“?"))
+        if (!Dialogy.Potvrd(Preklad.F($"Vrátiť {oznacene.Count} vyradených položiek do stavu „v prevádzke“?")))
         {
             return;
         }
@@ -258,16 +258,15 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         var oznacene = OznaceneAleboVybrana();
         if (oznacene.Count == 0)
         {
-            Dialogy.Info("Vyberte položky, ktoré chcete vymazať.");
+            Dialogy.Info(Preklad.T("Vyberte položky, ktoré chcete vymazať."));
             return;
         }
 
         var popis = oznacene.Count == 1
-            ? $"položku {oznacene[0].PrirastkoveCislo} – {oznacene[0].Nazov}"
-            : $"{oznacene.Count} položiek";
+            ? Preklad.F($"položku {oznacene[0].PrirastkoveCislo} – {oznacene[0].Nazov}")
+            : Preklad.F($"{oznacene.Count} položiek");
         if (!Dialogy.Potvrd(
-                $"Naozaj natrvalo vymazať {popis}?\n\nPri evidencii majetku sa položky zvyčajne nemažú, ale vyraďujú. " +
-                "Záznam o vymazaní zostane v histórii zmien a prírastkové čísla sa už nepoužijú."))
+                Preklad.F($"Naozaj natrvalo vymazať {popis}?\n\nPri evidencii majetku sa položky zvyčajne nemažú, ale vyraďujú. Záznam o vymazaní zostane v histórii zmien a prírastkové čísla sa už nepoužijú.")))
         {
             return;
         }
@@ -300,7 +299,7 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Zostavu sa nepodarilo vytvoriť.", ex);
+            Dialogy.Chyba(Preklad.T("Zostavu sa nepodarilo vytvoriť."), ex);
         }
     }
 
@@ -326,32 +325,32 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         var casti = new List<string>();
         if (FilterKategoria != 0 && FilterKategorie.FirstOrDefault(v => v.Id == FilterKategoria) is { } k)
         {
-            casti.Add("kategória " + k.Nazov);
+            casti.Add(Preklad.F($"kategória {k.Nazov}"));
         }
 
         if (FilterMiestnost != 0 && FilterMiestnosti.FirstOrDefault(v => v.Id == FilterMiestnost) is { } m)
         {
-            casti.Add("miestnosť " + m.Nazov);
+            casti.Add(Preklad.F($"miestnosť {m.Nazov}"));
         }
 
         if (FilterOsoba != 0 && FilterOsoby.FirstOrDefault(v => v.Id == FilterOsoba) is { } o)
         {
-            casti.Add("pridelené " + o.Nazov);
+            casti.Add(Preklad.F($"pridelené {o.Nazov}"));
         }
 
         if (FilterStav != FilterStavBezVyradenych && FilterStavy.FirstOrDefault(v => v.Id == FilterStav) is { } s)
         {
-            casti.Add("stav " + s.Nazov);
+            casti.Add(Preklad.F($"stav {s.Nazov}"));
         }
 
         if (PridaneOd is { } od)
         {
-            casti.Add("pridané od " + Sk.Datum(od));
+            casti.Add(Preklad.F($"pridané od {Sk.Datum(od)}"));
         }
 
         if (PridaneDo is { } po)
         {
-            casti.Add("pridané do " + Sk.Datum(po));
+            casti.Add(Preklad.F($"pridané do {Sk.Datum(po)}"));
         }
 
         if (!string.IsNullOrWhiteSpace(RychlyFilterPopis) && RychlyFilter is not null)
@@ -361,7 +360,7 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
 
         if (!string.IsNullOrWhiteSpace(HladanyText))
         {
-            casti.Add($"hľadanie „{HladanyText.Trim()}“");
+            casti.Add(Preklad.F($"hľadanie „{HladanyText.Trim()}“"));
         }
 
         return string.Join(", ", casti);
@@ -406,11 +405,11 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         var miestnost = FilterMiestnost;
         var osoba = FilterOsoba;
 
-        FilterKategorie = new List<Volba> { new(0, "(všetky)") }
+        FilterKategorie = new List<Volba> { new(0, Preklad.T("(všetky)")) }
             .Concat(_ciselniky.Volby(TypCiselnika.Kategorie, null, null)).ToList();
-        FilterMiestnosti = new List<Volba> { new(0, "(všetky)"), new(-1, "(nezadaná)") }
+        FilterMiestnosti = new List<Volba> { new(0, Preklad.T("(všetky)")), new(-1, Preklad.T("(nezadaná)")) }
             .Concat(_ciselniky.Volby(TypCiselnika.Miestnosti, null, null)).ToList();
-        FilterOsoby = new List<Volba> { new(0, "(všetci)"), new(-1, "(nikto)") }
+        FilterOsoby = new List<Volba> { new(0, Preklad.T("(všetci)")), new(-1, Preklad.T("(nikto)")) }
             .Concat(_ciselniky.Volby(TypCiselnika.Osoby, null, null)).ToList();
 
         FilterKategoria = FilterKategorie.Any(v => v.Id == kategoria) ? kategoria : 0;
@@ -453,7 +452,7 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
     private void AktualizujStavText()
     {
         var zobrazene = Pohlad?.Count ?? 0;
-        StavText = $"Zobrazené: {zobrazene} z {_vsetky.Count} položiek";
+        StavText = Preklad.F($"Zobrazené: {zobrazene} z {_vsetky.Count} položiek");
     }
 
     private bool Filtruj(object objekt)

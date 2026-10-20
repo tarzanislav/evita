@@ -16,6 +16,7 @@
             <pom:NulaNaViditelnost x:Key="NulaNaViditelnost" />
             <pom:FarbaNaStetec x:Key="FarbaNaStetec" />
             <pom:HodnotyNaKrivku x:Key="HodnotyNaKrivku" />
+            <pom:PrelozText x:Key="PrelozText" />
 
             <FontFamily x:Key="IkonovePismo">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 

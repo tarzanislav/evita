@@ -14,12 +14,11 @@ public partial class PrehladDnaWindow : Window
     {
         InitializeComponent();
         var dnes = DateTime.Today;
-        var text = dnes.ToString("dddd d. MMMM yyyy", Sk.Kultura);
-        Nadpis.Text = char.ToUpper(text[0], Sk.Kultura) + text[1..];
+        Nadpis.Text = Sk.DlhyDatum(dnes);
         try
         {
             var meniny = Kalendarium.KalendariumDb.Spolocna.Meniny(DateOnly.FromDateTime(dnes));
-            Meniny.Text = meniny.Count > 0 ? "Meniny má " + string.Join(", ", meniny) : "";
+            Meniny.Text = meniny.Count > 0 ? Preklad.F($"Meniny má {string.Join(", ", meniny)}") : "";
         }
         catch (Exception)
         {

@@ -191,19 +191,19 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
 
         if (poslednyPokus is { Uspech: false })
         {
-            ZalohaText = $"Posledná záloha sa nepodarila ({Sk.DatumCas(poslednyPokus.Cas)}): {poslednyPokus.Chyba}";
+            ZalohaText = Preklad.F($"Posledná záloha sa nepodarila ({Sk.DatumCas(poslednyPokus.Cas)}): {poslednyPokus.Chyba}");
             ZalohaVarovanie = true;
         }
         else if (posledna is null)
         {
-            ZalohaText = "Zatiaľ nebola urobená žiadna záloha.";
+            ZalohaText = Preklad.T("Zatiaľ nebola urobená žiadna záloha.");
             ZalohaVarovanie = true;
         }
         else
         {
             var dni = (int)(DateTime.Now - posledna.Value).TotalDays;
-            var vek = dni switch { 0 => "dnes", 1 => "včera", _ => $"pred {dni} dňami" };
-            ZalohaText = $"Posledná záloha: {Sk.DatumCas(posledna.Value)} ({vek})" + (nastavenia.Zapnuta ? "" : ", pravidelná záloha je vypnutá");
+            var vek = dni switch { 0 => Preklad.T("dnes"), 1 => Preklad.T("včera"), _ => Preklad.F($"pred {dni} dňami") };
+            ZalohaText = Preklad.F($"Posledná záloha: {Sk.DatumCas(posledna.Value)} ({vek})") + (nastavenia.Zapnuta ? "" : Preklad.T(", pravidelná záloha je vypnutá"));
             // varovanie, ak je záloha staršia ako nastavená perióda (s rezervou jedného dňa)
             var limit = ZalohaService.DalsiTermin(posledna.Value, nastavenia.Zapnuta ? nastavenia.Perioda : PeriodaZaloh.Mesacne).AddDays(1);
             ZalohaVarovanie = DateTime.Now > limit;
@@ -246,8 +246,7 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
                     volne.Contains(DateOnly.FromDateTime(d)),
                     vyskyty.Any(v => v.Stav != StavUdalosti.Zrusene && v.Zaciatok.Date <= d && v.PoslednyDen >= d));
             }).ToList();
-            var nazov = dnes.ToString("MMMM yyyy", Sk.Kultura);
-            NazovMesiaca = char.ToUpper(nazov[0], Sk.Kultura) + nazov[1..];
+            NazovMesiaca = Sk.MesiacRok(dnes);
 
             NajblizsieUdalosti = sluzba.Vyskyty(dnes, dnes.AddDays(7))
                 .Where(v => v.Stav == StavUdalosti.Naplanovane && v.PoslednyDen >= dnes)
@@ -257,13 +256,13 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
             var pocet = sluzba.Vyskyty(dnes, dnes.AddDays(7)).Count(v => v.Stav == StavUdalosti.Naplanovane);
             KalendarSuhrn = pocet switch
             {
-                0 => "Na najbližších 7 dní nie je nič naplánované.",
-                _ => $"Na dnes a najbližších 7 dní: {pocet}" + (pocet > NajblizsieUdalosti.Count ? $" (zobrazených {NajblizsieUdalosti.Count})" : ""),
+                0 => Preklad.T("Na najbližších 7 dní nie je nič naplánované."),
+                _ => Preklad.F($"Na dnes a najbližších 7 dní: {pocet}") + (pocet > NajblizsieUdalosti.Count ? Preklad.F($" (zobrazených {NajblizsieUdalosti.Count})") : ""),
             };
         }
         catch (Exception ex)
         {
-            KalendarSuhrn = $"Kalendár sa nepodarilo načítať: {ex.GetBaseException().Message}";
+            KalendarSuhrn = Preklad.F($"Kalendár sa nepodarilo načítať: {ex.GetBaseException().Message}");
         }
     }
 
@@ -488,9 +487,9 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         {
             var kalendar = KalendariumDb.Spolocna;
             var mena = kalendar.Meniny(dnes);
-            MeninyDnes = mena.Count > 0 ? string.Join(", ", mena) : "dnes nemá meniny nikto";
+            MeninyDnes = mena.Count > 0 ? string.Join(", ", mena) : Preklad.T("dnes nemá meniny nikto");
             var zajtra = kalendar.Meniny(dnes.AddDays(1));
-            MeninyZajtra = zajtra.Count > 0 ? string.Join(", ", zajtra) : "nikto";
+            MeninyZajtra = zajtra.Count > 0 ? string.Join(", ", zajtra) : Preklad.T("nikto");
 
             // osoby z evidencie, ktoré majú dnes meniny
             var hladane = mena.Select(Sk.BezDiakritiky).ToHashSet();
@@ -500,14 +499,14 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
                     .Where(o => hladane.Contains(Sk.BezDiakritiky(o.Meno.Trim())))
                     .Select(o => o.CeleMeno)
                     .ToList();
-                MeninyOsob = oslavenci.Count > 0 ? "Dnes má meniny aj: " + string.Join(", ", oslavenci) : "";
+                MeninyOsob = oslavenci.Count > 0 ? Preklad.F($"Dnes má meniny aj: {string.Join(", ", oslavenci)}") : "";
             }
 
             var sviatky = kalendar.SviatkyDna(dnes);
             JeDnesVolno = sviatky.Any(sv => sv.DenPracovnehoPokoja);
             SviatokDnes = string.Join("\n", sviatky.Select(sv =>
-                $"{char.ToUpper(sv.DruhText[0])}{sv.DruhText[1..]}: {sv.Nazov}" +
-                (sv.Druh != DruhSviatku.PamatnyDen && !sv.DenPracovnehoPokoja ? " (nie je deň pracovného pokoja)" : "")));
+                $"{Sk.VelkePrve(NazvySviatkov.Druh(sv))}: {NazvySviatkov.Nazov(sv)}" +
+                (sv.Druh != DruhSviatku.PamatnyDen && !sv.DenPracovnehoPokoja ? Preklad.T(" (nie je deň pracovného pokoja)") : "")));
 
             var najblizsi = kalendar.NajblizsiDenPracovnehoPokoja(dnes.AddDays(JeDnesVolno ? 1 : 0));
             if (najblizsi is null)
@@ -517,14 +516,13 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
             else
             {
                 var dni = najblizsi.Datum.DayNumber - dnes.DayNumber;
-                var kedy = dni switch { 0 => "dnes", 1 => "zajtra", _ => $"o {dni} dní" };
-                NajblizsiVolnyDen = $"Najbližší deň pracovného pokoja: {najblizsi.Nazov}, " +
-                                    $"{najblizsi.Datum.ToString("dddd d. MMMM", Sk.Kultura)} ({kedy})";
+                var kedy = dni switch { 0 => Preklad.T("dnes"), 1 => Preklad.T("zajtra"), _ => Preklad.F($"o {dni} dní") };
+                NajblizsiVolnyDen = Preklad.F($"Najbližší deň pracovného pokoja: {NazvySviatkov.Nazov(najblizsi)}, {Sk.DenAMesiac(najblizsi.Datum.ToDateTime(TimeOnly.MinValue))} ({kedy})");
             }
         }
         catch (Exception)
         {
-            MeninyDnes = "Kalendárium nie je dostupné";
+            MeninyDnes = Preklad.T("Kalendárium nie je dostupné");
             MeninyZajtra = "";
             MeninyOsob = "";
             SviatokDnes = "";
@@ -549,8 +547,8 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
 
             var kontrola = Databaza.Citaj(db, DiagnostikaService.KlucPoslednaKontrola)?.Split('|');
             PoslednaKontrola = kontrola is { Length: 3 } && DateTime.TryParse(kontrola[0], out var cas)
-                ? $"Posledná kontrola: {Sk.DatumCas(cas)} ({kontrola[1].ToLower(Sk.Kultura)}) – {(kontrola[2] == "ok" ? "v poriadku" : "našli sa problémy")}"
-                : "Kontrola databázy sa ešte nerobila.";
+                ? Preklad.F($"Posledná kontrola: {Sk.DatumCas(cas)} ({Preklad.TAkJe(kontrola[1]).ToLower(Sk.Kultura)}) – {(kontrola[2] == "ok" ? Preklad.T("v poriadku") : Preklad.T("našli sa problémy"))}")
+                : Preklad.T("Kontrola databázy sa ešte nerobila.");
         }
 
         var velkost = ServisService.VelkostDatabazy();
@@ -560,12 +558,11 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         {
             var kalendar = KalendariumDb.Spolocna;
             var rok = DateTime.Today.Year;
-            KalendariumText = $"Kalendárium: {kalendar.PocetMien()} mien, {kalendar.Sviatky(rok).Count(sv => sv.Druh != DruhSviatku.PamatnyDen)} sviatkov a " +
-                              $"{kalendar.Sviatky(rok).Count(sv => sv.Druh == DruhSviatku.PamatnyDen)} pamätných dní";
+            KalendariumText = Preklad.F($"Kalendárium: {kalendar.PocetMien()} mien, {kalendar.Sviatky(rok).Count(sv => sv.Druh != DruhSviatku.PamatnyDen)} sviatkov a {kalendar.Sviatky(rok).Count(sv => sv.Druh == DruhSviatku.PamatnyDen)} pamätných dní");
         }
         catch (Exception)
         {
-            KalendariumText = "Kalendárium nie je dostupné.";
+            KalendariumText = Preklad.T("Kalendárium nie je dostupné.");
         }
     }
 
@@ -634,10 +631,9 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     private void AktualizujCas()
     {
         var teraz = DateTime.Now;
-        var datum = teraz.ToString("dddd d. MMMM yyyy", Sk.Kultura);
-        DatumText = char.ToUpper(datum[0], Sk.Kultura) + datum[1..];
+        DatumText = Sk.DlhyDatum(teraz);
         CasText = teraz.ToString("H:mm:ss", Sk.Kultura);
-        TyzdenText = $"{ISOWeek.GetWeekOfYear(teraz)}. týždeň";
+        TyzdenText = Preklad.F($"{ISOWeek.GetWeekOfYear(teraz)}. týždeň");
         if (_zobrazenyDen != default && _zobrazenyDen != teraz.Date)
         {
             // o polnoci sa zmenia meniny aj sviatky

@@ -17,17 +17,25 @@ public enum TypStlpca
     Identifikator,
 }
 
-/// <summary>Jeden stĺpec, ktorý sa dá exportovať aj importovať (rovnaký názov v oboch smeroch).</summary>
+/// <summary>
+/// Jeden stĺpec, ktorý sa dá exportovať aj importovať (rovnaký názov v oboch smeroch). Názov, popis a príklad sú
+/// zapísané po slovensky a zobrazujú sa v jazyku programu; import rozpozná názov stĺpca v ktoromkoľvek jazyku.
+/// </summary>
 public sealed record StlpecPrenosu(
     string Kluc,
-    string Nazov,
+    string NazovSk,
     TypStlpca Typ,
     bool Povinny,
     bool PredvolenyExport,
     double Sirka,
-    string Popis,
-    string Priklad,
-    string[] Aliasy);
+    string PopisSk,
+    string PrikladSk,
+    string[] Aliasy)
+{
+    public string Nazov => Preklad.T(NazovSk);
+    public string Popis => Preklad.T(PopisSk);
+    public string Priklad => Preklad.TAkJe(PrikladSk);
+}
 
 /// <summary>Stĺpce evidencie pre export a import a ich rozpoznanie podľa názvu.</summary>
 public static class StlpcePrenosu
@@ -55,55 +63,55 @@ public static class StlpcePrenosu
 
     public static IReadOnlyList<StlpecPrenosu> Vsetky { get; } = new StlpecPrenosu[]
     {
-        new(Cislo, "Prírastkové číslo", TypStlpca.CeleCislo, false, true, 1.4,
-            "Pôvodné číslo položky. Pri doplnení do evidencie dostane položka nové číslo (od posledného + 1) a pôvodné sa zapíše do histórie.",
+        new(Cislo, Preklad.N("Prírastkové číslo"), TypStlpca.CeleCislo, false, true, 1.4,
+            Preklad.N("Pôvodné číslo položky. Pri doplnení do evidencie dostane položka nové číslo (od posledného + 1) a pôvodné sa zapíše do histórie."),
             "57", new[] { "prirastkovecislo", "prircislo", "cislo", "c", "poradovecislo", "evidencnecislo", "id" }),
-        new(Nazov, "Názov", TypStlpca.Text, true, true, 5.5,
-            "Názov položky. Jediný povinný údaj.",
-            "Notebook Dell Latitude 5540", new[] { "nazov", "nazovpolozky", "name", "polozka", "zariadenie", "predmet" }),
-        new(Kategoria, "Kategória", TypStlpca.Text, false, true, 2.4,
-            "Kategória zo zoznamu. Neznáma kategória sa vytvorí. Bez kategórie sa položka zaradí do kategórie „nezaradené“.",
-            "notebook", new[] { "kategoria", "category", "druh", "typzariadenia", "skupina" }),
-        new(Miestnost, "Miestnosť", TypStlpca.Text, false, true, 2.6,
-            "Kde je položka umiestnená. Neznáma miestnosť sa vytvorí.",
-            "Kancelária 101", new[] { "miestnost", "room", "umiestnenie", "lokalita", "kancelaria", "ucebna", "miesto" }),
-        new(Pridelene, "Pridelené", TypStlpca.Text, false, true, 2.8,
-            "Komu je položka pridelená, v tvare Meno Priezvisko. Neznáma osoba sa vytvorí.",
+        new(Nazov, Preklad.N("Názov"), TypStlpca.Text, true, true, 5.5,
+            Preklad.N("Názov položky. Jediný povinný údaj."),
+            Preklad.N("Notebook Dell Latitude 5540"), new[] { "nazov", "nazovpolozky", "name", "polozka", "zariadenie", "predmet" }),
+        new(Kategoria, Preklad.N("Kategória"), TypStlpca.Text, false, true, 2.4,
+            Preklad.N("Kategória zo zoznamu. Neznáma kategória sa vytvorí. Bez kategórie sa položka zaradí do kategórie „nezaradené“."),
+            Preklad.N("notebook"), new[] { "kategoria", "category", "druh", "typzariadenia", "skupina" }),
+        new(Miestnost, Preklad.N("Miestnosť"), TypStlpca.Text, false, true, 2.6,
+            Preklad.N("Kde je položka umiestnená. Neznáma miestnosť sa vytvorí."),
+            Preklad.N("Kancelária 101"), new[] { "miestnost", "room", "umiestnenie", "lokalita", "kancelaria", "ucebna", "miesto" }),
+        new(Pridelene, Preklad.N("Pridelené"), TypStlpca.Text, false, true, 2.8,
+            Preklad.N("Komu je položka pridelená, v tvare Meno Priezvisko. Neznáma osoba sa vytvorí."),
             "Ján Novák", new[] { "pridelene", "pridelenie", "osoba", "pouzivatel", "uzivatel", "zodpovednaosoba", "zamestnanec", "user", "owner", "drzitel" }),
-        new(Vyrobca, "Výrobca", TypStlpca.Text, false, true, 2.0,
-            "Výrobca alebo značka.", "Dell", new[] { "vyrobca", "manufacturer", "znacka", "brand", "vendor" }),
-        new(Model, "Model", TypStlpca.Text, false, true, 2.4,
-            "Model alebo typové označenie.", "Latitude 5540", new[] { "model", "typ", "modelzariadenia" }),
-        new(Seriove, "Sériové číslo", TypStlpca.Text, false, true, 2.6,
-            "Výrobné (sériové) číslo. Podľa neho sa pri importe zisťuje, či položka už v evidencii je.",
+        new(Vyrobca, Preklad.N("Výrobca"), TypStlpca.Text, false, true, 2.0,
+            Preklad.N("Výrobca alebo značka."), "Dell", new[] { "vyrobca", "manufacturer", "znacka", "brand", "vendor" }),
+        new(Model, Preklad.N("Model"), TypStlpca.Text, false, true, 2.4,
+            Preklad.N("Model alebo typové označenie."), "Latitude 5540", new[] { "model", "typ", "modelzariadenia" }),
+        new(Seriove, Preklad.N("Sériové číslo"), TypStlpca.Text, false, true, 2.6,
+            Preklad.N("Výrobné (sériové) číslo. Podľa neho sa pri importe zisťuje, či položka už v evidencii je."),
             "5CD1234XYZ", new[] { "seriovecislo", "sn", "serial", "serialnumber", "sernumber", "vyrobnecislo", "sc" }),
-        new(Inventarne, "Inventárne číslo", TypStlpca.Text, false, true, 2.2,
-            "Inventárne číslo z účtovníctva, ak sa používa.", "INV-2026-001", new[] { "inventarnecislo", "invcislo", "inventarne", "inventory", "inventorynumber" }),
-        new(Stav, "Stav", TypStlpca.Stav, false, true, 1.8,
-            "v prevádzke, v sklade, v oprave alebo vyradené. Prázdne = v prevádzke.",
-            "v prevádzke", new[] { "stav", "status", "state" }),
-        new(DatumNakupu, "Dátum nákupu", TypStlpca.Datum, false, true, 1.8,
-            "Dátum v tvare 20.10.2026, 20. 10. 2026 alebo 2026-10-20.",
+        new(Inventarne, Preklad.N("Inventárne číslo"), TypStlpca.Text, false, true, 2.2,
+            Preklad.N("Inventárne číslo z účtovníctva, ak sa používa."), "INV-2026-001", new[] { "inventarnecislo", "invcislo", "inventarne", "inventory", "inventorynumber" }),
+        new(Stav, Preklad.N("Stav"), TypStlpca.Stav, false, true, 1.8,
+            Preklad.N("v prevádzke, v sklade, v oprave alebo vyradené. Prázdne = v prevádzke."),
+            Preklad.N("v prevádzke"), new[] { "stav", "status", "state" }),
+        new(DatumNakupu, Preklad.N("Dátum nákupu"), TypStlpca.Datum, false, true, 1.8,
+            Preklad.N("Dátum v tvare 20.10.2026, 20. 10. 2026 alebo 2026-10-20."),
             "15.3.2026", new[] { "datumnakupu", "nakup", "zakupene", "datumobstarania", "obstarane", "purchasedate", "datumkupy" }),
-        new(Cena, "Cena", TypStlpca.Suma, false, true, 1.6,
-            "Cena v eurách, s desatinnou čiarkou alebo bodkou.", "1089,00", new[] { "cena", "price", "obstaravaciacena", "cenasdph", "hodnota" }),
-        new(ZarukaDo, "Záruka do", TypStlpca.Datum, false, true, 1.8,
-            "Dátum konca záruky.", "15.3.2029", new[] { "zarukado", "zaruka", "warranty", "konieczaruky" }),
-        new(DalsiaRevizia, "Ďalšia revízia", TypStlpca.Datum, false, false, 1.8,
-            "Dátum najbližšej revízie alebo kontroly.", "", new[] { "dalsiarevizia", "revizia", "revizdo", "datumrevizie" }),
-        new(DatumPridania, "Dátum pridania", TypStlpca.DatumCas, false, true, 2.2,
-            "Kedy bola položka zaradená do evidencie. Prázdne = deň importu.",
+        new(Cena, Preklad.N("Cena"), TypStlpca.Suma, false, true, 1.6,
+            Preklad.N("Cena v eurách, s desatinnou čiarkou alebo bodkou."), "1089,00", new[] { "cena", "price", "obstaravaciacena", "cenasdph", "hodnota" }),
+        new(ZarukaDo, Preklad.N("Záruka do"), TypStlpca.Datum, false, true, 1.8,
+            Preklad.N("Dátum konca záruky."), "15.3.2029", new[] { "zarukado", "zaruka", "warranty", "konieczaruky" }),
+        new(DalsiaRevizia, Preklad.N("Ďalšia revízia"), TypStlpca.Datum, false, false, 1.8,
+            Preklad.N("Dátum najbližšej revízie alebo kontroly."), "", new[] { "dalsiarevizia", "revizia", "revizdo", "datumrevizie" }),
+        new(DatumPridania, Preklad.N("Dátum pridania"), TypStlpca.DatumCas, false, true, 2.2,
+            Preklad.N("Kedy bola položka zaradená do evidencie. Prázdne = deň importu."),
             "20.10.2026", new[] { "datumpridania", "pridane", "datumzaradenia", "zaradene", "created" }),
-        new(DatumZmeny, "Dátum zmeny", TypStlpca.DatumCas, false, false, 2.2,
-            "Kedy sa položka naposledy zmenila (len pri prenose celej databázy).", "", new[] { "datumzmeny", "zmenene", "upravene", "modified" }),
-        new(DatumVyradenia, "Dátum vyradenia", TypStlpca.Datum, false, false, 1.8,
-            "Len pri stave vyradené.", "", new[] { "datumvyradenia" }),
-        new(DovodVyradenia, "Dôvod vyradenia", TypStlpca.Text, false, false, 3.0,
-            "Len pri stave vyradené.", "", new[] { "dovodvyradenia" }),
-        new(Poznamka, "Poznámka", TypStlpca.Text, false, true, 4.0,
-            "Ľubovoľný text.", "nabíjačka v taške", new[] { "poznamka", "poznamky", "note", "notes", "komentar", "popis" }),
-        new(Identifikator, "Identifikátor (GUID)", TypStlpca.Identifikator, false, false, 3.4,
-            "Skrytý jedinečný identifikátor z inej EviTA. Podľa neho sa spozná položka, ktorá už v evidencii je. Pri novej položke nechajte prázdne.",
+        new(DatumZmeny, Preklad.N("Dátum zmeny"), TypStlpca.DatumCas, false, false, 2.2,
+            Preklad.N("Kedy sa položka naposledy zmenila (len pri prenose celej databázy)."), "", new[] { "datumzmeny", "zmenene", "upravene", "modified" }),
+        new(DatumVyradenia, Preklad.N("Dátum vyradenia"), TypStlpca.Datum, false, false, 1.8,
+            Preklad.N("Len pri stave vyradené."), "", new[] { "datumvyradenia" }),
+        new(DovodVyradenia, Preklad.N("Dôvod vyradenia"), TypStlpca.Text, false, false, 3.0,
+            Preklad.N("Len pri stave vyradené."), "", new[] { "dovodvyradenia" }),
+        new(Poznamka, Preklad.N("Poznámka"), TypStlpca.Text, false, true, 4.0,
+            Preklad.N("Ľubovoľný text."), Preklad.N("nabíjačka v taške"), new[] { "poznamka", "poznamky", "note", "notes", "komentar", "popis" }),
+        new(Identifikator, Preklad.N("Identifikátor (GUID)"), TypStlpca.Identifikator, false, false, 3.4,
+            Preklad.N("Skrytý jedinečný identifikátor z inej EviTA. Podľa neho sa spozná položka, ktorá už v evidencii je. Pri novej položke nechajte prázdne."),
             "", new[] { "guid", "identifikator", "identifikatorguid", "uuid" }),
     };
 
@@ -140,10 +148,20 @@ public static class StlpcePrenosu
     private static Dictionary<string, string> VytvorAliasy()
     {
         var aliasy = new Dictionary<string, string>(StringComparer.Ordinal);
+        // názvy stĺpcov vo všetkých jazykoch programu (súbor mohol vzniknúť v inom jazyku)
+        var slovniky = Preklad.Jazyky.Where(j => j.Kod != "sk").Select(j => Preklad.NacitajSlovnik(j.Kod)).ToList();
         foreach (var stlpec in Vsetky)
         {
-            aliasy.TryAdd(Normalizuj(stlpec.Nazov), stlpec.Kluc);
+            aliasy.TryAdd(Normalizuj(stlpec.NazovSk), stlpec.Kluc);
             aliasy.TryAdd(Normalizuj(stlpec.Kluc), stlpec.Kluc);
+            foreach (var slovnik in slovniky)
+            {
+                if (slovnik.TryGetValue(stlpec.NazovSk, out var preklad))
+                {
+                    aliasy.TryAdd(Normalizuj(preklad), stlpec.Kluc);
+                }
+            }
+
             foreach (var alias in stlpec.Aliasy)
             {
                 aliasy.TryAdd(alias, stlpec.Kluc);
@@ -187,8 +205,10 @@ public static class Prevod
 {
     private static readonly string[] FormatyDatumu =
     {
-        "d.M.yyyy", "d. M. yyyy", "d.M. yyyy", "d. M.yyyy", "dd.MM.yyyy", "yyyy-MM-dd", "yyyy-M-d", "d/M/yyyy",
-        "d.M.yyyy H:mm", "d.M.yyyy H:mm:ss", "d. M. yyyy H:mm", "d. M. yyyy H:mm:ss",
+        "d.M.yyyy", "d. M. yyyy", "d.M. yyyy", "d. M.yyyy", "dd.MM.yyyy", "yyyy-MM-dd", "yyyy-M-d", "d/M/yyyy", "dd/MM/yyyy",
+        "yyyy.MM.dd.", "yyyy. MM. dd.", "yyyy.M.d.", "yyyy. M. d.", "yyyy/M/d", "yyyy/MM/dd",
+        "d.M.yyyy H:mm", "d.M.yyyy H:mm:ss", "d. M. yyyy H:mm", "d. M. yyyy H:mm:ss", "dd.MM.yyyy H:mm", "dd.MM.yyyy HH:mm",
+        "d/M/yyyy H:mm", "dd/MM/yyyy HH:mm", "yyyy.MM.dd. H:mm", "yyyy. MM. dd. H:mm", "yyyy/M/d H:mm",
         "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-ddTHH:mm:ss.FFFFFFF",
         "yyyy-MM-ddTHH:mm:ssK", "yyyy-MM-ddTHH:mm:ss.FFFFFFFK",
     };
@@ -213,6 +233,27 @@ public static class Prevod
         return false;
     }
 
+    /// <summary>Názvy stavov vo všetkých jazykoch programu (normalizované) → stav.</summary>
+    private static readonly Lazy<Dictionary<string, StavPolozky>> StavyVJazykoch = new(() =>
+    {
+        var vysledok = new Dictionary<string, StavPolozky>(StringComparer.Ordinal);
+        var slovniky = Preklad.Jazyky.Where(j => j.Kod != "sk").Select(j => Preklad.NacitajSlovnik(j.Kod)).ToList();
+        foreach (var stav in Enum.GetValues<StavPolozky>())
+        {
+            var nazov = StavyPoloziek.NazovSk(stav);
+            vysledok.TryAdd(StlpcePrenosu.Normalizuj(nazov), stav);
+            foreach (var slovnik in slovniky)
+            {
+                if (slovnik.TryGetValue(nazov, out var preklad))
+                {
+                    vysledok.TryAdd(StlpcePrenosu.Normalizuj(preklad), stav);
+                }
+            }
+        }
+
+        return vysledok;
+    });
+
     /// <summary>Stav podľa textu (v prevádzke, v sklade, v oprave, vyradené – aj bez diakritiky). Prázdny = v prevádzke.</summary>
     public static bool SkusStav(string? text, out StavPolozky stav)
     {
@@ -223,6 +264,12 @@ public static class Prevod
         }
 
         var t = StlpcePrenosu.Normalizuj(text);
+        if (StavyVJazykoch.Value.TryGetValue(t, out var najdeny))
+        {
+            stav = najdeny;
+            return true;
+        }
+
         if (t.Contains("prevadz") || t is "aktivne" or "aktivny" or "pouziva" or "0")
         {
             stav = StavPolozky.VPrevadzke;
@@ -276,12 +323,22 @@ public static class Prevod
         return false;
     }
 
+    /// <summary>Formát dátumu v CSV podľa jazyka (tak, ako ho otvorí Excel v danom jazyku).</summary>
+    private static string FormatCsv => Preklad.Kod switch
+    {
+        "sk" or "cs" => "d.M.yyyy",
+        "en" => "dd/MM/yyyy",
+        "hu" => "yyyy.MM.dd.",
+        "zh" => "yyyy-MM-dd",
+        _ => "dd.MM.yyyy",
+    };
+
     /// <summary>Hodnota ako text pre CSV (dátumy 20.10.2026, sumy 1089,00 – tak, ako ich otvorí slovenský Excel).</summary>
     public static string TextCsv(object? hodnota) => hodnota switch
     {
         null => "",
-        DateTime d when d.TimeOfDay == TimeSpan.Zero => d.ToString("d.M.yyyy", CultureInfo.InvariantCulture),
-        DateTime d => d.ToString("d.M.yyyy H:mm", CultureInfo.InvariantCulture),
+        DateTime d when d.TimeOfDay == TimeSpan.Zero => d.ToString(FormatCsv, CultureInfo.InvariantCulture),
+        DateTime d => d.ToString(FormatCsv + " H:mm", CultureInfo.InvariantCulture),
         decimal s => s.ToString("0.00", Sk.Kultura),
         int i => i.ToString(CultureInfo.InvariantCulture),
         _ => hodnota.ToString() ?? "",

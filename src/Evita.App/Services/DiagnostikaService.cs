@@ -23,9 +23,9 @@ public sealed class DiagnostikaService
         "Nastavenia", "Kategorie", "Miestnosti", "Osoby", "Polozky", "HistoriaZmien", "ZaznamyZaloh", "TypyUdalosti", "Udalosti", "Ulohy", "Poznamky",
     };
 
-    public VysledokKontroly RychlaKontrola() => Kontrola("PRAGMA quick_check;", "Rýchla kontrola");
+    public VysledokKontroly RychlaKontrola() => Kontrola("PRAGMA quick_check;", Preklad.T("Rýchla kontrola"));
 
-    public VysledokKontroly UplnaKontrola() => Kontrola("PRAGMA integrity_check;", "Úplná kontrola integrity");
+    public VysledokKontroly UplnaKontrola() => Kontrola("PRAGMA integrity_check;", Preklad.T("Úplná kontrola integrity"));
 
     public VysledokKontroly KontrolaVazieb()
     {
@@ -39,16 +39,16 @@ public sealed class DiagnostikaService
             var tabulka = citac.GetString(0);
             var riadok = citac.IsDBNull(1) ? "?" : citac.GetInt64(1).ToString();
             var rodic = citac.GetString(2);
-            riadky.Add($"{Upozornenie}tabuľka {tabulka}, riadok {riadok} odkazuje na neexistujúci záznam v tabuľke {rodic}.");
+            riadky.Add(Preklad.F($"{Upozornenie}tabuľka {tabulka}, riadok {riadok} odkazuje na neexistujúci záznam v tabuľke {rodic}."));
         }
 
         var ok = riadky.Count == 0;
         if (ok)
         {
-            riadky.Add("Všetky odkazy na kategórie, miestnosti a osoby sú v poriadku.");
+            riadky.Add(Preklad.T("Všetky odkazy na kategórie, miestnosti a osoby sú v poriadku."));
         }
 
-        return new VysledokKontroly("Kontrola väzieb", ok, riadky);
+        return new VysledokKontroly(Preklad.T("Kontrola väzieb"), ok, riadky);
     }
 
     /// <summary>Logická kontrola údajov: duplicity, chýbajúce čísla, nezmyselné dátumy…</summary>
@@ -69,7 +69,7 @@ public sealed class DiagnostikaService
         foreach (var skupina in duplicity)
         {
             problem = true;
-            riadky.Add($"{Upozornenie}sériové číslo {skupina.Key} má viac položiek: {string.Join(", ", skupina.Select(p => p.PrirastkoveCislo))}.");
+            riadky.Add(Preklad.F($"{Upozornenie}sériové číslo {skupina.Key} má viac položiek: {string.Join(", ", skupina.Select(p => p.PrirastkoveCislo))}."));
         }
 
         // chýbajúce prírastkové čísla
@@ -81,50 +81,48 @@ public sealed class DiagnostikaService
                 .Select(h => h.PrirastkoveCislo).ToHashSet();
             var chybajuce = Enumerable.Range(1, existujuce.Max()).Where(c => !existujuce.Contains(c)).ToList();
             var nevysvetlene = chybajuce.Where(c => !vymazane.Contains(c)).ToList();
-            riadky.Add($"Prírastkové čísla: 1 až {existujuce.Max()}, chýba {chybajuce.Count} (vymazané v programe: {chybajuce.Count - nevysvetlene.Count}).");
+            riadky.Add(Preklad.F($"Prírastkové čísla: 1 až {existujuce.Max()}, chýba {chybajuce.Count} (vymazané v programe: {chybajuce.Count - nevysvetlene.Count})."));
             if (nevysvetlene.Count > 0)
             {
                 problem = true;
-                riadky.Add($"{Upozornenie}čísla chýbajú bez záznamu o vymazaní: {Rozsahy(nevysvetlene)}.");
+                riadky.Add(Preklad.F($"{Upozornenie}čísla chýbajú bez záznamu o vymazaní: {Rozsahy(nevysvetlene)}."));
             }
         }
 
         var aktivne = polozky.Where(p => p.Stav != StavPolozky.Vyradene).ToList();
-        Pridaj(riadky, aktivne.Where(p => p.MiestnostId is null), "aktívne položky bez miestnosti", ref problem, jeProblem: false);
-        Pridaj(riadky, polozky.Where(p => p.DatumPridania > teraz.AddMinutes(5)), "dátum pridania je v budúcnosti", ref problem);
-        Pridaj(riadky, polozky.Where(p => p.DatumNakupu > teraz.Date), "dátum nákupu je v budúcnosti", ref problem);
+        Pridaj(riadky, aktivne.Where(p => p.MiestnostId is null), Preklad.T("aktívne položky bez miestnosti"), ref problem, jeProblem: false);
+        Pridaj(riadky, polozky.Where(p => p.DatumPridania > teraz.AddMinutes(5)), Preklad.T("dátum pridania je v budúcnosti"), ref problem);
+        Pridaj(riadky, polozky.Where(p => p.DatumNakupu > teraz.Date), Preklad.T("dátum nákupu je v budúcnosti"), ref problem);
         Pridaj(riadky, polozky.Where(p => p.ZarukaDo is not null && p.DatumNakupu is not null && p.ZarukaDo < p.DatumNakupu),
-            "záruka končí skôr, ako bol nákup", ref problem);
+            Preklad.T("záruka končí skôr, ako bol nákup"), ref problem);
         Pridaj(riadky, polozky.Where(p => p.Stav == StavPolozky.Vyradene && p.DatumVyradenia is null),
-            "vyradené bez dátumu vyradenia", ref problem);
-        Pridaj(riadky, polozky.Where(p => string.IsNullOrWhiteSpace(p.Nazov)), "položka bez názvu", ref problem);
+            Preklad.T("vyradené bez dátumu vyradenia"), ref problem);
+        Pridaj(riadky, polozky.Where(p => string.IsNullOrWhiteSpace(p.Nazov)), Preklad.T("položka bez názvu"), ref problem);
 
         // nepoužívané položky číselníkov (len informácia)
         var pouziteKategorie = polozky.Select(p => p.KategoriaId).ToHashSet();
         var pouziteMiestnosti = polozky.Where(p => p.MiestnostId is not null).Select(p => p.MiestnostId!.Value).ToHashSet();
         var pouziteOsoby = polozky.Where(p => p.OsobaId is not null).Select(p => p.OsobaId!.Value).ToHashSet();
-        riadky.Add($"Nepoužívané kategórie: {db.Kategorie.AsNoTracking().AsEnumerable().Count(k => !pouziteKategorie.Contains(k.Id))}, " +
-                   $"miestnosti: {db.Miestnosti.AsNoTracking().AsEnumerable().Count(m => !pouziteMiestnosti.Contains(m.Id))}, " +
-                   $"osoby: {db.Osoby.AsNoTracking().AsEnumerable().Count(o => !pouziteOsoby.Contains(o.Id))} (len informácia).");
+        riadky.Add(Preklad.F($"Nepoužívané kategórie: {db.Kategorie.AsNoTracking().AsEnumerable().Count(k => !pouziteKategorie.Contains(k.Id))}, miestnosti: {db.Miestnosti.AsNoTracking().AsEnumerable().Count(m => !pouziteMiestnosti.Contains(m.Id))}, osoby: {db.Osoby.AsNoTracking().AsEnumerable().Count(o => !pouziteOsoby.Contains(o.Id))} (len informácia)."));
 
         if (!problem)
         {
-            riadky.Add("Údaje sú v poriadku.");
+            riadky.Add(Preklad.T("Údaje sú v poriadku."));
         }
 
-        return new VysledokKontroly("Kontrola dát", !problem, riadky);
+        return new VysledokKontroly(Preklad.T("Kontrola dát"), !problem, riadky);
     }
 
     public VysledokKontroly Optimalizuj()
     {
         Vykonaj("PRAGMA optimize; ANALYZE;");
-        return new VysledokKontroly("Optimalizácia", true, new List<string> { "Štatistiky pre rýchle vyhľadávanie sú aktualizované." });
+        return new VysledokKontroly(Preklad.T("Optimalizácia"), true, new List<string> { Preklad.T("Štatistiky pre rýchle vyhľadávanie sú aktualizované.") });
     }
 
     public VysledokKontroly ObnovIndexy()
     {
         Vykonaj("REINDEX;");
-        return new VysledokKontroly("Obnova indexov", true, new List<string> { "Všetky indexy sú znovu vytvorené." });
+        return new VysledokKontroly(Preklad.T("Obnova indexov"), true, new List<string> { Preklad.T("Všetky indexy sú znovu vytvorené.") });
     }
 
     public VysledokKontroly Kompaktuj()
@@ -134,9 +132,9 @@ public sealed class DiagnostikaService
         Vykonaj("VACUUM;");
         Vykonaj("PRAGMA wal_checkpoint(TRUNCATE);");
         var po = ServisService.VelkostDatabazy();
-        return new VysledokKontroly("Kompaktovanie", true, new List<string>
+        return new VysledokKontroly(Preklad.T("Kompaktovanie"), true, new List<string>
         {
-            $"Veľkosť pred: {Velkost(pred)}, po: {Velkost(po)}.",
+            Preklad.F($"Veľkosť pred: {Velkost(pred)}, po: {Velkost(po)}."),
         });
     }
 
@@ -160,7 +158,7 @@ public sealed class DiagnostikaService
             File.Copy(Databaza.Cesta + "-wal", kopia + "-wal", overwrite: true);
         }
 
-        riadky.Add($"Pôvodný súbor je uložený: {kopia}");
+        riadky.Add(Preklad.F($"Pôvodný súbor je uložený: {kopia}"));
 
         // 2. nová prázdna databáza s aktuálnou štruktúrou
         var nova = Path.Combine(Databaza.Priecinok, "evita_zachrana.db");
@@ -216,14 +214,14 @@ public sealed class DiagnostikaService
         Databaza.Inicializuj();
 
         var vazby = KontrolaVazieb();
-        riadky.Add($"Prenesených záznamov: {prenesene}, nečitateľných: {strateneSpolu}.");
+        riadky.Add(Preklad.F($"Prenesených záznamov: {prenesene}, nečitateľných: {strateneSpolu}."));
         if (!vazby.Ok)
         {
-            riadky.Add($"{Upozornenie}niektoré položky odkazujú na stratené kategórie, miestnosti alebo osoby – pozrite kontrolu väzieb.");
+            riadky.Add(Preklad.F($"{Upozornenie}niektoré položky odkazujú na stratené kategórie, miestnosti alebo osoby – pozrite kontrolu väzieb."));
             riadky.AddRange(vazby.Riadky);
         }
 
-        return new VysledokKontroly("Záchrana dát", strateneSpolu == 0 && vazby.Ok, riadky);
+        return new VysledokKontroly(Preklad.T("Záchrana dát"), strateneSpolu == 0 && vazby.Ok, riadky);
     }
 
     // ------------------------------------------------------------------ pomocné
@@ -245,8 +243,8 @@ public sealed class DiagnostikaService
         var ok = riadky.Count == 1 && riadky[0] == "ok";
         ZapisKontrolu(nastroj, ok);
         return new VysledokKontroly(nastroj, ok, ok
-            ? new List<string> { "Databáza je v poriadku." }
-            : riadky.Select(r => Upozornenie + r).Prepend("Databáza môže byť poškodená. Odporúča sa obnova zo zálohy alebo záchrana dát.").ToList());
+            ? new List<string> { Preklad.T("Databáza je v poriadku.") }
+            : riadky.Select(r => Upozornenie + r).Prepend(Preklad.T("Databáza môže byť poškodená. Odporúča sa obnova zo zálohy alebo záchrana dát.")).ToList());
     }
 
     private static void ZapisKontrolu(string nastroj, bool ok)
@@ -273,12 +271,12 @@ public sealed class DiagnostikaService
         }
         catch (SqliteException)
         {
-            return (0, 0, $"Tabuľka {tabulka}: nedá sa prečítať, preskočená.");
+            return (0, 0, Preklad.F($"Tabuľka {tabulka}: nedá sa prečítať, preskočená."));
         }
 
         if (stlpceStare.Count == 0)
         {
-            return (0, 0, $"Tabuľka {tabulka}: v pôvodnej databáze neexistuje.");
+            return (0, 0, Preklad.F($"Tabuľka {tabulka}: v pôvodnej databáze neexistuje."));
         }
 
         var spolocne = stlpceNove.Where(stlpceStare.Contains).Select(s => $"\"{s}\"").ToList();
@@ -290,7 +288,7 @@ public sealed class DiagnostikaService
             using var prikaz = spojenie.CreateCommand();
             prikaz.CommandText = hromadne + ";";
             var pocet = prikaz.ExecuteNonQuery();
-            return (pocet, 0, $"Tabuľka {tabulka}: prenesených {pocet} záznamov.");
+            return (pocet, 0, Preklad.F($"Tabuľka {tabulka}: prenesených {pocet} záznamov."));
         }
         catch (SqliteException)
         {
@@ -306,7 +304,7 @@ public sealed class DiagnostikaService
         }
         catch (SqliteException)
         {
-            return (0, 0, $"Tabuľka {tabulka}: nedá sa prečítať, preskočená.");
+            return (0, 0, Preklad.F($"Tabuľka {tabulka}: nedá sa prečítať, preskočená."));
         }
 
         var prenesene = 0;
@@ -326,7 +324,7 @@ public sealed class DiagnostikaService
             }
         }
 
-        return (prenesene, stratene, $"Tabuľka {tabulka}: prenesených {prenesene} záznamov, nečitateľných {stratene}.");
+        return (prenesene, stratene, Preklad.F($"Tabuľka {tabulka}: prenesených {prenesene} záznamov, nečitateľných {stratene}."));
     }
 
     private static List<string> Stlpce(SqliteConnection spojenie, string schema, string tabulka)

@@ -16,8 +16,8 @@ public partial class AktualizaciaWindow : Window
     {
         InitializeComponent();
         _verzia = verzia;
-        Nadpis.Text = $"Je dostupná nová verzia EviTA {verzia.Verzia}";
-        Podnadpis.Text = $"Máte nainštalovanú verziu {AktualizaciaService.AktualnaVerzia}" +
+        Nadpis.Text = Preklad.F($"Je dostupná nová verzia EviTA {verzia.Verzia}");
+        Podnadpis.Text = Preklad.F($"Máte nainštalovanú verziu {AktualizaciaService.AktualnaVerzia}") +
                          (verzia.Zverejnene is { } datum ? $". Nová verzia je zverejnená {Sk.DatumCas(datum)}." : ".");
         Novinky.Text = UpravNovinky(verzia.Novinky);
         Closing += (_, e) =>
@@ -36,7 +36,7 @@ public partial class AktualizaciaWindow : Window
             .Select(r => r.TrimStart('#', ' ').Replace("**", ""))
             .Where(r => !r.StartsWith("Co-Authored-By", StringComparison.OrdinalIgnoreCase));
         var vysledok = string.Join(Environment.NewLine, riadky).Trim();
-        return vysledok.Length == 0 ? "Bez popisu zmien." : vysledok;
+        return vysledok.Length == 0 ? Preklad.T("Bez popisu zmien.") : vysledok;
     }
 
     private async void Aktualizovat_Click(object sender, RoutedEventArgs e)
@@ -44,35 +44,35 @@ public partial class AktualizaciaWindow : Window
         _prebieha = true;
         _zrusenie = new CancellationTokenSource();
         Aktualizovat.IsEnabled = false;
-        Neskor.Content = "Zrušiť";
+        Neskor.Content = Preklad.T("Zrušiť");
         PanelPriebeh.Visibility = Visibility.Visible;
 
         try
         {
-            Stav.Text = "Sťahujem novú verziu…";
+            Stav.Text = Preklad.T("Sťahujem novú verziu…");
             var priebeh = new Progress<double>(p => Priebeh.Value = p * 100);
             var instalator = await _sluzba.StiahniAsync(_verzia, priebeh, _zrusenie.Token);
 
-            Stav.Text = "Zálohujem databázu…";
+            Stav.Text = Preklad.T("Zálohujem databázu…");
             Priebeh.IsIndeterminate = true;
             try
             {
                 await Task.Run(() => new ZalohaService().Zalohuj(
-                    TypZalohy.PredAktualizaciou, poznamka: $"Automatická záloha pred aktualizáciou na verziu {_verzia.Verzia}"));
+                    TypZalohy.PredAktualizaciou, poznamka: Preklad.F($"Automatická záloha pred aktualizáciou na verziu {_verzia.Verzia}")));
             }
             catch (EvitaException chyba)
             {
-                if (!Dialogy.Potvrd($"{chyba.Message}\n\nPokračovať v aktualizácii aj bez zálohy?"))
+                if (!Dialogy.Potvrd(Preklad.F($"{chyba.Message}\n\nPokračovať v aktualizácii aj bez zálohy?")))
                 {
                     Obnov();
                     return;
                 }
             }
 
-            Stav.Text = "Spúšťam inštaláciu…";
+            Stav.Text = Preklad.T("Spúšťam inštaláciu…");
             if (!_sluzba.SpustiInstalator(instalator))
             {
-                Dialogy.Upozornenie("Aktualizácia sa nespustila – Windows nedostal povolenie na inštaláciu. Môžete to skúsiť znova.");
+                Dialogy.Upozornenie(Preklad.T("Aktualizácia sa nespustila – Windows nedostal povolenie na inštaláciu. Môžete to skúsiť znova."));
                 Obnov();
                 return;
             }
@@ -107,7 +107,7 @@ public partial class AktualizaciaWindow : Window
     {
         _prebieha = false;
         Aktualizovat.IsEnabled = true;
-        Neskor.Content = "Neskôr";
+        Neskor.Content = Preklad.T("Neskôr");
         Priebeh.IsIndeterminate = false;
         Priebeh.Value = 0;
         PanelPriebeh.Visibility = Visibility.Collapsed;

@@ -65,7 +65,7 @@ public partial class MainViewModel : ObservableObject
 
     public string NovaVerziaText => NovaVerzia is null
         ? ""
-        : $"Je dostupná nová verzia EviTA {NovaVerzia.Verzia} (máte {AktualizaciaService.AktualnaVerzia}).";
+        : Preklad.F($"Je dostupná nová verzia EviTA {NovaVerzia.Verzia} (máte {AktualizaciaService.AktualnaVerzia}).");
 
     /// <summary>Žiadosť pre hlavné okno: zobraziť ponuku aktualizácie.</summary>
     public event Action<DostupnaVerzia>? ZiadostOAktualizaciu;

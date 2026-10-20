@@ -109,12 +109,12 @@ public sealed class CiselnikService
             {
                 if (pole1.Length == 0)
                 {
-                    throw new EvitaException("Zadajte názov kategórie.");
+                    throw new EvitaException(Preklad.T("Zadajte názov kategórie."));
                 }
 
-                KontrolaDuplicity(db.Kategorie.Where(k => k.Id != id).Select(k => k.Nazov).ToList(), pole1, "Kategória");
+                KontrolaDuplicity(db.Kategorie.Where(k => k.Id != id).Select(k => k.Nazov).ToList(), pole1, Preklad.T("Kategória"));
                 var k = id == 0 ? db.Kategorie.Add(new Kategoria()).Entity : db.Kategorie.Find(id)
-                    ?? throw new EvitaException("Kategória už neexistuje.");
+                    ?? throw new EvitaException(Preklad.T("Kategória už neexistuje."));
                 k.Nazov = pole1;
                 db.SaveChanges();
                 return k.Id;
@@ -123,12 +123,12 @@ public sealed class CiselnikService
             {
                 if (pole1.Length == 0)
                 {
-                    throw new EvitaException("Zadajte názov miestnosti.");
+                    throw new EvitaException(Preklad.T("Zadajte názov miestnosti."));
                 }
 
-                KontrolaDuplicity(db.Miestnosti.Where(m => m.Id != id).Select(m => m.Nazov).ToList(), pole1, "Miestnosť");
+                KontrolaDuplicity(db.Miestnosti.Where(m => m.Id != id).Select(m => m.Nazov).ToList(), pole1, Preklad.T("Miestnosť"));
                 var m = id == 0 ? db.Miestnosti.Add(new Miestnost()).Entity : db.Miestnosti.Find(id)
-                    ?? throw new EvitaException("Miestnosť už neexistuje.");
+                    ?? throw new EvitaException(Preklad.T("Miestnosť už neexistuje."));
                 m.Nazov = pole1;
                 m.Budova = Sk.Prazdne(pole2);
                 m.Poznamka = Sk.Prazdne(pole3);
@@ -141,11 +141,11 @@ public sealed class CiselnikService
                 var priezvisko = (pole2 ?? "").Trim();
                 if (priezvisko.Length == 0)
                 {
-                    throw new EvitaException("Zadajte aspoň priezvisko (alebo názov útvaru).");
+                    throw new EvitaException(Preklad.T("Zadajte aspoň priezvisko (alebo názov útvaru)."));
                 }
 
                 var o = id == 0 ? db.Osoby.Add(new Osoba()).Entity : db.Osoby.Find(id)
-                    ?? throw new EvitaException("Osoba už neexistuje.");
+                    ?? throw new EvitaException(Preklad.T("Osoba už neexistuje."));
                 o.Meno = meno;
                 o.Priezvisko = priezvisko;
                 o.Funkcia = Sk.Prazdne(pole3);
@@ -198,7 +198,7 @@ public sealed class CiselnikService
 
         if (pouzite)
         {
-            throw new EvitaException("Túto položku číselníka používajú položky v evidencii, preto ju nemožno vymazať. Môžete ju deaktivovať.");
+            throw new EvitaException(Preklad.T("Túto položku číselníka používajú položky v evidencii, preto ju nemožno vymazať. Môžete ju deaktivovať."));
         }
 
         switch (typ)
@@ -219,7 +219,7 @@ public sealed class CiselnikService
     {
         if (existujuce.Any(e => Sk.Porovnanie.Equals(e.Trim(), nazov)))
         {
-            throw new EvitaException($"{co} s názvom „{nazov}“ už existuje.");
+            throw new EvitaException(Preklad.F($"{co} s názvom „{nazov}“ už existuje."));
         }
     }
 }

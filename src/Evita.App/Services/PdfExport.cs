@@ -16,7 +16,7 @@ internal static class PdfExport
         PdfZostava.UlozPdf(zostava.Dokument, cesta);
     }
 
-    public static string Hlavicka(StlpecPrenosu stlpec) => stlpec.Kluc == StlpcePrenosu.Cislo ? "Č." : stlpec.Nazov;
+    public static string Hlavicka(StlpecPrenosu stlpec) => stlpec.Kluc == StlpcePrenosu.Cislo ? Preklad.T("Č.") : stlpec.Nazov;
 
     public static bool VPravo(StlpecPrenosu stlpec) => stlpec.Typ is TypStlpca.CeleCislo or TypStlpca.Suma;
 }

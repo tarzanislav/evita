@@ -75,17 +75,17 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     [RelayCommand]
     private async Task SkontrolovatAktualizacie()
     {
-        AktualizaciaStav = "Zisťujem, či je dostupná nová verzia…";
+        AktualizaciaStav = Preklad.T("Zisťujem, či je dostupná nová verzia…");
         try
         {
             var verzia = await _aktualizacie.SkontrolujAsync();
             if (verzia is null)
             {
-                AktualizaciaStav = $"Máte najnovšiu verziu ({AktualizaciaService.AktualnaVerzia}). Skontrolované {Sk.DatumCas(DateTime.Now)}.";
+                AktualizaciaStav = Preklad.F($"Máte najnovšiu verziu ({AktualizaciaService.AktualnaVerzia}). Skontrolované {Sk.DatumCas(DateTime.Now)}.");
             }
             else
             {
-                AktualizaciaStav = $"Je dostupná nová verzia {verzia.Verzia}.";
+                AktualizaciaStav = Preklad.F($"Je dostupná nová verzia {verzia.Verzia}.");
                 _hlavne.ZobrazitAktualizaciu(verzia);
             }
         }
@@ -106,8 +106,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         Velkost = info.VelkostBajtov < 1024 * 1024
             ? $"{info.VelkostBajtov / 1024.0:0.0} kB"
             : $"{info.VelkostBajtov / 1024.0 / 1024.0:0.0} MB";
-        Pocty = $"{info.Polozky} položiek (z toho {info.Vyradene} vyradených), {info.Kategorie} kategórií, " +
-                $"{info.Miestnosti} miestností, {info.Osoby} osôb, {info.ZaznamyHistorie} záznamov v histórii zmien";
+        Pocty = Preklad.F($"{info.Polozky} položiek (z toho {info.Vyradene} vyradených), {info.Kategorie} kategórií, {info.Miestnosti} miestností, {info.Osoby} osôb, {info.ZaznamyHistorie} záznamov v histórii zmien");
         VerziaSchemy = info.VerziaSchemy.ToString();
         UkazkoveData = info.UkazkoveData;
 
@@ -115,7 +114,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         KontrolovatAktualizacie = _aktualizacie.KontrolovatPriSpusteni();
         if (AktualizaciaStav.Length == 0 && _aktualizacie.PoslednaKontrola() is { } kontrola)
         {
-            AktualizaciaStav = $"Posledná kontrola: {Sk.DatumCas(kontrola)}.";
+            AktualizaciaStav = Preklad.F($"Posledná kontrola: {Sk.DatumCas(kontrola)}.");
         }
 
         _nacitavam = false;
@@ -128,35 +127,35 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         PlanovacWindows = nastavenia.PlanovacWindows;
         CasZalohy = nastavenia.Cas;
         AutomatickaSHeslom = nastavenia.AutomatickaSHeslom;
-        HesloAutomatickychStav = _zalohy.JeHesloAutomatickychNastavene() ? "Heslo je nastavené." : "Heslo nie je nastavené.";
+        HesloAutomatickychStav = _zalohy.JeHesloAutomatickychNastavene() ? Preklad.T("Heslo je nastavené.") : Preklad.T("Heslo nie je nastavené.");
         AktualizujStavZaloh(nastavenia);
     }
 
     private void AktualizujStavZaloh(NastaveniaZaloh nastavenia)
     {
         var posledna = _zalohy.PoslednaUspesna();
-        var text = posledna is null ? "Zatiaľ nebola urobená žiadna záloha." : $"Posledná záloha: {Sk.DatumCas(posledna.Value)}.";
+        var text = posledna is null ? Preklad.T("Zatiaľ nebola urobená žiadna záloha.") : Preklad.F($"Posledná záloha: {Sk.DatumCas(posledna.Value)}.");
         if (nastavenia.Zapnuta)
         {
             text += posledna is null
-                ? " Prvá pravidelná záloha sa urobí pri najbližšom spustení alebo zatvorení programu."
-                : $" Ďalšia pravidelná záloha ({ZalohaService.NazovPeriody(nastavenia.Perioda)}): od {Sk.Datum(ZalohaService.DalsiTermin(posledna.Value, nastavenia.Perioda))}.";
+                ? Preklad.T(" Prvá pravidelná záloha sa urobí pri najbližšom spustení alebo zatvorení programu.")
+                : Preklad.F($" Ďalšia pravidelná záloha ({ZalohaService.NazovPeriody(nastavenia.Perioda)}): od {Sk.Datum(ZalohaService.DalsiTermin(posledna.Value, nastavenia.Perioda))}.");
         }
         else
         {
-            text += " Pravidelná záloha je vypnutá.";
+            text += Preklad.T(" Pravidelná záloha je vypnutá.");
         }
 
         if (_zalohy.PoslednyZaznam() is { Uspech: false } chybna)
         {
-            text += $"\nPosledný pokus o zálohu {Sk.DatumCas(chybna.Cas)} sa nepodaril: {chybna.Chyba}";
+            text += Preklad.F($"\nPosledný pokus o zálohu {Sk.DatumCas(chybna.Cas)} sa nepodaril: {chybna.Chyba}");
         }
 
         StavZaloh = text;
         PlanovacStav = nastavenia.PlanovacWindows
             ? (_zalohy.JePlanovacNastaveny()
-                ? $"Úloha v Plánovači úloh Windows je nastavená ({ZalohaService.NazovPeriody(nastavenia.Perioda)} o {nastavenia.Cas})."
-                : "Úloha v Plánovači úloh Windows sa nenašla – uložte nastavenia znova.")
+                ? Preklad.F($"Úloha v Plánovači úloh Windows je nastavená ({ZalohaService.NazovPeriody(nastavenia.Perioda)} o {nastavenia.Cas}).")
+                : Preklad.T("Úloha v Plánovači úloh Windows sa nenašla – uložte nastavenia znova."))
             : "";
 
         Zaznamy = _zalohy.Zaznamy().Select(z => new ZaznamZalohyRiadok(
@@ -164,7 +163,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
             ZalohaService.PopisTypu(z),
             z.Cesta is null ? "" : Path.GetFileName(z.Cesta),
             z.Velkost > 0 ? $"{z.Velkost / 1024.0:0} kB" : "",
-            z.Uspech ? "v poriadku" : $"chyba: {z.Chyba}",
+            z.Uspech ? Preklad.T("v poriadku") : Preklad.F($"chyba: {z.Chyba}"),
             z.Cesta)).ToList();
     }
 
@@ -176,24 +175,23 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         var nastavenia = new NastaveniaZaloh(ZalohaZapnuta, Perioda, PriecinokZaloh, Ponechat, PlanovacWindows, CasZalohy, AutomatickaSHeslom);
         Dialogy.Cakaj(() => _zalohy.UlozNastavenia(nastavenia));
         Obnov();
-        Dialogy.Info("Nastavenia záloh sú uložené.");
+        Dialogy.Info(Preklad.T("Nastavenia záloh sú uložené."));
     }
 
     [RelayCommand]
     private void NastavitHesloAutomatickych()
     {
         var heslo = HesloWindow.Nove(
-            "Týmto heslom sa budú šifrovať automatické zálohy (AES-256). Program si ho uloží chránené ochranou Windows " +
-            "a pri zálohe ho použije sám. Pri obnove zo zálohy ho budete musieť zadať – dobre si ho uschovajte.");
+            Preklad.T("Týmto heslom sa budú šifrovať automatické zálohy (AES-256). Program si ho uloží chránené ochranou Windows a pri zálohe ho použije sám. Pri obnove zo zálohy ho budete musieť zadať – dobre si ho uschovajte."));
         if (heslo is null)
         {
             return;
         }
 
         _zalohy.NastavHesloAutomatickych(heslo);
-        HesloAutomatickychStav = "Heslo je nastavené.";
+        HesloAutomatickychStav = Preklad.T("Heslo je nastavené.");
         AutomatickaSHeslom = true;
-        Dialogy.Info("Heslo pre automatické zálohy je nastavené. Nezabudnite kliknúť na „Uložiť nastavenia“.");
+        Dialogy.Info(Preklad.T("Heslo pre automatické zálohy je nastavené. Nezabudnite kliknúť na „Uložiť nastavenia“."));
     }
 
     [RelayCommand]
@@ -201,7 +199,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     {
         var vyber = new OpenFolderDialog
         {
-            Title = "Priečinok na zálohy",
+            Title = Preklad.T("Priečinok na zálohy"),
             InitialDirectory = Directory.Exists(PriecinokZaloh) ? PriecinokZaloh : null,
         };
         if (vyber.ShowDialog() == true)
@@ -228,8 +226,8 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         var cesta = "";
         Dialogy.Cakaj(() => cesta = _zalohy.Zalohuj(TypZalohy.Rucna, heslo));
         Obnov();
-        Dialogy.Info($"Záloha je hotová:\n\n{cesta}" +
-                     (heslo is null ? "" : "\n\nZáloha je zašifrovaná. Otvoriť ju dokáže EviTA alebo program 7-Zip, Prieskumník Windows nie."));
+        Dialogy.Info(Preklad.F($"Záloha je hotová:\n\n{cesta}") +
+                     (heslo is null ? "" : Preklad.T("\n\nZáloha je zašifrovaná. Otvoriť ju dokáže EviTA alebo program 7-Zip, Prieskumník Windows nie.")));
     }
 
     [RelayCommand]
@@ -246,8 +244,8 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     {
         var vyber = new OpenFileDialog
         {
-            Title = "Vyberte zálohu EviTA",
-            Filter = "Zálohy EviTA (*.zip)|*.zip",
+            Title = Preklad.T("Vyberte zálohu EviTA"),
+            Filter = Preklad.T("Zálohy EviTA (*.zip)|*.zip"),
             InitialDirectory = Directory.Exists(PriecinokZaloh) ? PriecinokZaloh : null,
         };
         if (vyber.ShowDialog() != true)
@@ -282,25 +280,25 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
             }
         }
 
-        var otazka = new StringBuilder("Obnoviť databázu zo zálohy?\n\n");
-        otazka.AppendLine($"Súbor: {Path.GetFileName(info.Subor)}");
+        var otazka = new StringBuilder(Preklad.T("Obnoviť databázu zo zálohy?\n\n"));
+        otazka.AppendLine(Preklad.F($"Súbor: {Path.GetFileName(info.Subor)}"));
         if (info.Vytvorene is { } vytvorene)
         {
-            otazka.AppendLine($"Vytvorená: {Sk.DatumCas(vytvorene)}");
+            otazka.AppendLine(Preklad.F($"Vytvorená: {Sk.DatumCas(vytvorene)}"));
         }
 
-        otazka.AppendLine($"Položiek: {info.Polozky}" + (info.UkazkoveData ? " (ukážkové dáta)" : ""));
+        otazka.AppendLine(Preklad.F($"Položiek: {info.Polozky}") + (info.UkazkoveData ? Preklad.T(" (ukážkové dáta)") : ""));
         if (!string.IsNullOrEmpty(info.Pocitac))
         {
-            otazka.AppendLine($"Počítač: {info.Pocitac}");
+            otazka.AppendLine(Preklad.F($"Počítač: {info.Pocitac}"));
         }
 
         if (!string.IsNullOrEmpty(info.VerziaProgramu))
         {
-            otazka.AppendLine($"Verzia programu: {info.VerziaProgramu}");
+            otazka.AppendLine(Preklad.F($"Verzia programu: {info.VerziaProgramu}"));
         }
 
-        otazka.Append("\nSúčasné dáta sa nahradia dátami zo zálohy. Predtým sa automaticky zálohujú, takže krok sa dá vrátiť.");
+        otazka.Append(Preklad.T("\nSúčasné dáta sa nahradia dátami zo zálohy. Predtým sa automaticky zálohujú, takže krok sa dá vrátiť."));
         if (!Dialogy.Potvrd(otazka.ToString()))
         {
             return;
@@ -310,8 +308,8 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         Dialogy.Cakaj(() => bezpecnostna = _zalohy.Obnov(vyber.FileName, heslo));
         _hlavne.DataZmenene();
         Obnov();
-        Dialogy.Info("Databáza je obnovená zo zálohy." +
-                     (bezpecnostna is null ? "" : $"\n\nPredchádzajúci stav je uložený tu:\n{bezpecnostna}"));
+        Dialogy.Info(Preklad.T("Databáza je obnovená zo zálohy.") +
+                     (bezpecnostna is null ? "" : Preklad.F($"\n\nPredchádzajúci stav je uložený tu:\n{bezpecnostna}")));
     }
 
     // ------------------------------------------------------------------ kontrola a oprava
@@ -345,9 +343,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     private void Zachranit()
     {
         if (!Dialogy.Potvrd(
-                "Záchrana dát prenesie všetky čitateľné záznamy do novej databázy a tou nahradí súčasnú.\n\n" +
-                "Používa sa len vtedy, keď kontrola integrity hlási poškodenie a nie je k dispozícii dobrá záloha. " +
-                "Pôvodný súbor sa predtým uloží do priečinka záloh.\n\nPokračovať?"))
+                Preklad.T("Záchrana dát prenesie všetky čitateľné záznamy do novej databázy a tou nahradí súčasnú.\n\nPoužíva sa len vtedy, keď kontrola integrity hlási poškodenie a nie je k dispozícii dobrá záloha. Pôvodný súbor sa predtým uloží do priečinka záloh.\n\nPokračovať?")))
         {
             return;
         }
@@ -362,14 +358,14 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     {
         if (_zaznamProtokolu.Length == 0)
         {
-            Dialogy.Info("Protokol je zatiaľ prázdny. Najprv spustite niektorý nástroj.");
+            Dialogy.Info(Preklad.T("Protokol je zatiaľ prázdny. Najprv spustite niektorý nástroj."));
             return;
         }
 
         var ulozit = new SaveFileDialog
         {
-            Title = "Uložiť protokol",
-            Filter = "Textový súbor (*.txt)|*.txt",
+            Title = Preklad.T("Uložiť protokol"),
+            Filter = Preklad.T("Textový súbor (*.txt)|*.txt"),
             FileName = $"EviTA_protokol_{DateTime.Now:yyyy-MM-dd_HHmm}.txt",
         };
         if (ulozit.ShowDialog() == true)
@@ -394,7 +390,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
             return;
         }
 
-        _zaznamProtokolu.AppendLine($"── {Sk.DatumCas(DateTime.Now)}  {vysledok.Nastroj}: {(vysledok.Ok ? "v poriadku" : "našli sa problémy")}");
+        _zaznamProtokolu.AppendLine($"── {Sk.DatumCas(DateTime.Now)}  {vysledok.Nastroj}: {(vysledok.Ok ? Preklad.T("v poriadku") : Preklad.T("našli sa problémy"))}");
         foreach (var riadok in vysledok.Riadky)
         {
             _zaznamProtokolu.AppendLine("   " + riadok);
@@ -411,8 +407,8 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     {
         var info = _servis.Info();
         var otazka = info.Polozky > 0
-            ? "Načítať ukážkové dáta? Súčasné položky, história, miestnosti a osoby sa najprv zálohujú a potom vymažú."
-            : "Načítať ukážkové dáta (200 položiek, 30 osôb, 25 miestností)?";
+            ? Preklad.T("Načítať ukážkové dáta? Súčasné položky, história, miestnosti a osoby sa najprv zálohujú a potom vymažú.")
+            : Preklad.T("Načítať ukážkové dáta (200 položiek, 30 osôb, 25 miestností)?");
         if (!Dialogy.Potvrd(otazka))
         {
             return;
@@ -423,8 +419,8 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         _hlavne.DataZmenene();
         Obnov();
         Dialogy.Info(zaloha is null
-            ? "Ukážkové dáta sú načítané."
-            : $"Ukážkové dáta sú načítané. Pôvodné dáta sú zálohované tu:\n\n{zaloha}");
+            ? Preklad.T("Ukážkové dáta sú načítané.")
+            : Preklad.F($"Ukážkové dáta sú načítané. Pôvodné dáta sú zálohované tu:\n\n{zaloha}"));
     }
 
     [RelayCommand]
@@ -440,7 +436,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         Dialogy.Cakaj(() => zaloha = _servis.VymazatData(okno.PonechatMiestnosti, okno.PonechatOsoby));
         _hlavne.DataZmenene();
         Obnov();
-        Dialogy.Info($"Dáta sú vymazané a evidencia začína od prírastkového čísla 1.\n\nZáloha pred vymazaním:\n{zaloha}");
+        Dialogy.Info(Preklad.F($"Dáta sú vymazané a evidencia začína od prírastkového čísla 1.\n\nZáloha pred vymazaním:\n{zaloha}"));
     }
 
     public string CestaKZalohamPredvolene => Databaza.PriecinokZaloh;

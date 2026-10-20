@@ -74,7 +74,7 @@ public partial class TypyUdalostiWindow : Window
 
     private void Vymazat_Click(object sender, RoutedEventArgs e)
     {
-        if (_id == 0 || !Dialogy.Potvrd($"Vymazať typ „{PoleNazov.Text}“?"))
+        if (_id == 0 || !Dialogy.Potvrd(Preklad.F($"Vymazať typ „{PoleNazov.Text}“?")))
         {
             return;
         }
@@ -83,7 +83,7 @@ public partial class TypyUdalostiWindow : Window
         {
             if (!_sluzba.VymazTyp(_id))
             {
-                Dialogy.Info("Typ používajú niektoré udalosti, preto sa nevymazal, len sa skryl z ponuky pri nových udalostiach.");
+                Dialogy.Info(Preklad.T("Typ používajú niektoré udalosti, preto sa nevymazal, len sa skryl z ponuky pri nových udalostiach."));
             }
 
             Nacitaj(null);

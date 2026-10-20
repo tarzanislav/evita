@@ -38,13 +38,13 @@ public sealed class DenKalendara
     public string PoznamkyTip => string.Join("\n", Poznamky.Select(p => "• " + p.Nazov));
     public string NazovDna => Datum.ToString("dddd", Sk.Kultura);
     public string KratkyNazovDna => Datum.ToString("ddd", Sk.Kultura);
-    public string DatumText => Datum.ToString("d. M.", Sk.Kultura);
-    public string DlhyDatum => Datum.ToString("dddd d. MMMM yyyy", Sk.Kultura);
+    public string DatumText => Sk.KratkyDatum(Datum);
+    public string DlhyDatum => Sk.DlhyDatum(Datum);
     public bool MaSviatok => !string.IsNullOrEmpty(Sviatok);
     public bool Zvyraznit => Volno || Vikend;
     public List<VyskytUdalosti> Zobrazene => Udalosti.Take(NajviacVBunke).ToList();
     public int Dalsie => Math.Max(0, Udalosti.Count - NajviacVBunke);
-    public string DalsieText => Dalsie > 0 ? $"+ {Dalsie} ďalšie" : "";
+    public string DalsieText => Dalsie > 0 ? Preklad.F($"+ {Dalsie} ďalšie") : "";
 }
 
 public sealed class TyzdenKalendara
@@ -119,7 +119,7 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         }
     }
 
-    public string[] NazvyDni { get; } = { "Po", "Ut", "St", "Št", "Pi", "So", "Ne" };
+    public string[] NazvyDni { get; } = { Preklad.T("Po"), Preklad.T("Ut"), Preklad.T("St"), Preklad.T("Št"), Preklad.T("Pi"), Preklad.T("So"), Preklad.T("Ne") };
 
     /// <summary>Výber dátumu „skočiť na“.</summary>
     public DateTime? SkocNa
@@ -169,7 +169,7 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         }
         catch (Exception ex)
         {
-            Suhrn = $"Kalendár sa nepodarilo načítať: {ex.GetBaseException().Message}";
+            Suhrn = Preklad.F($"Kalendár sa nepodarilo načítať: {ex.GetBaseException().Message}");
         }
     }
 
@@ -186,7 +186,7 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
             .ToList();
         Titulok = Mesiac(prvy);
         var vMesiaci = dni.Where(d => !d.MimoMesiaca).SelectMany(d => d.Udalosti).Select(u => u.Kluc).Distinct().Count();
-        Suhrn = $"{Titulok}: {vMesiaci} udalostí a termínov. Dvojklikom na deň pridáte udalosť.";
+        Suhrn = Preklad.F($"{Titulok}: {vMesiaci} udalostí a termínov. Dvojklikom na deň pridáte udalosť.");
     }
 
     private void NacitajTyzden()
@@ -194,8 +194,8 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         var od = Pondelok(AktualnyDatum);
         var po = od.AddDays(6);
         DniTyzdna = VytvorDni(od, po, null);
-        Titulok = $"{od:d. M.} – {po:d. M. yyyy} · {KalendarService.CisloTyzdna(od)}. týždeň";
-        Suhrn = $"{DniTyzdna.SelectMany(d => d.Udalosti).Select(u => u.Kluc).Distinct().Count()} udalostí a termínov v týždni.";
+        Titulok = Preklad.F($"{Sk.KratkyDatum(od)} – {Sk.Datum(po)} · {KalendarService.CisloTyzdna(od)}. týždeň");
+        Suhrn = Preklad.F($"{DniTyzdna.SelectMany(d => d.Udalosti).Select(u => u.Kluc).Distinct().Count()} udalostí a termínov v týždni.");
     }
 
     private void NacitajZoznam()
@@ -204,14 +204,10 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         var po = od.AddDays(PocetDniZoznamu - 1);
         DniZoznamu = VytvorDni(od, po, null).Where(d => d.Udalosti.Count > 0 || d.MaSviatok || d.MaPoznamky).ToList();
         Titulok = $"{Sk.Datum(od)} – {Sk.Datum(po)}";
-        Suhrn = $"Zoznam na {PocetDniZoznamu} dní od zvoleného dátumu: {DniZoznamu.Sum(d => d.Udalosti.Count)} udalostí a termínov.";
+        Suhrn = Preklad.F($"Zoznam na {PocetDniZoznamu} dní od zvoleného dátumu: {DniZoznamu.Sum(d => d.Udalosti.Count)} udalostí a termínov.");
     }
 
-    public static string Mesiac(DateTime datum)
-    {
-        var text = datum.ToString("MMMM yyyy", Sk.Kultura);
-        return char.ToUpper(text[0], Sk.Kultura) + text[1..];
-    }
+    public static string Mesiac(DateTime datum) => Sk.MesiacRok(datum);
 
     private List<DenKalendara> VytvorDni(DateTime od, DateTime po, int? mesiac)
     {
@@ -275,7 +271,7 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
                 Dnes = d == dnes,
                 Vikend = d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday,
                 Volno = sviatkyDna.Any(x => x.DenPracovnehoPokoja),
-                Sviatok = sviatkyDna.Count == 0 ? null : string.Join(", ", sviatkyDna.Where(x => x.Druh != DruhSviatku.PamatnyDen || sviatkyDna.Count == 1).Select(x => x.Nazov)),
+                Sviatok = sviatkyDna.Count == 0 ? null : string.Join(", ", sviatkyDna.Where(x => x.Druh != DruhSviatku.PamatnyDen || sviatkyDna.Count == 1).Select(NazvySviatkov.Nazov)),
                 Meniny = meniny,
                 Udalosti = vyskyty.Where(v => v.Zaciatok.Date <= datum && v.PoslednyDen >= datum).ToList(),
                 Poznamky = poznamky.Where(p => p.Datum?.Date == datum).ToList(),
@@ -290,8 +286,8 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         var legenda = _sluzba.Typy(lenAktivne: true).Select(t => new PolozkaLegendy(t.Nazov, t.Farba)).ToList();
         if (UkazAutomaticke)
         {
-            legenda.Add(new PolozkaLegendy("koniec záruky", KalendarService.FarbaZaruky));
-            legenda.Add(new PolozkaLegendy("záloha", KalendarService.FarbaZalohy));
+            legenda.Add(new PolozkaLegendy(Preklad.T("koniec záruky"), KalendarService.FarbaZaruky));
+            legenda.Add(new PolozkaLegendy(Preklad.T("záloha"), KalendarService.FarbaZalohy));
         }
 
         Legenda = legenda;
@@ -476,8 +472,8 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         {
             var dialog = new SaveFileDialog
             {
-                Title = "Export kalendára pre Outlook alebo Google Kalendár",
-                Filter = "Kalendár iCalendar (*.ics)|*.ics",
+                Title = Preklad.T("Export kalendára pre Outlook alebo Google Kalendár"),
+                Filter = Preklad.T("Kalendár iCalendar (*.ics)|*.ics"),
                 FileName = $"EviTA_kalendar_{od:yyyy-MM}.ics",
             };
             if (dialog.ShowDialog() != true)
@@ -493,12 +489,11 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
             // od začiatku zobrazeného mesiaca na rok dopredu (opakované udalosti idú s pravidlom opakovania)
             var text = _sluzba.Ics(od, od.AddYears(1).AddDays(-1), UkazAutomaticke);
             File.WriteAllText(cesta, text, new UTF8Encoding(false));
-            Dialogy.Info($"Kalendár je uložený na rok dopredu od {Sk.Datum(od)}.\n\n{cesta}\n\n" +
-                         "Súbor otvorí Outlook (dvojklik) a v Google Kalendári ho naimportujete cez Nastavenia → Import a export.");
+            Dialogy.Info(Preklad.F($"Kalendár je uložený na rok dopredu od {Sk.Datum(od)}.\n\n{cesta}\n\nSúbor otvorí Outlook (dvojklik) a v Google Kalendári ho naimportujete cez Nastavenia → Import a export."));
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Kalendár sa nepodarilo uložiť.", ex);
+            Dialogy.Chyba(Preklad.T("Kalendár sa nepodarilo uložiť."), ex);
         }
     }
 
@@ -521,14 +516,14 @@ public partial class KalendarViewModel : ObservableObject, IObnovitelny
         var zostavy = new ZostavyService();
         try
         {
-            new NahladWindow(() => zostavy.Vytvor(moznosti), moznosti.NaSirku, "Kalendár", $"EviTA_kalendar_{od:yyyy-MM-dd}.pdf")
+            new NahladWindow(() => zostavy.Vytvor(moznosti), moznosti.NaSirku, Preklad.T("Kalendár"), $"EviTA_kalendar_{od:yyyy-MM-dd}.pdf")
             {
                 Owner = Dialogy.Vlastnik,
             }.ShowDialog();
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Kalendár sa nepodarilo pripraviť na tlač.", ex);
+            Dialogy.Chyba(Preklad.T("Kalendár sa nepodarilo pripraviť na tlač."), ex);
         }
     }
 }

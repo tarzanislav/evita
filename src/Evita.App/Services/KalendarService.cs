@@ -38,17 +38,17 @@ public sealed record VyskytUdalosti
     public bool ViacDni => PoslednyDen > Zaciatok.Date;
 
     public string CasText => CelyDen || ViacDni
-        ? ViacDni ? $"{Sk.Datum(Zaciatok)} – {Sk.Datum(PoslednyDen)}" : "celý deň"
+        ? ViacDni ? $"{Sk.Datum(Zaciatok)} – {Sk.Datum(PoslednyDen)}" : Preklad.T("celý deň")
         : Koniec is { } k && k > Zaciatok ? $"{Zaciatok:H:mm} – {k:H:mm}" : $"{Zaciatok:H:mm}";
 
     public string StavText => Stav switch
     {
-        StavUdalosti.Hotovo => "hotovo",
-        StavUdalosti.Zrusene => "zrušené",
-        _ => "naplánované",
+        StavUdalosti.Hotovo => Preklad.T("hotovo"),
+        StavUdalosti.Zrusene => Preklad.T("zrušené"),
+        _ => Preklad.T("naplánované"),
     };
 
-    public string DruhText => Druh == DruhUdalosti.Uloha ? "úloha" : "udalosť";
+    public string DruhText => Druh == DruhUdalosti.Uloha ? Preklad.T("úloha") : Preklad.T("udalosť");
 
     /// <summary>Text do bunky kalendára, napr. „8:00 Porada“.</summary>
     public string KratkyText => CelyDen || ViacDni ? Nazov : $"{Zaciatok:H:mm} {Nazov}";
@@ -90,6 +90,17 @@ public sealed class KalendarService
     };
 
     // ------------------------------------------------------------------ nastavenia
+
+    /// <summary>
+    /// Typ udalosti podľa počiatočného (slovenského) názvu – nájde ho, aj keď bol vytvorený v inom jazyku programu
+    /// (napr. „servis“ aj „service“).
+    /// </summary>
+    public static TypUdalosti? NajdiTyp(IEnumerable<TypUdalosti> typy, string slovenskyNazov)
+    {
+        var zoznam = typy as IList<TypUdalosti> ?? typy.ToList();
+        return zoznam.FirstOrDefault(t => Sk.Porovnanie.Equals(t.Nazov, slovenskyNazov))
+               ?? zoznam.FirstOrDefault(t => Sk.Porovnanie.Equals(t.Nazov, Preklad.TAkJe(slovenskyNazov)));
+    }
 
     public NastaveniaKalendara NacitajNastavenia()
     {
@@ -137,18 +148,18 @@ public sealed class KalendarService
         nazov = (nazov ?? "").Trim();
         if (nazov.Length == 0)
         {
-            throw new EvitaException("Zadajte názov typu udalosti.");
+            throw new EvitaException(Preklad.T("Zadajte názov typu udalosti."));
         }
 
         using var db = Databaza.Otvor();
         if (db.TypyUdalosti.Where(t => t.Id != id).AsEnumerable().Any(t => Sk.Porovnanie.Equals(t.Nazov, nazov)))
         {
-            throw new EvitaException($"Typ „{nazov}“ už existuje.");
+            throw new EvitaException(Preklad.F($"Typ „{nazov}“ už existuje."));
         }
 
         var typ = id == 0
             ? db.TypyUdalosti.Add(new TypUdalosti { Poradie = (db.TypyUdalosti.Max(t => (int?)t.Poradie) ?? 0) + 1 }).Entity
-            : db.TypyUdalosti.Find(id) ?? throw new EvitaException("Typ udalosti už neexistuje.");
+            : db.TypyUdalosti.Find(id) ?? throw new EvitaException(Preklad.T("Typ udalosti už neexistuje."));
         typ.Nazov = nazov;
         typ.Farba = string.IsNullOrWhiteSpace(farba) ? "#7F8C8D" : farba.Trim();
         typ.Aktivny = true;
@@ -160,7 +171,7 @@ public sealed class KalendarService
     public bool VymazTyp(int id)
     {
         using var db = Databaza.Otvor();
-        var typ = db.TypyUdalosti.Find(id) ?? throw new EvitaException("Typ udalosti už neexistuje.");
+        var typ = db.TypyUdalosti.Find(id) ?? throw new EvitaException(Preklad.T("Typ udalosti už neexistuje."));
         if (db.Udalosti.Any(u => u.TypUdalostiId == id))
         {
             typ.Aktivny = false;
@@ -170,7 +181,7 @@ public sealed class KalendarService
 
         if (db.TypyUdalosti.Count() <= 1)
         {
-            throw new EvitaException("Musí zostať aspoň jeden typ udalosti.");
+            throw new EvitaException(Preklad.T("Musí zostať aspoň jeden typ udalosti."));
         }
 
         db.TypyUdalosti.Remove(typ);
@@ -191,7 +202,7 @@ public sealed class KalendarService
     {
         if (string.IsNullOrWhiteSpace(u.Nazov))
         {
-            throw new EvitaException("Zadajte názov udalosti.");
+            throw new EvitaException(Preklad.T("Zadajte názov udalosti."));
         }
 
         if (u.CelyDen)
@@ -202,7 +213,7 @@ public sealed class KalendarService
 
         if (u.Koniec is { } koniec && koniec < u.Zaciatok)
         {
-            throw new EvitaException("Koniec udalosti je skôr ako jej začiatok.");
+            throw new EvitaException(Preklad.T("Koniec udalosti je skôr ako jej začiatok."));
         }
 
         if (u.Opakovanie == OpakovanieUdalosti.Ziadne)
@@ -211,13 +222,13 @@ public sealed class KalendarService
         }
         else if (u.OpakovanieDo is { } doDna && doDna.Date < u.Zaciatok.Date)
         {
-            throw new EvitaException("Dátum ukončenia opakovania je skôr ako začiatok udalosti.");
+            throw new EvitaException(Preklad.T("Dátum ukončenia opakovania je skôr ako začiatok udalosti."));
         }
 
         using var db = Databaza.Otvor();
         if (!db.TypyUdalosti.Any(t => t.Id == u.TypUdalostiId))
         {
-            throw new EvitaException("Vyberte typ udalosti.");
+            throw new EvitaException(Preklad.T("Vyberte typ udalosti."));
         }
 
         var teraz = DateTime.Now;
@@ -229,7 +240,7 @@ public sealed class KalendarService
         }
         else
         {
-            cielova = db.Udalosti.Find(u.Id) ?? throw new EvitaException("Udalosť medzičasom zanikla (bola vymazaná).");
+            cielova = db.Udalosti.Find(u.Id) ?? throw new EvitaException(Preklad.T("Udalosť medzičasom zanikla (bola vymazaná)."));
         }
 
         cielova.Nazov = u.Nazov.Trim();
@@ -393,7 +404,7 @@ public sealed class KalendarService
         var casti = new List<string>();
         if (u.Polozka is { } p)
         {
-            casti.Add($"č. {p.PrirastkoveCislo} {p.Nazov}");
+            casti.Add(Preklad.F($"č. {p.PrirastkoveCislo} {p.Nazov}"));
         }
 
         if (u.Miestnost is { } m)
@@ -415,7 +426,7 @@ public sealed class KalendarService
         var vysledok = new List<VyskytUdalosti>();
         var nastavenia = NacitajNastavenia();
         string Farba(string nazovTypu, string nahradna) =>
-            typy.FirstOrDefault(t => Sk.Porovnanie.Equals(t.Nazov, nazovTypu))?.Farba ?? nahradna;
+            NajdiTyp(typy, nazovTypu)?.Farba ?? nahradna;
 
         if (nastavenia.Zaruky || nastavenia.Revizie)
         {
@@ -437,15 +448,15 @@ public sealed class KalendarService
                     vysledok.Add(new VyskytUdalosti
                     {
                         Kluc = $"zaruka-{p.Id}",
-                        Nazov = $"Koniec záruky: {p.Nazov}",
-                        Popis = $"Záruka položky č. {p.PrirastkoveCislo} končí. Termín je z poľa „Záruka do“ v karte položky.",
+                        Nazov = Preklad.F($"Koniec záruky: {p.Nazov}"),
+                        Popis = Preklad.F($"Záruka položky č. {p.PrirastkoveCislo} končí. Termín je z poľa „Záruka do“ v karte položky."),
                         Zaciatok = zaruka.Date,
                         CelyDen = true,
-                        Typ = "koniec záruky",
+                        Typ = Preklad.T("koniec záruky"),
                         Farba = FarbaZaruky,
                         Pripomienka = PripomienkaUdalosti.TyzdenVopred,
                         PolozkaId = p.Id,
-                        Naviazanie = $"č. {p.PrirastkoveCislo} {p.Nazov}",
+                        Naviazanie = Preklad.F($"č. {p.PrirastkoveCislo} {p.Nazov}"),
                         Zdroj = "záruka",
                     });
                 }
@@ -455,16 +466,16 @@ public sealed class KalendarService
                     vysledok.Add(new VyskytUdalosti
                     {
                         Kluc = $"revizia-{p.Id}",
-                        Nazov = $"Revízia: {p.Nazov}",
-                        Popis = $"Revízia položky č. {p.PrirastkoveCislo}. Termín je z poľa „Ďalšia revízia“ v karte položky.",
+                        Nazov = Preklad.F($"Revízia: {p.Nazov}"),
+                        Popis = Preklad.F($"Revízia položky č. {p.PrirastkoveCislo}. Termín je z poľa „Ďalšia revízia“ v karte položky."),
                         Zaciatok = revizia.Date,
                         CelyDen = true,
-                        Typ = "revízia",
+                        Typ = Preklad.T("revízia"),
                         Farba = farbaRevizie,
                         Druh = DruhUdalosti.Uloha,
                         Pripomienka = PripomienkaUdalosti.TyzdenVopred,
                         PolozkaId = p.Id,
-                        Naviazanie = $"č. {p.PrirastkoveCislo} {p.Nazov}",
+                        Naviazanie = Preklad.F($"č. {p.PrirastkoveCislo} {p.Nazov}"),
                         Zdroj = "revízia",
                     });
                 }
@@ -498,11 +509,11 @@ public sealed class KalendarService
                             vysledok.Add(new VyskytUdalosti
                             {
                                 Kluc = $"zaloha-{termin:yyyyMMdd}",
-                                Nazov = $"Pravidelná záloha ({ZalohaService.NazovPeriody(nastaveniaZaloh.Perioda)})",
-                                Popis = $"Automatická záloha databázy podľa nastavení v časti Servis → Zálohy, okolo {nastaveniaZaloh.Cas}.",
+                                Nazov = Preklad.F($"Pravidelná záloha ({ZalohaService.NazovPeriody(nastaveniaZaloh.Perioda)})"),
+                                Popis = Preklad.F($"Automatická záloha databázy podľa nastavení v časti Servis → Zálohy, okolo {nastaveniaZaloh.Cas}."),
                                 Zaciatok = termin.Date,
                                 CelyDen = true,
-                                Typ = "záloha",
+                                Typ = Preklad.T("záloha"),
                                 Farba = FarbaZalohy,
                                 Zdroj = "záloha",
                             });
@@ -529,11 +540,11 @@ public sealed class KalendarService
                     vysledok.Add(new VyskytUdalosti
                     {
                         Kluc = $"inventura-{rok}",
-                        Nazov = "Ročná inventúra",
-                        Popis = "Ročná inventúra majetku. Termín sa nastavuje v nastaveniach kalendára.",
+                        Nazov = Preklad.T("Ročná inventúra"),
+                        Popis = Preklad.T("Ročná inventúra majetku. Termín sa nastavuje v nastaveniach kalendára."),
                         Zaciatok = datum,
                         CelyDen = true,
-                        Typ = "inventúra",
+                        Typ = Preklad.T("inventúra"),
                         Farba = Farba("inventúra", "#8E44AD"),
                         Druh = DruhUdalosti.Uloha,
                         Pripomienka = PripomienkaUdalosti.TyzdenVopred,
@@ -640,7 +651,7 @@ public sealed class KalendarService
 
                 if (Naviazanie(u) is { } naviazanie)
                 {
-                    popis.Add("Naviazanie: " + naviazanie);
+                    popis.Add(Preklad.F($"Naviazanie: {naviazanie}"));
                 }
 
                 if (popis.Count > 0)

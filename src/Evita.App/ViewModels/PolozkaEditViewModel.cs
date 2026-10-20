@@ -144,10 +144,10 @@ public partial class PolozkaEditViewModel : ObservableObject
         Polozka? zdroj = null;
         if (id is int upravovana)
         {
-            zdroj = _sluzba.Nacitaj(upravovana) ?? throw new EvitaException("Položka už neexistuje.");
+            zdroj = _sluzba.Nacitaj(upravovana) ?? throw new EvitaException(Preklad.T("Položka už neexistuje."));
             _id = zdroj.Id;
             _verzia = zdroj.Verzia;
-            Titulok = $"Položka {zdroj.PrirastkoveCislo} – {zdroj.Nazov}";
+            Titulok = Preklad.F($"Položka {zdroj.PrirastkoveCislo} – {zdroj.Nazov}");
             PrirastkoveCisloText = zdroj.PrirastkoveCislo.ToString();
             DatumPridaniaText = Sk.DatumCas(zdroj.DatumPridania);
             DatumZmenyText = Sk.DatumCas(zdroj.DatumZmeny);
@@ -159,15 +159,15 @@ public partial class PolozkaEditViewModel : ObservableObject
         {
             JeNova = true;
             using var db = Databaza.Otvor();
-            PrirastkoveCisloText = $"{Databaza.DalsiePrirastkoveCislo(db)} (pridelí sa pri uložení)";
+            PrirastkoveCisloText = Preklad.F($"{Databaza.DalsiePrirastkoveCislo(db)} (pridelí sa pri uložení)");
             if (kopiaZ is int kopia)
             {
                 zdroj = _sluzba.Nacitaj(kopia);
-                Titulok = "Nová položka (kópia)";
+                Titulok = Preklad.T("Nová položka (kópia)");
             }
             else
             {
-                Titulok = "Nová položka";
+                Titulok = Preklad.T("Nová položka");
             }
         }
 
@@ -262,19 +262,19 @@ public partial class PolozkaEditViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(Nazov))
         {
-            Dialogy.Upozornenie("Zadajte názov technológie.");
+            Dialogy.Upozornenie(Preklad.T("Zadajte názov technológie."));
             return;
         }
 
         if (KategoriaId <= 0)
         {
-            Dialogy.Upozornenie("Vyberte kategóriu.");
+            Dialogy.Upozornenie(Preklad.T("Vyberte kategóriu."));
             return;
         }
 
         if (!Sk.SkusPrecitatSumu(CenaText, out var cena))
         {
-            Dialogy.Upozornenie("Cenu sa nepodarilo prečítať. Napíšte ju ako číslo, napríklad 749,90.");
+            Dialogy.Upozornenie(Preklad.T("Cenu sa nepodarilo prečítať. Napíšte ju ako číslo, napríklad 749,90."));
             return;
         }
 
@@ -304,7 +304,7 @@ public partial class PolozkaEditViewModel : ObservableObject
         {
             if (PocetKusov < 1 || PocetKusov > 500)
             {
-                Dialogy.Upozornenie("Počet kusov musí byť od 1 do 500.");
+                Dialogy.Upozornenie(Preklad.T("Počet kusov musí byť od 1 do 500."));
                 return;
             }
 
@@ -318,11 +318,11 @@ public partial class PolozkaEditViewModel : ObservableObject
 
             if (PocetKusov > 1 && serioveCisla.Count > PocetKusov)
             {
-                Dialogy.Upozornenie($"Zadali ste {serioveCisla.Count} sériových čísel, ale počet kusov je {PocetKusov}.");
+                Dialogy.Upozornenie(Preklad.F($"Zadali ste {serioveCisla.Count} sériových čísel, ale počet kusov je {PocetKusov}."));
                 return;
             }
 
-            if (PocetKusov > 1 && !Dialogy.Potvrd($"Pridať {PocetKusov} rovnakých položiek s po sebe idúcimi prírastkovými číslami?"))
+            if (PocetKusov > 1 && !Dialogy.Potvrd(Preklad.F($"Pridať {PocetKusov} rovnakých položiek s po sebe idúcimi prírastkovými číslami?")))
             {
                 return;
             }
@@ -344,7 +344,7 @@ public partial class PolozkaEditViewModel : ObservableObject
     [RelayCommand]
     private void NovaKategoria()
     {
-        var nazov = Dialogy.Vstup("Nová kategória", "Názov novej kategórie:");
+        var nazov = Dialogy.Vstup(Preklad.T("Nová kategória"), Preklad.T("Názov novej kategórie:"));
         if (string.IsNullOrWhiteSpace(nazov))
         {
             return;
@@ -358,7 +358,7 @@ public partial class PolozkaEditViewModel : ObservableObject
     [RelayCommand]
     private void NovaMiestnost()
     {
-        var nazov = Dialogy.Vstup("Nová miestnosť", "Názov novej miestnosti (napr. Učebňa 105):");
+        var nazov = Dialogy.Vstup(Preklad.T("Nová miestnosť"), Preklad.T("Názov novej miestnosti (napr. Učebňa 105):"));
         if (string.IsNullOrWhiteSpace(nazov))
         {
             return;
@@ -372,7 +372,7 @@ public partial class PolozkaEditViewModel : ObservableObject
     [RelayCommand]
     private void NovaOsoba()
     {
-        var text = Dialogy.Vstup("Nová osoba", "Meno a priezvisko (alebo názov útvaru):");
+        var text = Dialogy.Vstup(Preklad.T("Nová osoba"), Preklad.T("Meno a priezvisko (alebo názov útvaru):"));
         if (string.IsNullOrWhiteSpace(text))
         {
             return;
@@ -388,7 +388,7 @@ public partial class PolozkaEditViewModel : ObservableObject
     private void NacitajVolby(int? kategoria, int? miestnost, int? osoba)
     {
         Kategorie = _ciselniky.Volby(TypCiselnika.Kategorie, kategoria, null);
-        Miestnosti = _ciselniky.Volby(TypCiselnika.Miestnosti, miestnost, "(nezadaná)");
-        Osoby = _ciselniky.Volby(TypCiselnika.Osoby, osoba, "(nikto)");
+        Miestnosti = _ciselniky.Volby(TypCiselnika.Miestnosti, miestnost, Preklad.T("(nezadaná)"));
+        Osoby = _ciselniky.Volby(TypCiselnika.Osoby, osoba, Preklad.T("(nikto)"));
     }
 }

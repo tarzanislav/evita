@@ -35,18 +35,18 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
         {
             using (var db = Databaza.Otvor())
             {
-                PocetPoloziek = $"V evidencii je {ExportService.PocetPoloziek(db.Polozky.Count())}.";
+                PocetPoloziek = Preklad.F($"V evidencii je {ExportService.PocetPoloziek(db.Polozky.Count())}.");
             }
 
             var posledny = _import.PoslednyImport();
             MozeVratit = posledny is not null;
             PoslednyImport = posledny is { } p
-                ? $"Posledný import: {p.Popis}. Dá sa vrátiť – evidencia sa obnoví zo zálohy urobenej tesne pred ním."
-                : "Žiadny import, ktorý by sa dal vrátiť.";
+                ? Preklad.F($"Posledný import: {p.Popis}. Dá sa vrátiť – evidencia sa obnoví zo zálohy urobenej tesne pred ním.")
+                : Preklad.T("Žiadny import, ktorý by sa dal vrátiť.");
         }
         catch (Exception ex)
         {
-            PoslednyImport = $"Údaje sa nepodarilo načítať: {ex.GetBaseException().Message}";
+            PoslednyImport = Preklad.F($"Údaje sa nepodarilo načítať: {ex.GetBaseException().Message}");
         }
     }
 
@@ -87,7 +87,7 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Vzorový súbor sa nepodarilo uložiť do priečinka Stiahnuté.", ex);
+            Dialogy.Chyba(Preklad.T("Vzorový súbor sa nepodarilo uložiť do priečinka Stiahnuté."), ex);
         }
     }
 
@@ -110,13 +110,12 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
         var posledny = _import.PoslednyImport();
         if (posledny is null)
         {
-            Dialogy.Info("Nie je žiadny import, ktorý by sa dal vrátiť.");
+            Dialogy.Info(Preklad.T("Nie je žiadny import, ktorý by sa dal vrátiť."));
             return;
         }
 
         if (!Dialogy.Potvrd(
-                $"Vrátiť posledný import?\n\n{posledny.Value.Popis}\n\nEvidencia sa obnoví zo zálohy urobenej tesne pred importom. " +
-                "Zmeny urobené po importe sa tým tiež vrátia."))
+                Preklad.F($"Vrátiť posledný import?\n\n{posledny.Value.Popis}\n\nEvidencia sa obnoví zo zálohy urobenej tesne pred importom. Zmeny urobené po importe sa tým tiež vrátia.")))
         {
             return;
         }
@@ -126,7 +125,7 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
             Dialogy.Cakaj(_import.VratPoslednyImport);
             _hlavne.DataZmenene();
             Obnov();
-            Dialogy.Info("Import je vrátený. Evidencia je v stave pred importom.");
+            Dialogy.Info(Preklad.T("Import je vrátený. Evidencia je v stave pred importom."));
         }
         catch (EvitaException ex)
         {
@@ -134,7 +133,7 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Import sa nepodarilo vrátiť.", ex);
+            Dialogy.Chyba(Preklad.T("Import sa nepodarilo vrátiť."), ex);
         }
     }
 }

@@ -34,9 +34,9 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
 
     public IReadOnlyList<VolbaZoskupenia> Zoskupenia { get; } = new VolbaZoskupenia[]
     {
-        new(Zoskupenie.Kategoria, "kategórie"),
-        new(Zoskupenie.Miestnost, "miestnosti"),
-        new(Zoskupenie.Pridelenie, "pridelenia (osoby)"),
+        new(Zoskupenie.Kategoria, Preklad.T("kategórie")),
+        new(Zoskupenie.Miestnost, Preklad.T("miestnosti")),
+        new(Zoskupenie.Pridelenie, Preklad.T("pridelenia (osoby)")),
     };
 
     [ObservableProperty]
@@ -73,8 +73,8 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     public string Poznamka => Vybrana.Poznamka ?? "";
 
     public string TextPodpisu => Vybrana.Druh == DruhZostavy.PodlaPridelenia
-        ? "Zoznam zverenej techniky s podpisom (prevzal / odovzdal)"
-        : "Inventúrny zoznam s riadkami na podpis";
+        ? Preklad.T("Zoznam zverenej techniky s podpisom (prevzal / odovzdal)")
+        : Preklad.T("Inventúrny zoznam s riadkami na podpis");
 
     public string PopisVyfiltrovanych
     {
@@ -86,9 +86,9 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
             }
 
             var (id, popis) = Vyfiltrovane();
-            return $"Vytlačí sa {ExportService.PocetPoloziek(id.Count)} zobrazených v Evidencii" +
-                   (string.IsNullOrWhiteSpace(popis) ? " (bez filtra)." : $" – filter: {popis}.") +
-                   " Filter zmeníte na obrazovke Evidencia.";
+            return Preklad.F($"Vytlačí sa {ExportService.PocetPoloziek(id.Count)} zobrazených v Evidencii") +
+                   (string.IsNullOrWhiteSpace(popis) ? Preklad.T(" (bez filtra).") : Preklad.F($" – filter: {popis}.")) +
+                   Preklad.T(" Filter zmeníte na obrazovke Evidencia.");
         }
     }
 
@@ -122,9 +122,9 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
 
     public void Obnov()
     {
-        Miestnosti = new List<Volba> { new(0, "(všetky)") }.Concat(_ciselniky.Volby(TypCiselnika.Miestnosti, null, null)).ToList();
-        Osoby = new List<Volba> { new(0, "(všetci)") }.Concat(_ciselniky.Volby(TypCiselnika.Osoby, null, null)).ToList();
-        Kategorie = new List<Volba> { new(0, "(všetky)") }.Concat(_ciselniky.Volby(TypCiselnika.Kategorie, null, null)).ToList();
+        Miestnosti = new List<Volba> { new(0, Preklad.T("(všetky)")) }.Concat(_ciselniky.Volby(TypCiselnika.Miestnosti, null, null)).ToList();
+        Osoby = new List<Volba> { new(0, Preklad.T("(všetci)")) }.Concat(_ciselniky.Volby(TypCiselnika.Osoby, null, null)).ToList();
+        Kategorie = new List<Volba> { new(0, Preklad.T("(všetky)")) }.Concat(_ciselniky.Volby(TypCiselnika.Kategorie, null, null)).ToList();
         if (!Miestnosti.Any(v => v.Id == MiestnostId))
         {
             MiestnostId = 0;
@@ -214,7 +214,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     {
         if (Od is { } od && Do is { } po && od > po)
         {
-            throw new EvitaException("Dátum „od“ je neskôr ako dátum „do“.");
+            throw new EvitaException(Preklad.T("Dátum „od“ je neskôr ako dátum „do“."));
         }
 
         int? cislo = null;
@@ -222,7 +222,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
         {
             if (!int.TryParse(PrirastkoveCislo.Trim(), out var c) || c < 1)
             {
-                throw new EvitaException("Prírastkové číslo položky musí byť kladné celé číslo.");
+                throw new EvitaException(Preklad.T("Prírastkové číslo položky musí byť kladné celé číslo."));
             }
 
             cislo = c;
@@ -276,7 +276,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Zostavu sa nepodarilo vytvoriť.", ex);
+            Dialogy.Chyba(Preklad.T("Zostavu sa nepodarilo vytvoriť."), ex);
             return null;
         }
     }
@@ -315,7 +315,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Tlač sa nepodarila.", ex);
+            Dialogy.Chyba(Preklad.T("Tlač sa nepodarila."), ex);
         }
     }
 
@@ -327,11 +327,11 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
         try
         {
             NastaveniaTlace.UlozNazov(NazovOrganizacie);
-            Dialogy.Info("Názov organizácie je uložený. Zobrazí sa v hlavičke každej zostavy.");
+            Dialogy.Info(Preklad.T("Názov organizácie je uložený. Zobrazí sa v hlavičke každej zostavy."));
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Názov sa nepodarilo uložiť.", ex);
+            Dialogy.Chyba(Preklad.T("Názov sa nepodarilo uložiť."), ex);
         }
     }
 
@@ -340,8 +340,8 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Vyberte logo organizácie",
-            Filter = "Obrázky (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp",
+            Title = Preklad.T("Vyberte logo organizácie"),
+            Filter = Preklad.T("Obrázky (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp"),
         };
         if (dialog.ShowDialog() != true)
         {
@@ -372,7 +372,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Obrázok sa nepodarilo načítať. Použite súbor PNG alebo JPG.", ex);
+            Dialogy.Chyba(Preklad.T("Obrázok sa nepodarilo načítať. Použite súbor PNG alebo JPG."), ex);
         }
     }
 

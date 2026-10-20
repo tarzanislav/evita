@@ -82,7 +82,7 @@ public partial class App : Application
                 }
                 catch (Exception ex)
                 {
-                    Dialogy.Chyba("Ukážkové dáta sa nepodarilo vytvoriť.", ex);
+                    Dialogy.Chyba(Preklad.T("Ukážkové dáta sa nepodarilo vytvoriť."), ex);
                 }
                 finally
                 {
@@ -142,8 +142,7 @@ public partial class App : Application
     private static bool ObnovaPriChybe(Exception chyba)
     {
         var otazka = MessageBox.Show(
-            $"Databázu sa nepodarilo otvoriť.\n\n{Databaza.Cesta}\n\n{chyba.GetBaseException().Message}\n\n" +
-            "Chcete ju obnoviť zo zálohy?",
+            Preklad.F($"Databázu sa nepodarilo otvoriť.\n\n{Databaza.Cesta}\n\n{chyba.GetBaseException().Message}\n\nChcete ju obnoviť zo zálohy?"),
             "EviTA", MessageBoxButton.YesNo, MessageBoxImage.Error);
         if (otazka != MessageBoxResult.Yes)
         {
@@ -152,8 +151,8 @@ public partial class App : Application
 
         var vyber = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Vyberte zálohu EviTA",
-            Filter = "Zálohy EviTA (*.zip)|*.zip",
+            Title = Preklad.T("Vyberte zálohu EviTA"),
+            Filter = Preklad.T("Zálohy EviTA (*.zip)|*.zip"),
             InitialDirectory = Databaza.PriecinokZaloh,
         };
         if (vyber.ShowDialog() != true)
@@ -175,12 +174,12 @@ public partial class App : Application
             }
 
             sluzba.Obnov(vyber.FileName, heslo);
-            MessageBox.Show("Databáza je obnovená zo zálohy.", "EviTA", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(Preklad.T("Databáza je obnovená zo zálohy."), "EviTA", MessageBoxButton.OK, MessageBoxImage.Information);
             return true;
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Obnova sa nepodarila.\n\n{ex.GetBaseException().Message}", "EviTA",
+            MessageBox.Show(Preklad.F($"Obnova sa nepodarila.\n\n{ex.GetBaseException().Message}"), "EviTA",
                 MessageBoxButton.OK, MessageBoxImage.Error);
             return false;
         }
@@ -208,15 +207,13 @@ public partial class App : Application
             if (!vysledok.Ok)
             {
                 Dialogy.Upozornenie(
-                    "Rýchla kontrola zistila, že databáza môže byť poškodená.\n\n" +
-                    "Program sa otvorí, ale odporúčame v časti Servis → Kontrola a oprava spustiť úplnú kontrolu " +
-                    "a podľa výsledku obnoviť databázu zo zálohy alebo použiť záchranu dát.\n\n" +
+                    Preklad.T("Rýchla kontrola zistila, že databáza môže byť poškodená.\n\nProgram sa otvorí, ale odporúčame v časti Servis → Kontrola a oprava spustiť úplnú kontrolu a podľa výsledku obnoviť databázu zo zálohy alebo použiť záchranu dát.\n\n") +
                     string.Join("\n", vysledok.Riadky.Take(5)));
             }
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Kontrolu databázy sa nepodarilo vykonať. Odporúčame obnovu zo zálohy (Servis → Obnova).", ex);
+            Dialogy.Chyba(Preklad.T("Kontrolu databázy sa nepodarilo vykonať. Odporúčame obnovu zo zálohy (Servis → Obnova)."), ex);
         }
     }
 
@@ -266,7 +263,7 @@ public partial class App : Application
         }
         else
         {
-            Dialogy.Chyba("Nastala neočakávaná chyba. Program pokračuje ďalej.", e.Exception);
+            Dialogy.Chyba(Preklad.T("Nastala neočakávaná chyba. Program pokračuje ďalej."), e.Exception);
         }
 
         e.Handled = true;

@@ -32,7 +32,7 @@ public sealed record Pocasie(
 {
     public string Symbol => PocasieService.Symbol(Kod, Den);
     public string Popis => PocasieService.Popis(Kod);
-    public string TeplotaText => Teplota is { } t ? $"{Math.Round(t):0} °C" : "–";
+    public string TeplotaText => Teplota is { } t ? Preklad.F($"{Math.Round(t):0} °C") : "–";
     public string PocitovaText => Pocitova is { } p ? Preklad.F($"pocitovo {Math.Round(p):0} °C") : "";
     public string VlhkostText => Vlhkost is { } v ? Preklad.F($"vlhkosť {v} %") : "";
     public string VietorText => Vietor is { } v ? Preklad.F($"vietor {Math.Round(v):0} km/h") : "";

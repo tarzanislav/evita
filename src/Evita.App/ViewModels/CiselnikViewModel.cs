@@ -19,26 +19,26 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
         switch (typ)
         {
             case TypCiselnika.Kategorie:
-                Nadpis = "Kategórie";
-                NovaText = "Nová kategória";
-                Pole1Popis = "Názov kategórie";
+                Nadpis = Preklad.T("Kategórie");
+                NovaText = Preklad.T("Nová kategória");
+                Pole1Popis = Preklad.T("Názov kategórie");
                 StlpecDetail = "";
                 break;
             case TypCiselnika.Miestnosti:
-                Nadpis = "Miestnosti";
-                NovaText = "Nová miestnosť";
-                Pole1Popis = "Názov miestnosti";
-                Pole2Popis = "Budova alebo poschodie (nepovinné)";
-                Pole3Popis = "Poznámka (nepovinné)";
-                StlpecDetail = "Budova";
+                Nadpis = Preklad.T("Miestnosti");
+                NovaText = Preklad.T("Nová miestnosť");
+                Pole1Popis = Preklad.T("Názov miestnosti");
+                Pole2Popis = Preklad.T("Budova alebo poschodie (nepovinné)");
+                Pole3Popis = Preklad.T("Poznámka (nepovinné)");
+                StlpecDetail = Preklad.T("Budova");
                 break;
             default:
-                Nadpis = "Osoby";
-                NovaText = "Nová osoba";
-                Pole1Popis = "Meno";
-                Pole2Popis = "Priezvisko (alebo názov útvaru)";
-                Pole3Popis = "Funkcia alebo útvar (nepovinné)";
-                StlpecDetail = "Funkcia";
+                Nadpis = Preklad.T("Osoby");
+                NovaText = Preklad.T("Nová osoba");
+                Pole1Popis = Preklad.T("Meno");
+                Pole2Popis = Preklad.T("Priezvisko (alebo názov útvaru)");
+                Pole3Popis = Preklad.T("Funkcia alebo útvar (nepovinné)");
+                StlpecDetail = Preklad.T("Funkcia");
                 break;
         }
     }
@@ -55,8 +55,8 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
     public bool MaDetail => StlpecDetail.Length > 0;
 
     public string Napoveda => Typ == TypCiselnika.Kategorie
-        ? "Zoznam je vždy zoradený abecedne. Kategóriu, ktorú používajú položky, nemožno vymazať, len deaktivovať – potom sa nebude ponúkať pri nových položkách."
-        : "Položku, ktorú používajú záznamy v evidencii, nemožno vymazať, len deaktivovať – potom sa nebude ponúkať pri nových položkách.";
+        ? Preklad.T("Zoznam je vždy zoradený abecedne. Kategóriu, ktorú používajú položky, nemožno vymazať, len deaktivovať – potom sa nebude ponúkať pri nových položkách.")
+        : Preklad.T("Položku, ktorú používajú záznamy v evidencii, nemožno vymazať, len deaktivovať – potom sa nebude ponúkať pri nových položkách.");
 
     [ObservableProperty] private List<CiselnikRiadok> _polozky = new();
     [ObservableProperty] private CiselnikRiadok? _vybrana;
@@ -87,7 +87,7 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
         Pole1 = value.Pole1;
         Pole2 = value.Pole2 ?? "";
         Pole3 = value.Pole3 ?? "";
-        FormularNadpis = $"Úprava: {value.Nazov}";
+        FormularNadpis = Preklad.F($"Úprava: {value.Nazov}");
         Upravujem = true;
     }
 
@@ -134,11 +134,11 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
 
         if (v.Pocet > 0)
         {
-            Dialogy.Upozornenie($"„{v.Nazov}“ používa {v.Pocet} položiek v evidencii, preto sa nedá vymazať. Môžete ju deaktivovať.");
+            Dialogy.Upozornenie(Preklad.F($"„{v.Nazov}“ používa {v.Pocet} položiek v evidencii, preto sa nedá vymazať. Môžete ju deaktivovať."));
             return;
         }
 
-        if (!Dialogy.Potvrd($"Vymazať „{v.Nazov}“?"))
+        if (!Dialogy.Potvrd(Preklad.F($"Vymazať „{v.Nazov}“?")))
         {
             return;
         }

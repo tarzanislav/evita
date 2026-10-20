@@ -44,7 +44,7 @@ public partial class NastaveniaKalendaraWindow : Window
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Nastavenia sa nepodarilo uložiť.", ex);
+            Dialogy.Chyba(Preklad.T("Nastavenia sa nepodarilo uložiť."), ex);
         }
     }
 }

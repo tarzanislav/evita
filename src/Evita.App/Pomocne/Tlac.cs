@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Evita.Services;
 
 namespace Evita.Pomocne;
 
@@ -63,7 +64,7 @@ public static class Tlac
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba($"Súbor sa nepodarilo otvoriť:\n{cesta}", ex);
+            Dialogy.Chyba(Preklad.F($"Súbor sa nepodarilo otvoriť:\n{cesta}"), ex);
         }
     }
 
@@ -85,7 +86,7 @@ public static class Tlac
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba($"Priečinok sa nepodarilo otvoriť:\n{priecinok}", ex);
+            Dialogy.Chyba(Preklad.F($"Priečinok sa nepodarilo otvoriť:\n{priecinok}"), ex);
         }
     }
 }

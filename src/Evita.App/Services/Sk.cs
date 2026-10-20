@@ -35,6 +35,12 @@ public static class Sk
         return VelkePrve(text);
     }
 
+    /// <summary>Deň v týždni, deň a mesiac bez roka (napr. „nedeľa 1. novembra“).</summary>
+    public static string DenAMesiac(DateTime datum) =>
+        Preklad.JeSlovencina
+            ? datum.ToString("dddd d. MMMM", Kultura)
+            : datum.ToString("dddd", Kultura) + (Preklad.Kod is "zh" or "hu" ? " " : ", ") + datum.ToString(Kultura.DateTimeFormat.MonthDayPattern, Kultura);
+
     /// <summary>Mesiac a rok s veľkým začiatočným písmenom (napr. „Október 2026“).</summary>
     public static string MesiacRok(DateTime datum) =>
         VelkePrve(datum.ToString(Preklad.JeSlovencina ? "MMMM yyyy" : "Y", Kultura));

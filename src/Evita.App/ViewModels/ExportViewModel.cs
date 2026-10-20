@@ -73,9 +73,9 @@ public partial class ExportViewModel : ObservableObject
             ulozeny = Enum.TryParse<FormatExportu>(Databaza.Citaj(db, KlucFormat), out var f) ? f : FormatExportu.Excel;
         }
 
-        TextCela = $"Celá evidencia ({ExportService.PocetPoloziek(celkom)})";
-        TextVyfiltrovane = _vyfiltrovane is null ? "Vyfiltrované položky" : $"Vyfiltrované položky ({ExportService.PocetPoloziek(_vyfiltrovane.Count)})";
-        TextOznacene = _oznacene is null ? "Označené položky" : $"Označené položky ({ExportService.PocetPoloziek(_oznacene.Count)})";
+        TextCela = Preklad.F($"Celá evidencia ({ExportService.PocetPoloziek(celkom)})");
+        TextVyfiltrovane = _vyfiltrovane is null ? Preklad.T("Vyfiltrované položky") : Preklad.F($"Vyfiltrované položky ({ExportService.PocetPoloziek(_vyfiltrovane.Count)})");
+        TextOznacene = _oznacene is null ? Preklad.T("Označené položky") : Preklad.F($"Označené položky ({ExportService.PocetPoloziek(_oznacene.Count)})");
 
         // predvolený rozsah: označené (ak sú aspoň dve), inak vyfiltrované, inak celá evidencia
         if (_oznacene is { Count: > 1 })
@@ -125,7 +125,7 @@ public partial class ExportViewModel : ObservableObject
 
     public string PoznamkaFormatu => UkazStlpce
         ? ""
-        : "JSON a XML obsahujú vždy všetky údaje položiek vrátane identifikátora a číselníkov, aby sa dali naimportovať do inej EviTA.";
+        : Preklad.T("JSON a XML obsahujú vždy všetky údaje položiek vrátane identifikátora a číselníkov, aby sa dali naimportovať do inej EviTA.");
 
     /// <summary>Pre automatický test: cesta k súboru bez okna Uložiť ako.</summary>
     public string? CestaBezDialogu { get; set; }
@@ -161,20 +161,20 @@ public partial class ExportViewModel : ObservableObject
         var stlpce = Stlpce.Where(s => s.Vybrany).Select(s => s.Stlpec.Kluc).ToList();
         if (UkazStlpce && stlpce.Count == 0)
         {
-            Dialogy.Info("Vyberte aspoň jeden stĺpec.");
+            Dialogy.Info(Preklad.T("Vyberte aspoň jeden stĺpec."));
             return;
         }
 
         IReadOnlyCollection<int>? id = RozsahOznacene ? _oznacene : RozsahVyfiltrovane ? _vyfiltrovane : null;
         if (id is { Count: 0 })
         {
-            Dialogy.Info("V zvolenom rozsahu nie je žiadna položka.");
+            Dialogy.Info(Preklad.T("V zvolenom rozsahu nie je žiadna položka."));
             return;
         }
 
-        var popis = RozsahOznacene ? "označené položky"
-            : RozsahVyfiltrovane ? (string.IsNullOrWhiteSpace(_popisFiltra) ? "vyfiltrované položky" : $"vyfiltrované položky ({_popisFiltra})")
-            : "celá evidencia";
+        var popis = RozsahOznacene ? Preklad.T("označené položky")
+            : RozsahVyfiltrovane ? (string.IsNullOrWhiteSpace(_popisFiltra) ? Preklad.T("vyfiltrované položky") : Preklad.F($"vyfiltrované položky ({_popisFiltra})"))
+            : Preklad.T("celá evidencia");
 
         var cesta = CestaBezDialogu ?? VyberSubor();
         if (cesta is null)
@@ -197,7 +197,7 @@ public partial class ExportViewModel : ObservableObject
             }
             else
             {
-                Dialogy.Info($"Vyexportované: {ExportService.PocetPoloziek(pocet)}.\n\n{cesta}");
+                Dialogy.Info(Preklad.F($"Vyexportované: {ExportService.PocetPoloziek(pocet)}.\n\n{cesta}"));
             }
 
             Zatvorit?.Invoke(true);
@@ -208,7 +208,7 @@ public partial class ExportViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Export sa nepodaril.", ex);
+            Dialogy.Chyba(Preklad.T("Export sa nepodaril."), ex);
         }
     }
 
@@ -236,7 +236,7 @@ public partial class ExportViewModel : ObservableObject
         var rozsah = RozsahOznacene ? "oznacene" : RozsahVyfiltrovane ? "vyber" : "evidencia";
         var dialog = new SaveFileDialog
         {
-            Title = "Exportovať evidenciu",
+            Title = Preklad.T("Exportovať evidenciu"),
             Filter = ExportService.Filter(Format),
             FileName = $"EviTA_{rozsah}_{DateTime.Now:yyyy-MM-dd}{ExportService.Pripona(Format)}",
             InitialDirectory = priecinok,

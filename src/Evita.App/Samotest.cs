@@ -115,7 +115,7 @@ internal static class Samotest
             Vykonaj("DROP TABLE \"ZaznamyZaloh\"; UPDATE \"Nastavenia\" SET \"Hodnota\" = '1' WHERE \"Kluc\" = 'Schema.Verzia';");
             Databaza.Inicializuj();
             Over(Databaza.VerziaVDatabaze() == Databaza.VerziaSchemy, "aktualizácia štruktúry z verzie 1");
-            Over(Directory.GetFiles(Databaza.PriecinokZaloh, "*_EviTA_pred_aktualizaciou_*.db").Length == 1, "záloha pred aktualizáciou štruktúry");
+            Over(Directory.GetFiles(Databaza.PriecinokZaloh, "*_EviTA_pred_upravou_struktury_*.db").Length == 1, "záloha pred aktualizáciou štruktúry");
 
             // zálohy
             var zalohy = new ZalohaService();
@@ -142,6 +142,19 @@ internal static class Samotest
             Over(sluzba.NacitajRiadky().Count == pocet, "obnova vrátila stav zo zálohy");
             Over(bezpecnostna is not null && File.Exists(bezpecnostna), "bezpečnostná záloha pred obnovou");
             Over(zalohy.Zaznamy().Any(z => z.Typ == "obnova" && z.Uspech), "obnova je v zázname záloh");
+            Over(zalohy.Zaznamy().Any(z => z.Typ == "pred obnovou" && z.Uspech), "záloha pred obnovou má vlastný typ");
+
+            // typ zálohy pred aktualizáciou programu
+            var predAktualizaciou = zalohy.Zalohuj(TypZalohy.PredAktualizaciou, poznamka: "test");
+            Over(Path.GetFileName(predAktualizaciou).Contains("_EviTA_pred_aktualizaciou_"), "názov zálohy pred aktualizáciou");
+            Over(zalohy.Zaznamy().First().Typ == "pred aktualizáciou", "typ zálohy pred aktualizáciou");
+
+            // oprava typu pri zázname zo staršej verzie
+            var staryTyp = zalohy.Zalohuj(TypZalohy.PredOperaciou, poznamka: "Automatická záloha pred aktualizáciou na verziu 0.2.8");
+            Over(zalohy.Zaznamy().First().Typ == "pred operáciou", "záznam so starým typom");
+            Over(zalohy.OpravTypyStarychZaznamov() == 1 && zalohy.Zaznamy().First(z => z.Cesta == staryTyp).Typ == "pred aktualizáciou",
+                "starý záznam dostal typ pred aktualizáciou");
+            Over(zalohy.OpravTypyStarychZaznamov() == 0, "oprava typov sa robí len raz");
 
             // rotácia automatických záloh
             zalohy.UlozNastavenia(nastavenia with { Ponechat = 2 });
@@ -246,6 +259,7 @@ internal static class Samotest
             // nový začiatok
             servis.VymazatData(ponechatMiestnosti: false, ponechatOsoby: false);
             Over(sluzba.NacitajRiadky().Count == 0, "vymazanie dát");
+            Over(new ZalohaService().Zaznamy().First().Typ == "pred vymazaním dát", "záloha pred vymazaním má vlastný typ");
             Over(!Databaza.SuUkazkoveData(), "príznak ukážkových dát zrušený");
             vzor.MiestnostId = null;
             vzor.OsobaId = null;

@@ -15,6 +15,9 @@ public enum TypZalohy
     Rucna,
     Automaticka,
     PredOperaciou,
+    PredAktualizaciou,
+    PredObnovou,
+    PredVymazanim,
 }
 
 public enum PeriodaZaloh
@@ -79,6 +82,9 @@ public sealed class ZalohaService
     {
         TypZalohy.Rucna => "ručná",
         TypZalohy.Automaticka => "automatická",
+        TypZalohy.PredAktualizaciou => "pred aktualizáciou",
+        TypZalohy.PredObnovou => "pred obnovou",
+        TypZalohy.PredVymazanim => "pred vymazaním dát",
         _ => "pred operáciou",
     };
 
@@ -259,6 +265,9 @@ public sealed class ZalohaService
                 {
                     TypZalohy.Rucna => "EviTA_zaloha_",
                     TypZalohy.Automaticka => "EviTA_auto_",
+                    TypZalohy.PredAktualizaciou => "EviTA_pred_aktualizaciou_",
+                    TypZalohy.PredObnovou => "EviTA_pred_obnovou_",
+                    TypZalohy.PredVymazanim => "EviTA_pred_vymazanim_",
                     _ => "EviTA_pred_",
                 };
                 ciel = CislovanaCesta(priecinok, $"{predpona}{cas:yyyy-MM-dd_HHmmss}", ".zip");
@@ -279,7 +288,7 @@ public sealed class ZalohaService
                 {
                     Rotuj(priecinok, "*EviTA_auto_*.zip", nastavenia.Ponechat);
                 }
-                else if (typ == TypZalohy.PredOperaciou)
+                else if (typ is not TypZalohy.Rucna)
                 {
                     Rotuj(priecinok, "*EviTA_pred_*.zip", PonechatPredOperaciou);
                 }
@@ -394,7 +403,7 @@ public sealed class ZalohaService
                 string? bezpecnostna = null;
                 try
                 {
-                    bezpecnostna = Zalohuj(TypZalohy.PredOperaciou, poznamka: "Automatická záloha pred obnovou zo zálohy");
+                    bezpecnostna = Zalohuj(TypZalohy.PredObnovou, poznamka: "Automatická záloha pred obnovou zo zálohy");
                 }
                 catch (Exception)
                 {
@@ -426,7 +435,7 @@ public sealed class ZalohaService
                     Zaznamenaj(new ZaznamZalohy
                     {
                         Cas = teraz,
-                        Typ = NazovTypu(TypZalohy.PredOperaciou),
+                        Typ = NazovTypu(TypZalohy.PredObnovou),
                         Cesta = bezpecnostna,
                         Velkost = new FileInfo(bezpecnostna).Length,
                         Uspech = true,
@@ -499,6 +508,52 @@ public sealed class ZalohaService
     /// Zálohy zo starších verzií programu (bez poradového čísla) prečísluje podľa dátumu vzniku
     /// a opraví na ne odkazy v zázname záloh. Vráti počet premenovaných súborov.
     /// </summary>
+    /// <summary>
+    /// Záznamy bezpečnostných záloh zo starších verzií mali spoločný typ „pred operáciou“. Podľa poznámky
+    /// v zálohe im doplní presný typ (pred aktualizáciou, pred obnovou, pred vymazaním dát). Robí sa raz.
+    /// </summary>
+    public int OpravTypyStarychZaznamov()
+    {
+        const string kluc = "Zaloha.TypyOpravene";
+        var opravene = 0;
+        using var db = Databaza.Otvor();
+        if (Databaza.Citaj(db, kluc) == "1")
+        {
+            return 0;
+        }
+
+        var vseobecny = NazovTypu(TypZalohy.PredOperaciou);
+        foreach (var zaznam in db.ZaznamyZaloh.Where(z => z.Typ == vseobecny).ToList())
+        {
+            if (zaznam.Cesta is null || !zaznam.Cesta.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || !File.Exists(zaznam.Cesta))
+            {
+                continue;
+            }
+
+            try
+            {
+                var poznamka = PrecitajInfo(zaznam.Cesta, null).Poznamka ?? "";
+                TypZalohy? typ = poznamka.Contains("aktualiz", StringComparison.OrdinalIgnoreCase) ? TypZalohy.PredAktualizaciou
+                    : poznamka.Contains("obnov", StringComparison.OrdinalIgnoreCase) ? TypZalohy.PredObnovou
+                    : poznamka.Contains("vymaz", StringComparison.OrdinalIgnoreCase) ? TypZalohy.PredVymazanim
+                    : null;
+                if (typ is { } presny)
+                {
+                    zaznam.Typ = NazovTypu(presny);
+                    opravene++;
+                }
+            }
+            catch (Exception)
+            {
+                // zálohu sa nepodarilo prečítať – typ ponecháme
+            }
+        }
+
+        Databaza.Zapis(db, kluc, "1");
+        db.SaveChanges();
+        return opravene;
+    }
+
     public int PrecislujStareZalohy()
     {
         var priecinky = new[] { NacitajNastavenia().Priecinok, Databaza.PriecinokZaloh }

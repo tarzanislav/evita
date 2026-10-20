@@ -58,7 +58,7 @@ public partial class AktualizaciaWindow : Window
             try
             {
                 await Task.Run(() => new ZalohaService().Zalohuj(
-                    TypZalohy.PredOperaciou, poznamka: $"Automatická záloha pred aktualizáciou na verziu {_verzia.Verzia}"));
+                    TypZalohy.PredAktualizaciou, poznamka: $"Automatická záloha pred aktualizáciou na verziu {_verzia.Verzia}"));
             }
             catch (EvitaException chyba)
             {

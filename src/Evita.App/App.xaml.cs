@@ -85,6 +85,7 @@ public partial class App : Application
                 try
                 {
                     zalohy.PrecislujStareZalohy();
+                    zalohy.OpravTypyStarychZaznamov();
                 }
                 catch (Exception)
                 {

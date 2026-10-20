@@ -100,7 +100,7 @@ public class ZaznamZalohy
 {
     public int Id { get; set; }
     public DateTime Cas { get; set; }
-    /// <summary>ručná, automatická, pred operáciou, obnova</summary>
+    /// <summary>ručná, automatická, pred aktualizáciou, pred obnovou, pred vymazaním dát, obnova</summary>
     public string Typ { get; set; } = "";
     public string? Cesta { get; set; }
     public long Velkost { get; set; }

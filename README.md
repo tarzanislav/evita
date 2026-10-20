@@ -9,8 +9,21 @@ Desktopový program pre Windows 10/11 na evidenciu informačných technológií,
 3. Windows môže zobraziť modré upozornenie *Neznámy vydavateľ* (inštalátor zatiaľ nemá platený podpisový certifikát).
    Kliknite na **Ďalšie informácie → Spustiť aj tak**.
 
-Pri prvom spustení si vyberiete, či chcete začať s **ukážkovými dátami** (200 položiek, 30 osôb, 25 miestností)
-alebo s **prázdnou databázou**. Ukážkové dáta neskôr vymažete v časti *Servis → Databáza → Vymazať dáta a začať nanovo*.
+Pri prvom spustení si vyberiete, či chcete začať s **ukážkovými dátami** (200 položiek, 30 osôb, 25 miestností),
+s **prázdnou databázou**, alebo **naimportovať existujúcu evidenciu** zo súboru. Ukážkové dáta neskôr vymažete
+v časti *Servis → Databáza → Vymazať dáta a začať nanovo*.
+
+## Import a export
+
+- **Export** (menu *Import a export*, alebo tlačidlo *Export* v Evidencii pre vyfiltrované či označené položky):
+  Excel, CSV (UTF-8, bodkočiarka), JSON, XML s popisom formátu `evita.xsd`, HTML a PDF, s voľbou stĺpcov.
+- **Import** cez sprievodcu v 5 krokoch: výber súboru (Excel, CSV, JSON, XML), priradenie stĺpcov, kontrola
+  s opravou priamo v tabuľke, náhľad a import s protokolom. Pred zápisom sa urobí záloha a import sa dá jedným
+  kliknutím vrátiť. Duplicity sa hľadajú podľa identifikátora, sériového čísla a zhody názvu, kategórie a miestnosti.
+- **Prenos celej databázy** na iný počítač: úplný export JSON alebo XML naimportovaný do prázdnej evidencie
+  zachová prírastkové čísla, číselníky aj históriu zmien.
+- **Vzorové súbory** `vzor_import.xlsx` (s návodom a výberovými zoznamami), `.csv`, `.json`, `.xml`
+  sú v priečinku `Dokumenty\EviTA\Vzory`.
 
 ## Aktualizácie
 
@@ -28,6 +41,9 @@ a zdrojovým kódom `evita-0.2.7.zip` a `evita-0.2.7.tar.gz`.
 | Program | `C:\Program Files\EviTA` |
 | Databáza | `C:\ProgramData\EviTA\Data\evita.db` |
 | Zálohy | `Dokumenty\EviTA\Zálohy` (dá sa zmeniť v Servis → Zálohy) |
+| Vzorové súbory pre import | `Dokumenty\EviTA\Vzory` |
+| Exporty (predvolene) | `Dokumenty\EviTA\Exporty` |
+| Meniny a sviatky (Kalendárium) | `C:\ProgramData\Kalendarium\kalendarium.db` |
 
 Odinštalovanie programu databázu ani zálohy nemaže.
 
@@ -37,8 +53,8 @@ Odinštalovanie programu databázu ani zálohy nemaže.
       ukážková databáza, jednorazová záloha, inštalátor
 - [x] **Etapa 2 – Bezpečnosť dát:** pravidelné zálohy (aj cez Plánovač úloh Windows), zálohy s heslom,
       obnova zo zálohy, kontrola a oprava databázy, automatická aktualizácia štruktúry databázy
-- [ ] Etapa 3 – Dashboard: grafy, meniny, sviatky
-- [ ] Etapa 4 – Import a export
+- [x] **Etapa 3 – Dashboard:** počty, graf kategórií, meniny, sviatky a dni pracovného pokoja, upozornenia
+- [x] **Etapa 4 – Import a export:** všetky formáty, sprievodca importom, vzorové súbory, prenos celej databázy
 - [ ] Etapa 5 – Tlač a zostavy
 - [ ] Etapa 6 – Kalendár
 - [ ] Etapa 7 – Kalendárium (citáty, výročia)
@@ -57,7 +73,7 @@ Odinštalovanie programu databázu ani zálohy nemaže.
 src/Evita.App/
   Models/       dátové triedy (položka, kategória, miestnosť, osoba, história)
   Data/         databáza (EF Core, SQLite)
-  Services/     evidencia, číselníky, servis, ukážkové dáta
+  Services/     evidencia, číselníky, servis, zálohy, import a export, ukážkové dáta
   ViewModels/   logika obrazoviek
   Views/        okná a obrazovky (XAML)
 installer/      skript inštalátora

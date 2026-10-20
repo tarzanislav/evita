@@ -17,10 +17,10 @@ internal static class PdfExport
         var vahy = new double[stlpce.Count];
         for (var i = 0; i < stlpce.Count; i++)
         {
-            var dlzkaHlavicky = Hlavicka(stlpce[i]).Split(' ').Max(w => w.Length);
-            var dlzky = texty.Select(t => t[i].Length).OrderBy(x => x).ToList();
+            var dlzkaHlavicky = Hlavicka(stlpce[i]).Split(' ').Max(w => Sirka(w) * 1.1);
+            var dlzky = texty.Select(t => Sirka(t[i])).OrderBy(x => x).ToList();
             var typicka = dlzky.Count == 0 ? 0 : dlzky[(int)Math.Floor((dlzky.Count - 1) * 0.9)];
-            var slovo = texty.Count == 0 ? 0 : texty.Max(t => t[i].Split(' ').Max(w => w.Length));
+            var slovo = texty.Count == 0 ? 0 : texty.Max(t => t[i].Split(' ').Max(Sirka));
             vahy[i] = Math.Max(dlzkaHlavicky, Math.Max(Math.Min(slovo, 16), Math.Min(typicka, 30) * 0.7)) + 1.5;
         }
 
@@ -117,6 +117,13 @@ internal static class PdfExport
         vykreslenie.RenderDocument();
         vykreslenie.PdfDocument.Save(cesta);
     }
+
+    /// <summary>Približná šírka textu v „priemerných znakoch“ (veľké písmená a číslice sú širšie, i, l, bodka užšie).</summary>
+    private static double Sirka(string text) => text.Sum(z =>
+        char.IsUpper(z) || char.IsDigit(z) ? 1.3
+        : z is 'i' or 'l' or 'j' or 't' or 'f' or 'í' or '.' or ',' or ':' or ' ' or '\'' ? 0.55
+        : z is 'm' or 'w' or '€' ? 1.45
+        : 1.0);
 
     private static string Hlavicka(StlpecPrenosu stlpec) => stlpec.Kluc == StlpcePrenosu.Cislo ? "Č." : stlpec.Nazov;
 

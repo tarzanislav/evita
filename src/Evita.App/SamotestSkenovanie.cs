@@ -202,7 +202,7 @@ internal static partial class Samotest
         {
             try
             {
-                var zInternetu = new EanService().HladajAsync(ean).GetAwaiter().GetResult();
+                var zInternetu = Cakaj(new EanService().HladajAsync(ean));
                 Krok($"EAN {ean}: {string.Join(" | ", zInternetu.Najdene.Select(n => $"{n.Zdroj}: {n.Nazov} ({n.Prehlad})"))} {string.Join(" ", zInternetu.Spravy)}");
             }
             catch (Exception ex)

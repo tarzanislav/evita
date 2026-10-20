@@ -80,7 +80,7 @@ public sealed class EanService
 
         try
         {
-            if (await IcecatAsync(ean, zrusenie) is { } icecat)
+            if (await IcecatAsync(ean, zrusenie).ConfigureAwait(false) is { } icecat)
             {
                 najdene.Add(icecat);
             }
@@ -96,7 +96,7 @@ public sealed class EanService
 
         try
         {
-            najdene.AddRange(await UpcItemDbAsync(ean, zrusenie));
+            najdene.AddRange(await UpcItemDbAsync(ean, zrusenie).ConfigureAwait(false));
             if (najdene.All(n => n.Zdroj != "UPCitemdb"))
             {
                 spravy.Add(Preklad.T("UPCitemdb: výrobok sa nenašiel."));
@@ -153,8 +153,8 @@ public sealed class EanService
         foreach (var lang in jazyk == "EN" ? new[] { "EN" } : new[] { jazyk, "EN" })
         {
             var adresa = $"https://live.icecat.biz/api?lang={lang}&shopname={Uri.EscapeDataString(pouzivatel)}&GTIN={ean}";
-            using var odpoved = await Klient.GetAsync(adresa, zrusenie);
-            var text = await odpoved.Content.ReadAsStringAsync(zrusenie);
+            using var odpoved = await Klient.GetAsync(adresa, zrusenie).ConfigureAwait(false);
+            var text = await odpoved.Content.ReadAsStringAsync(zrusenie).ConfigureAwait(false);
             if (odpoved.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest or HttpStatusCode.Forbidden)
             {
                 // výrobok nie je v (otvorenom) katalógu alebo nie je v tomto jazyku
@@ -201,7 +201,7 @@ public sealed class EanService
     /// <summary>Databáza UPCitemdb (bezplatný prístup bez registrácie, obmedzený počet dopytov za deň).</summary>
     private static async Task<List<UdajeProduktu>> UpcItemDbAsync(string ean, CancellationToken zrusenie)
     {
-        using var odpoved = await Klient.GetAsync($"https://api.upcitemdb.com/prod/trial/lookup?upc={ean}", zrusenie);
+        using var odpoved = await Klient.GetAsync($"https://api.upcitemdb.com/prod/trial/lookup?upc={ean}", zrusenie).ConfigureAwait(false);
         if (odpoved.StatusCode == HttpStatusCode.NotFound || odpoved.StatusCode == HttpStatusCode.BadRequest)
         {
             return new List<UdajeProduktu>();
@@ -213,7 +213,7 @@ public sealed class EanService
         }
 
         odpoved.EnsureSuccessStatusCode();
-        using var json = JsonDocument.Parse(await odpoved.Content.ReadAsStringAsync(zrusenie));
+        using var json = JsonDocument.Parse(await odpoved.Content.ReadAsStringAsync(zrusenie).ConfigureAwait(false));
         var vysledok = new List<UdajeProduktu>();
         if (!json.RootElement.TryGetProperty("items", out var polozky) || polozky.ValueKind != JsonValueKind.Array)
         {

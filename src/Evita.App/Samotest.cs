@@ -36,6 +36,8 @@ internal static partial class Samotest
 
         Directory.CreateDirectory(Databaza.Priecinok);
         var subor = Path.Combine(Databaza.Priecinok, "samotest.log");
+        _priebeznyZaznam = Path.Combine(Databaza.Priecinok, "samotest_priebeh.log");
+        File.Delete(_priebeznyZaznam);
         var vysledok = 1;
 
         try
@@ -1584,7 +1586,25 @@ internal static partial class Samotest
         Krok("ok – " + popis);
     }
 
-    private static void Krok(string text) => Zaznam.AppendLine($"{DateTime.Now:HH:mm:ss} {text}");
+    /// <summary>Záznam písaný priebežne – ak sa test zasekne, ukáže, kde.</summary>
+    private static string? _priebeznyZaznam;
+
+    private static void Krok(string text)
+    {
+        var riadok = $"{DateTime.Now:HH:mm:ss} {text}";
+        Zaznam.AppendLine(riadok);
+        if (_priebeznyZaznam is not null)
+        {
+            try
+            {
+                File.AppendAllText(_priebeznyZaznam, riadok + Environment.NewLine, Encoding.UTF8);
+            }
+            catch (Exception)
+            {
+                // priebežný záznam nie je nevyhnutný
+            }
+        }
+    }
 
     /// <summary>Nechá WPF dokončiť rozloženie a vykreslenie (ako pri bežnom behu).</summary>
     private static void Pumpuj()

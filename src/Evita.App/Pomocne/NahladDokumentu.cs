@@ -25,7 +25,7 @@ public static class NahladDokumentu
         return vykreslenie;
     }
 
-    public static int PocetStran(DocumentRenderer vykreslenie) => vykreslenie.FormattedDocument.PageCount;
+    public static int PocetStran(DocumentRenderer vykreslenie) => vykreslenie.FormattedDocument!.PageCount;
 
     /// <summary>Jedna strana ako vektorový obrázok (ostrý pri každom zväčšení).</summary>
     public static DrawingImage Obrazok(DocumentRenderer vykreslenie, int strana, bool naSirku)
@@ -39,7 +39,7 @@ public static class NahladDokumentu
     /// <summary>Vykreslí stranu (číslovanú od 1) do vizuálu vo veľkosti strany A4 v jednotkách WPF.</summary>
     public static DrawingVisual Strana(DocumentRenderer vykreslenie, int strana, bool naSirku, out Size velkost)
     {
-        var info = vykreslenie.FormattedDocument.GetPageInfo(strana);
+        var info = vykreslenie.FormattedDocument!.GetPageInfo(strana);
         double sirka = info.Width;
         double vyska = info.Height;
         if (naSirku != (sirka > vyska))
@@ -52,7 +52,7 @@ public static class NahladDokumentu
         using (var kontext = kresba.RenderOpen())
         {
             kontext.DrawRectangle(Brushes.White, null, new Rect(velkost));
-            using var grafika = XGraphics.FromDrawingContext(kontext, new XSize(sirka, vyska), XGraphicsUnit.Point);
+            using var grafika = XGraphics.FromDrawingContext(kontext, new XSize(sirka, vyska), XGraphicsUnit.Point, new PdfSharp.Events.RenderEvents());
             vykreslenie.RenderPage(grafika, strana);
         }
 

@@ -21,7 +21,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     private readonly ServisService _servis = new();
     private readonly ZalohaService _zalohy = new();
     private readonly DiagnostikaService _diagnostika = new();
-    private readonly StringBuilder _protokol = new();
+    private readonly StringBuilder _zaznamProtokolu = new();
 
     public ServisViewModel(MainViewModel hlavne)
     {
@@ -285,7 +285,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     [RelayCommand]
     private void UlozitProtokol()
     {
-        if (_protokol.Length == 0)
+        if (_zaznamProtokolu.Length == 0)
         {
             Dialogy.Info("Protokol je zatiaľ prázdny. Najprv spustite niektorý nástroj.");
             return;
@@ -299,14 +299,14 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         };
         if (ulozit.ShowDialog() == true)
         {
-            File.WriteAllText(ulozit.FileName, _protokol.ToString(), Encoding.UTF8);
+            File.WriteAllText(ulozit.FileName, _zaznamProtokolu.ToString(), Encoding.UTF8);
         }
     }
 
     [RelayCommand]
     private void VymazatProtokol()
     {
-        _protokol.Clear();
+        _zaznamProtokolu.Clear();
         Protokol = "";
     }
 
@@ -319,14 +319,14 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
             return;
         }
 
-        _protokol.AppendLine($"── {Sk.DatumCas(DateTime.Now)}  {vysledok.Nastroj}: {(vysledok.Ok ? "v poriadku" : "našli sa problémy")}");
+        _zaznamProtokolu.AppendLine($"── {Sk.DatumCas(DateTime.Now)}  {vysledok.Nastroj}: {(vysledok.Ok ? "v poriadku" : "našli sa problémy")}");
         foreach (var riadok in vysledok.Riadky)
         {
-            _protokol.AppendLine("   " + riadok);
+            _zaznamProtokolu.AppendLine("   " + riadok);
         }
 
-        _protokol.AppendLine();
-        Protokol = _protokol.ToString();
+        _zaznamProtokolu.AppendLine();
+        Protokol = _zaznamProtokolu.ToString();
     }
 
     // ------------------------------------------------------------------ ukážkové dáta

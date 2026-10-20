@@ -44,11 +44,13 @@ public static class CiarovyKod
     /// <summary>Pruhy čiarového kódu Code 128 (true = čierny modul), bez okrajov.</summary>
     public static bool[] Code128(string text)
     {
-        var (data, sirka, _) = Vytvor(ZXingCpp.BarcodeFormat.Code128, text, null);
+        // kódovač nechá nad a pod pruhmi biele riadky – vzor pruhov je v strednom riadku
+        var (data, sirka, vyska) = Vytvor(ZXingCpp.BarcodeFormat.Code128, text, null);
+        var riadok = vyska / 2 * sirka;
         var pruhy = new bool[sirka];
         for (var x = 0; x < sirka; x++)
         {
-            pruhy[x] = data[x] < 128;
+            pruhy[x] = data[riadok + x] < 128;
         }
 
         return pruhy;

@@ -115,7 +115,7 @@ internal static class Samotest
             Vykonaj("DROP TABLE \"ZaznamyZaloh\"; UPDATE \"Nastavenia\" SET \"Hodnota\" = '1' WHERE \"Kluc\" = 'Schema.Verzia';");
             Databaza.Inicializuj();
             Over(Databaza.VerziaVDatabaze() == Databaza.VerziaSchemy, "aktualizácia štruktúry z verzie 1");
-            Over(Directory.GetFiles(Databaza.PriecinokZaloh, "EviTA_pred_aktualizaciou_*.db").Length == 1, "záloha pred aktualizáciou štruktúry");
+            Over(Directory.GetFiles(Databaza.PriecinokZaloh, "*_EviTA_pred_aktualizaciou_*.db").Length == 1, "záloha pred aktualizáciou štruktúry");
 
             // zálohy
             var zalohy = new ZalohaService();
@@ -150,8 +150,34 @@ internal static class Samotest
                 zalohy.Zalohuj(TypZalohy.Automaticka);
             }
 
-            Over(Directory.GetFiles(nastavenia.Priecinok, "EviTA_auto_*.zip").Length == 2, "rotácia ponechá 2 automatické zálohy");
-            Over(Directory.GetFiles(nastavenia.Priecinok, "EviTA_zaloha_*.zip").Length == 2, "ručné zálohy rotácia nemaže");
+            Over(Directory.GetFiles(nastavenia.Priecinok, "*_EviTA_auto_*.zip").Length == 2, "rotácia ponechá 2 automatické zálohy");
+            Over(Directory.GetFiles(nastavenia.Priecinok, "*_EviTA_zaloha_*.zip").Length == 2, "ručné zálohy rotácia nemaže");
+
+            // číslovanie záloh
+            var nazvy = Directory.GetFiles(nastavenia.Priecinok, "*_EviTA_*").Select(f => Path.GetFileName(f)).ToList();
+            Over(nazvy.Count > 0 && nazvy.All(n => n.Length > 6 && n[..5].All(char.IsDigit) && n[5] == '_'), "zálohy majú poradové číslo na začiatku");
+            Over(nazvy.Select(n => int.Parse(n[..5])).Distinct().Count() == nazvy.Count, "poradové čísla záloh sú jedinečné");
+            var staraZaloha = Path.Combine(nastavenia.Priecinok, "EviTA_zaloha_2019-01-01_000000.zip");
+            File.WriteAllText(staraZaloha, "test");
+            File.SetLastWriteTimeUtc(staraZaloha, new DateTime(2019, 1, 1));
+            var ocakavaneCislo = ZalohaService.DalsieCislo(nastavenia.Priecinok);
+            Over(zalohy.PrecislujStareZalohy() == 1, "prečíslovanie zálohy zo staršej verzie");
+            Over(File.Exists(Path.Combine(nastavenia.Priecinok, $"{ocakavaneCislo:D5}_EviTA_zaloha_2019-01-01_000000.zip")),
+                "stará záloha dostala poradové číslo");
+
+            // aktualizácie programu (bez prístupu na internet – len spracovanie údajov)
+            const string vydanieJson = """
+                {"tag_name":"v9.8.7","name":"EviTA 9.8.7","body":"## Novinky\n- **oprava**","html_url":"https://github.com/x",
+                 "published_at":"2026-10-20T10:00:00Z","assets":[
+                   {"name":"notes.md","browser_download_url":"https://x/notes.md","size":1},
+                   {"name":"EviTA_Setup_9.8.7.exe","browser_download_url":"https://x/EviTA_Setup_9.8.7.exe","size":123,"digest":"sha256:ABCDEF"}]}
+                """;
+            var vydanie = AktualizaciaService.PrecitajVydanie(vydanieJson);
+            Over(vydanie is { SuborNazov: "EviTA_Setup_9.8.7.exe", Sha256: "ABCDEF", SuborVelkost: 123 } && vydanie.Verzia == new Version(9, 8, 7),
+                "spracovanie údajov o novej verzii");
+            Over(vydanie!.Verzia > AktualizaciaService.AktualnaVerzia, "nová verzia je novšia ako nainštalovaná");
+            Over(AktualizaciaService.PrecitajVydanie("""{"tag_name":"v1.0.0","assets":[]}""") is null, "vydanie bez inštalátora sa ignoruje");
+            Over(AktualizaciaWindow.UpravNovinky(vydanie.Novinky) == $"Novinky{Environment.NewLine}- oprava", "úprava textu noviniek");
 
             // Plánovač úloh Windows
             zalohy.UlozNastavenia(nastavenia with { Ponechat = 2, PlanovacWindows = true, Cas = "21:30" });
@@ -210,6 +236,10 @@ internal static class Samotest
             OtvorAZatvor(new VstupWindow("Test", "Otázka", "text", true), "vstup");
             OtvorAZatvor(new HesloWindow(true, null), "nové heslo");
             OtvorAZatvor(new HesloWindow(false, null), "zadanie hesla");
+            OtvorAZatvor(new AktualizaciaWindow(vydanie), "ponuka aktualizácie");
+            model.NovaVerzia = vydanie;
+            Pumpuj();
+            Over(model.JeNovaVerzia, "pruh s novou verziou");
             okno.Close();
             Pumpuj();
 

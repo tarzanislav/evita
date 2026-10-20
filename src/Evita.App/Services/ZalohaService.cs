@@ -261,12 +261,7 @@ public sealed class ZalohaService
                     TypZalohy.Automaticka => "EviTA_auto_",
                     _ => "EviTA_pred_",
                 };
-                var nazov = $"{predpona}{cas:yyyy-MM-dd_HHmmss}";
-                ciel = Path.Combine(priecinok, nazov + ".zip");
-                for (var poradie = 2; File.Exists(ciel); poradie++)
-                {
-                    ciel = Path.Combine(priecinok, $"{nazov}_{poradie}.zip");
-                }
+                ciel = CislovanaCesta(priecinok, $"{predpona}{cas:yyyy-MM-dd_HHmmss}", ".zip");
 
                 ZapisZip(ciel, heslo, cas, ("evita.db", kopia), ("info.json", info));
 
@@ -282,11 +277,11 @@ public sealed class ZalohaService
 
                 if (typ == TypZalohy.Automaticka)
                 {
-                    Rotuj(priecinok, "EviTA_auto_*.zip", nastavenia.Ponechat);
+                    Rotuj(priecinok, "*EviTA_auto_*.zip", nastavenia.Ponechat);
                 }
                 else if (typ == TypZalohy.PredOperaciou)
                 {
-                    Rotuj(priecinok, "EviTA_pred_*.zip", PonechatPredOperaciou);
+                    Rotuj(priecinok, "*EviTA_pred_*.zip", PonechatPredOperaciou);
                 }
 
                 return ciel;
@@ -408,7 +403,7 @@ public sealed class ZalohaService
                     {
                         var nastavenia = NacitajNastaveniaBezpecne();
                         Directory.CreateDirectory(nastavenia);
-                        bezpecnostna = Path.Combine(nastavenia, $"EviTA_pred_obnovou_subor_{DateTime.Now:yyyy-MM-dd_HHmmss}.db");
+                        bezpecnostna = CislovanaCesta(nastavenia, $"EviTA_pred_obnovou_subor_{DateTime.Now:yyyy-MM-dd_HHmmss}", ".db");
                         File.Copy(Databaza.Cesta, bezpecnostna, overwrite: true);
                     }
                 }
@@ -455,6 +450,103 @@ public sealed class ZalohaService
                 TichoVymazPriecinok(docasny);
             }
         }
+    }
+
+    // ------------------------------------------------------------------ číslovanie záloh
+
+    /// <summary>
+    /// Cesta pre nový súbor zálohy s poradovým číslom na začiatku, napr. „00012_EviTA_zaloha_2026-10-20_122501.zip“.
+    /// Čísla sú v priečinku jedinečné a stúpajú, takže zoradenie podľa názvu je zoradenie podľa poradia.
+    /// </summary>
+    public static string CislovanaCesta(string priecinok, string zaklad, string pripona)
+    {
+        lock (Zamok)
+        {
+            Directory.CreateDirectory(priecinok);
+            var cislo = DalsieCislo(priecinok);
+            var cesta = Path.Combine(priecinok, $"{cislo:D5}_{zaklad}{pripona}");
+            while (File.Exists(cesta))
+            {
+                cislo++;
+                cesta = Path.Combine(priecinok, $"{cislo:D5}_{zaklad}{pripona}");
+            }
+
+            return cesta;
+        }
+    }
+
+    /// <summary>Najbližšie voľné poradové číslo zálohy v priečinku.</summary>
+    public static int DalsieCislo(string priecinok)
+    {
+        var najvacsie = 0;
+        if (Directory.Exists(priecinok))
+        {
+            foreach (var subor in Directory.EnumerateFiles(priecinok, "*_EviTA_*"))
+            {
+                var nazov = Path.GetFileName(subor);
+                var podciarka = nazov.IndexOf('_');
+                if (podciarka > 0 && int.TryParse(nazov[..podciarka], out var cislo))
+                {
+                    najvacsie = Math.Max(najvacsie, cislo);
+                }
+            }
+        }
+
+        return najvacsie + 1;
+    }
+
+    /// <summary>
+    /// Zálohy zo starších verzií programu (bez poradového čísla) prečísluje podľa dátumu vzniku
+    /// a opraví na ne odkazy v zázname záloh. Vráti počet premenovaných súborov.
+    /// </summary>
+    public int PrecislujStareZalohy()
+    {
+        var priecinky = new[] { NacitajNastavenia().Priecinok, Databaza.PriecinokZaloh }
+            .Where(Directory.Exists)
+            .Select(Path.GetFullPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var premenovane = 0;
+
+        lock (Zamok)
+        {
+            using var db = Databaza.Otvor();
+            foreach (var priecinok in priecinky)
+            {
+                var stare = new DirectoryInfo(priecinok).GetFiles("EviTA_*")
+                    .Where(f => f.Extension is ".zip" or ".db")
+                    .OrderBy(f => f.LastWriteTimeUtc).ThenBy(f => f.Name, StringComparer.Ordinal)
+                    .ToList();
+                var cislo = DalsieCislo(priecinok);
+
+                foreach (var subor in stare)
+                {
+                    var novy = Path.Combine(priecinok, $"{cislo:D5}_{subor.Name}");
+                    if (File.Exists(novy))
+                    {
+                        continue;
+                    }
+
+                    File.Move(subor.FullName, novy);
+                    if (File.Exists(subor.FullName + "-wal"))
+                    {
+                        File.Move(subor.FullName + "-wal", novy + "-wal");
+                    }
+
+                    foreach (var zaznam in db.ZaznamyZaloh.Where(z => z.Cesta == subor.FullName))
+                    {
+                        zaznam.Cesta = novy;
+                    }
+
+                    cislo++;
+                    premenovane++;
+                }
+            }
+
+            db.SaveChanges();
+        }
+
+        return premenovane;
     }
 
     // ------------------------------------------------------------------ Plánovač úloh Windows

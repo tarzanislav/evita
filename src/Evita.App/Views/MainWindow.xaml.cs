@@ -15,8 +15,32 @@ public partial class MainWindow : Window
         DataContext = _model;
         InitializeComponent();
         _model.ZiadostOSekciu += OznacSekciu;
+        _model.ZiadostOAktualizaciu += verzia => new AktualizaciaWindow(verzia) { Owner = this }.ShowDialog();
         Loaded += (_, _) => Navigacia.SelectedIndex = 0;
         Closing += PriZatvarani;
+    }
+
+    /// <summary>Pri spustení zistí, či je na GitHube nová verzia, a ak áno, ponúkne aktualizáciu.</summary>
+    public async Task SkontrolujAktualizaciuAsync()
+    {
+        try
+        {
+            var sluzba = new AktualizaciaService();
+            if (!sluzba.KontrolovatPriSpusteni())
+            {
+                return;
+            }
+
+            var verzia = await sluzba.SkontrolujAsync();
+            if (verzia is not null && IsVisible)
+            {
+                _model.ZobrazitAktualizaciu(verzia);
+            }
+        }
+        catch (Exception)
+        {
+            // bez internetu alebo pri chybe GitHubu sa pri spustení nič nehlási
+        }
     }
 
     /// <summary>Po pravidelnej zálohe na pozadí obnoví stav záloh na obrazovke.</summary>

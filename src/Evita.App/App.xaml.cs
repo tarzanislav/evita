@@ -78,9 +78,25 @@ public partial class App : Application
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         okno.Show();
 
-        // pravidelná záloha na pozadí, ak už je čas
-        Task.Run(() => new ZalohaService().AutomatickaAkTreba())
+        // prečíslovanie záloh zo starších verzií a pravidelná záloha na pozadí, ak už je čas
+        Task.Run(() =>
+            {
+                var zalohy = new ZalohaService();
+                try
+                {
+                    zalohy.PrecislujStareZalohy();
+                }
+                catch (Exception)
+                {
+                    // prečíslovanie nie je nevyhnutné
+                }
+
+                return zalohy.AutomatickaAkTreba();
+            })
             .ContinueWith(_ => okno.Dispatcher.InvokeAsync(okno.PoAutomatickejZalohe), TaskScheduler.Default);
+
+        // kontrola novej verzie programu
+        _ = okno.SkontrolujAktualizaciuAsync();
     }
 
     /// <summary>Databáza sa nedá otvoriť – ponúkne obnovu zo zálohy. Vráti true, ak sa dá pokračovať.</summary>

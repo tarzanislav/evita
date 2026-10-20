@@ -23,7 +23,7 @@ DefaultDirName={autopf}\EviTA
 DefaultGroupName=EviTA
 DisableProgramGroupPage=yes
 OutputDir=Output
-OutputBaseFilename=EviTA_Setup
+OutputBaseFilename=EviTA_Setup_{#AppVersion}
 SetupIconFile=..\src\Evita.App\Assets\evita.ico
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
@@ -60,9 +60,17 @@ Name: "{autodesktop}\EviTA"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,EviTA}"; Flags: nowait postinstall skipifsilent
+; po automatickej aktualizácii z programu (tichá inštalácia s parametrom /SPUSTIT=1) sa EviTA znova spustí
+Filename: "{app}\{#AppExe}"; Flags: nowait runasoriginaluser; Check: SpustitPoAktualizacii
 
 [UninstallRun]
 ; úloha pravidelnej zálohy v Plánovači úloh Windows (ak bola nastavená)
 Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""EviTA zaloha"" /F"; Flags: runhidden; RunOnceId: "ZmazatUlohuZalohy"
 
-; Databáza (C:\ProgramData\EviTA) a zálohy (Dokumenty\EviTA) sa pri odinštalovaní nemažú.
+[Code]
+function SpustitPoAktualizacii: Boolean;
+begin
+  Result := ExpandConstant('{param:SPUSTIT|0}') = '1';
+end;
+
+// Databáza (C:\ProgramData\EviTA) a zálohy (Dokumenty\EviTA) sa pri odinštalovaní nemažú.

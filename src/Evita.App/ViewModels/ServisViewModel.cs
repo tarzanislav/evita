@@ -21,6 +21,8 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     private readonly ServisService _servis = new();
     private readonly ZalohaService _zalohy = new();
     private readonly DiagnostikaService _diagnostika = new();
+    private readonly AktualizaciaService _aktualizacie = new();
+    private bool _nacitavam;
     private readonly StringBuilder _zaznamProtokolu = new();
 
     public ServisViewModel(MainViewModel hlavne)
@@ -52,6 +54,49 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     // kontrola a oprava
     [ObservableProperty] private string _protokol = "";
 
+    // aktualizácie
+    [ObservableProperty] private bool _kontrolovatAktualizacie;
+    [ObservableProperty] private string _aktualizaciaStav = "";
+
+    public string AktualnaVerziaText => $"EviTA {AktualizaciaService.AktualnaVerzia}";
+
+    public string StrankaVydani => AktualizaciaService.StrankaVydani;
+
+    partial void OnKontrolovatAktualizacieChanged(bool value)
+    {
+        if (!_nacitavam)
+        {
+            _aktualizacie.NastavKontroluPriSpusteni(value);
+        }
+    }
+
+    [RelayCommand]
+    private async Task SkontrolovatAktualizacie()
+    {
+        AktualizaciaStav = "Zisťujem, či je dostupná nová verzia…";
+        try
+        {
+            var verzia = await _aktualizacie.SkontrolujAsync();
+            if (verzia is null)
+            {
+                AktualizaciaStav = $"Máte najnovšiu verziu ({AktualizaciaService.AktualnaVerzia}). Skontrolované {Sk.DatumCas(DateTime.Now)}.";
+            }
+            else
+            {
+                AktualizaciaStav = $"Je dostupná nová verzia {verzia.Verzia}.";
+                _hlavne.ZobrazitAktualizaciu(verzia);
+            }
+        }
+        catch (EvitaException chyba)
+        {
+            AktualizaciaStav = chyba.Message;
+        }
+    }
+
+    [RelayCommand]
+    private void OtvoritStrankuVydani() =>
+        Process.Start(new ProcessStartInfo(AktualizaciaService.StrankaVydani) { UseShellExecute = true });
+
     public void Obnov()
     {
         var info = _servis.Info();
@@ -63,6 +108,15 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
                 $"{info.Miestnosti} miestností, {info.Osoby} osôb, {info.ZaznamyHistorie} záznamov v histórii zmien";
         VerziaSchemy = info.VerziaSchemy.ToString();
         UkazkoveData = info.UkazkoveData;
+
+        _nacitavam = true;
+        KontrolovatAktualizacie = _aktualizacie.KontrolovatPriSpusteni();
+        if (AktualizaciaStav.Length == 0 && _aktualizacie.PoslednaKontrola() is { } kontrola)
+        {
+            AktualizaciaStav = $"Posledná kontrola: {Sk.DatumCas(kontrola)}.";
+        }
+
+        _nacitavam = false;
 
         var nastavenia = _zalohy.NacitajNastavenia();
         ZalohaZapnuta = nastavenia.Zapnuta;

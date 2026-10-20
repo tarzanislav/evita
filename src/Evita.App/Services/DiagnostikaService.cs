@@ -150,7 +150,7 @@ public sealed class DiagnostikaService
 
         // 1. surová kópia pôvodného súboru (môže byť nečitateľný, preto len kopírujeme súbor)
         SqliteConnection.ClearAllPools();
-        var kopia = Path.Combine(priecinokZaloh, $"EviTA_pred_zachranou_{cas:yyyy-MM-dd_HHmmss}.db");
+        var kopia = ZalohaService.CislovanaCesta(priecinokZaloh, $"EviTA_pred_zachranou_{cas:yyyy-MM-dd_HHmmss}", ".db");
         File.Copy(Databaza.Cesta, kopia, overwrite: true);
         if (File.Exists(Databaza.Cesta + "-wal"))
         {

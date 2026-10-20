@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Stiahnuť zdrojový kód
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Nainštalovať .NET 10
         uses: actions/setup-dotnet@v5
@@ -75,17 +77,37 @@ jobs:
           & $iscc "/DAppVersion=${{ steps.verzia.outputs.cislo }}" "/DSourceDir=$PWD\publish" installer\evita.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Zverejniť najnovšiu verziu
+      - name: Zverejniť novú verziu
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $verzia = "${{ steps.verzia.outputs.cislo }}"
+          $instalator = "installer/Output/EviTA_Setup_$verzia.exe"
+
+          # staré priebežné vydanie z prvých verzií už nepotrebujeme
           gh release delete najnovsia --yes --cleanup-tag 2>$null
           $global:LASTEXITCODE = 0
-          $poznamky = "Automaticky zostavená verzia $verzia z $(Get-Date -Format 'd. M. yyyy H:mm').`n`nStiahnite súbor EviTA_Setup.exe a spustite ho."
-          gh release create najnovsia installer/Output/EviTA_Setup.exe `
-            --title "EviTA $verzia (najnovšia)" `
-            --notes $poznamky `
-            --prerelease `
+
+          # novinky = zmeny od predchádzajúcej verzie
+          $predosla = git describe --tags --abbrev=0 --match "v*" 2>$null
+          $global:LASTEXITCODE = 0
+          if ($predosla) {
+            $zmeny = git log --no-merges --pretty=format:"- %s" "$predosla..HEAD"
+          } else {
+            $zmeny = git log --no-merges --pretty=format:"- %s" -n 15
+          }
+          $poznamky = @(
+            "## Novinky vo verzii $verzia",
+            "",
+            ($zmeny -join "`n"),
+            "",
+            "Stiahnite súbor **EviTA_Setup_$verzia.exe** a spustite ho. Nainštalovaná EviTA (od verzie 0.2.7) ponúkne aktualizáciu sama pri spustení."
+          ) -join "`n"
+          Set-Content -Path notes.md -Value $poznamky -Encoding utf8
+
+          gh release create "v$verzia" $instalator `
+            --title "EviTA $verzia" `
+            --notes-file notes.md `
+            --latest `
             --target ${{ github.sha }}

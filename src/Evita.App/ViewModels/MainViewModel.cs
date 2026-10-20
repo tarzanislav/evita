@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Evita.Data;
 using Evita.Models;
+using Evita.Services;
 
 namespace Evita.ViewModels;
 
@@ -37,6 +39,35 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _ukazkoveData;
+
+    /// <summary>Novšia verzia programu zverejnená na GitHube (ak existuje).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(JeNovaVerzia), nameof(NovaVerziaText))]
+    private DostupnaVerzia? _novaVerzia;
+
+    public bool JeNovaVerzia => NovaVerzia is not null;
+
+    public string NovaVerziaText => NovaVerzia is null
+        ? ""
+        : $"Je dostupná nová verzia EviTA {NovaVerzia.Verzia} (máte {AktualizaciaService.AktualnaVerzia}).";
+
+    /// <summary>Žiadosť pre hlavné okno: zobraziť ponuku aktualizácie.</summary>
+    public event Action<DostupnaVerzia>? ZiadostOAktualizaciu;
+
+    public void ZobrazitAktualizaciu(DostupnaVerzia verzia)
+    {
+        NovaVerzia = verzia;
+        ZiadostOAktualizaciu?.Invoke(verzia);
+    }
+
+    [RelayCommand]
+    private void Aktualizovat()
+    {
+        if (NovaVerzia is { } verzia)
+        {
+            ZobrazitAktualizaciu(verzia);
+        }
+    }
 
     /// <summary>Žiadosť pre hlavné okno: prepnúť menu na sekciu (okno potom zavolá Prejdi).</summary>
     public event Action<string>? ZiadostOSekciu;

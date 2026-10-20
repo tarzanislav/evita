@@ -177,6 +177,31 @@
                 </Grid>
             </TabItem>
 
+            <!-- AKTUALIZÁCIE -->
+            <TabItem Header="Aktualizácie">
+                <StackPanel Margin="0,12,8,8" MaxWidth="900" HorizontalAlignment="Left">
+                    <Border Style="{StaticResource Karta}">
+                        <StackPanel>
+                            <TextBlock Text="Aktualizácie programu" Style="{StaticResource Podnadpis}" />
+                            <TextBlock>
+                                <Run Text="Nainštalovaná verzia:" /> <Run Text="{Binding AktualnaVerziaText, Mode=OneWay}" FontWeight="SemiBold" />
+                            </TextBlock>
+                            <TextBlock Text="{Binding AktualizaciaStav}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <CheckBox Content="Pri spustení programu zistiť, či je dostupná nová verzia" Margin="0,12,0,0"
+                                      IsChecked="{Binding KontrolovatAktualizacie}" />
+                            <WrapPanel Margin="0,14,0,0">
+                                <Button Style="{DynamicResource AccentButtonStyle}" Margin="0,0,8,8" Padding="14,7"
+                                        Content="Skontrolovať teraz" Command="{Binding SkontrolovatAktualizacieCommand}" />
+                                <Button Style="{StaticResource Akcia}" Content="Všetky verzie na GitHube"
+                                        Command="{Binding OtvoritStrankuVydaniCommand}" />
+                            </WrapPanel>
+                            <TextBlock Style="{StaticResource Popis}" Margin="0,6,0,0"
+                                       Text="Nová verzia sa stiahne z GitHubu, databáza sa pred inštaláciou automaticky zálohuje a program sa po aktualizácii sám znova spustí. Vaše dáta zostávajú zachované." />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </TabItem>
+
             <!-- DATABÁZA A UKÁŽKOVÉ DÁTA -->
             <TabItem Header="Databáza">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">

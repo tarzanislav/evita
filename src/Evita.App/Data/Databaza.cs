@@ -125,8 +125,7 @@ public static class Databaza
         }
 
         // bezpečnostná kópia pred úpravou štruktúry
-        Directory.CreateDirectory(PriecinokZaloh);
-        var kopia = Path.Combine(PriecinokZaloh, $"EviTA_pred_aktualizaciou_v{verzia}_{DateTime.Now:yyyy-MM-dd_HHmmss}.db");
+        var kopia = ZalohaService.CislovanaCesta(PriecinokZaloh, $"EviTA_pred_aktualizaciou_v{verzia}_{DateTime.Now:yyyy-MM-dd_HHmmss}", ".db");
 
         using var spojenie = OtvorSpojenie();
         using (var prikaz = spojenie.CreateCommand())

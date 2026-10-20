@@ -4,13 +4,22 @@ Desktopový program pre Windows 10/11 na evidenciu informačných technológií,
 
 ## Stiahnutie a inštalácia
 
-1. V repozitári otvorte vpravo časť **Releases** a vyberte **EviTA … (najnovšia)**.
-2. Stiahnite súbor **EviTA_Setup.exe** a spustite ho.
+1. Otvorte [najnovšiu verziu](https://github.com/tarzanislav/evita/releases/latest).
+2. Stiahnite súbor **EviTA_Setup_X.Y.Z.exe** (X.Y.Z je číslo verzie) a spustite ho.
 3. Windows môže zobraziť modré upozornenie *Neznámy vydavateľ* (inštalátor zatiaľ nemá platený podpisový certifikát).
    Kliknite na **Ďalšie informácie → Spustiť aj tak**.
 
 Pri prvom spustení si vyberiete, či chcete začať s **ukážkovými dátami** (200 položiek, 30 osôb, 25 miestností)
-alebo s **prázdnou databázou**. Ukážkové dáta neskôr vymažete v časti *Servis → Vymazať dáta a začať nanovo*.
+alebo s **prázdnou databázou**. Ukážkové dáta neskôr vymažete v časti *Servis → Databáza → Vymazať dáta a začať nanovo*.
+
+## Aktualizácie
+
+Od verzie 0.2.7 program pri spustení sám zistí, či je na GitHube nová verzia, ukáže novinky a ponúkne aktualizáciu.
+Po kliknutí na *Aktualizovať teraz* sa nová verzia stiahne, databáza sa zálohuje, nainštaluje sa a program sa znova spustí.
+Kontrolu možno vypnúť alebo spustiť ručne v časti *Servis → Aktualizácie*.
+
+Každá verzia má na GitHube vlastné vydanie (napr. `v0.2.7`) s inštalátorom `EviTA_Setup_0.2.7.exe`
+a zdrojovým kódom `evita-0.2.7.zip` a `evita-0.2.7.tar.gz`.
 
 ## Kde sú dáta
 

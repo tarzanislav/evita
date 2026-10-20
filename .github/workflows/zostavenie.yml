@@ -67,6 +67,27 @@ jobs:
           if ($p.ExitCode -ne 0) { exit 1 }
           Write-Host "::notice::Samotest OK"
 
+      - name: Uložiť výstupy samotestu (len vývojové vetvy)
+        if: github.ref != 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $zdroj = Join-Path $env:RUNNER_TEMP "evita-samotest"
+          $ciel = Join-Path $env:RUNNER_TEMP "vystupy"
+          New-Item -ItemType Directory -Force $ciel | Out-Null
+          foreach ($p in @("Export", "Vzory")) {
+            if (Test-Path (Join-Path $zdroj $p)) { Copy-Item (Join-Path $zdroj "$p\*") $ciel -Force }
+          }
+          Copy-Item (Join-Path $zdroj "samotest.log") $ciel -ErrorAction SilentlyContinue
+          Set-Location $ciel
+          git init -q -b vystupy
+          git config user.name "EviTA zostavenie"
+          git config user.email "zostavenie@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Výstupy samotestu ${{ github.sha }}"
+          git push -q -f "https://x-access-token:$env:GH_TOKEN@github.com/${{ github.repository }}.git" vystupy
+
       - name: Zostaviť inštalátor
         shell: pwsh
         run: |

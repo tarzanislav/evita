@@ -17,6 +17,7 @@
             <pom:FarbaNaStetec x:Key="FarbaNaStetec" />
             <pom:HodnotyNaKrivku x:Key="HodnotyNaKrivku" />
             <pom:PrelozText x:Key="PrelozText" />
+            <pom:RovnaSa x:Key="RovnaSa" />
 
             <FontFamily x:Key="IkonovePismo">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 

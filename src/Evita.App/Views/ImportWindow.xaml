@@ -49,21 +49,21 @@
                                Text="Excel (.xlsx), CSV, JSON alebo XML. Stĺpce sa priradia podľa názvov; dátumy môžu byť v tvare 20.10.2026, 20. 10. 2026 aj 2026-10-20." />
 
                     <TextBlock Text="Druh importu" Style="{StaticResource Stitok}" Margin="0,20,0,6" />
-                    <RadioButton GroupName="druh" IsChecked="{Binding DruhZlucenie}" Margin="0,0,0,8">
+                    <RadioButton GroupName="druh" IsChecked="{Binding VolbaDruhu, Converter={StaticResource RovnaSa}, ConverterParameter=zlucenie}" Margin="0,0,0,8">
                         <StackPanel>
                             <TextBlock Text="Doplniť položky do evidencie" FontWeight="SemiBold" />
                             <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"
                                        Text="Prvé naplnenie zo starej evidencie, hromadné doplnenie alebo spojenie dvoch evidencií. Pridajú sa len položky, ktoré v evidencii ešte nie sú. Nové položky dostanú prírastkové čísla od posledného + 1, pôvodné číslo sa zapíše do histórie." />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton GroupName="druh" IsChecked="{Binding DruhCela}" Margin="0,0,0,8">
+                    <RadioButton GroupName="druh" IsChecked="{Binding VolbaDruhu, Converter={StaticResource RovnaSa}, ConverterParameter=cela}" Margin="0,0,0,8">
                         <StackPanel>
                             <TextBlock Text="Preniesť celú databázu do prázdnej evidencie" FontWeight="SemiBold" />
                             <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"
                                        Text="Prechod na nový počítač z úplného exportu EviTA (JSON alebo XML). Zachovajú sa prírastkové čísla, číselníky aj história zmien. Evidencia musí byť prázdna." />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton x:Name="VolbaCiselnik" GroupName="druh" IsChecked="{Binding DruhCiselnik}">
+                    <RadioButton x:Name="VolbaCiselnik" GroupName="druh" IsChecked="{Binding VolbaDruhu, Converter={StaticResource RovnaSa}, ConverterParameter=ciselnik}">
                         <StackPanel>
                             <TextBlock Text="Doplniť kategórie, miestnosti alebo osoby" FontWeight="SemiBold" />
                             <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"

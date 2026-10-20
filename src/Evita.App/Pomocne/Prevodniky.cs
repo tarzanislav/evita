@@ -120,3 +120,17 @@ public sealed class PrelozText : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>
+/// Prepínač (RadioButton) pre jednu hodnotu: zaškrtnutý, keď sa hodnota rovná parametru. Pri odškrtnutí nezapíše nič,
+/// takže skupina prepínačov nemôže omylom prepísať zvolenú hodnotu.
+/// </summary>
+public sealed class RovnaSa : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
+        string.Equals(value?.ToString(), parameter?.ToString(), StringComparison.Ordinal);
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
+        value is true ? parameter ?? Binding.DoNothing : Binding.DoNothing;
+}
+

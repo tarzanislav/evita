@@ -89,12 +89,17 @@ public partial class ImportViewModel : ObservableObject
     // ------------------------------------------------------------------ krok 1
 
     [ObservableProperty] private string _cesta = "";
-    [ObservableProperty] private bool _druhZlucenie = true;
-    [ObservableProperty] private bool _druhCela;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VolbaDruhu))]
+    private bool _druhZlucenie = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VolbaDruhu))]
+    private bool _druhCela;
 
     /// <summary>Import číselníka (kategórie, miestnosti alebo osoby) namiesto položiek.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(JeCiselnik), nameof(JePolozky))]
+    [NotifyPropertyChangedFor(nameof(JeCiselnik), nameof(JePolozky), nameof(VolbaDruhu))]
     private bool _druhCiselnik;
 
     // voľby druhu importu sa vylučujú (aj keď ich nastaví kód, nielen prepínač v okne)
@@ -122,6 +127,29 @@ public partial class ImportViewModel : ObservableObject
         {
             DruhZlucenie = false;
             DruhCela = false;
+        }
+    }
+
+    /// <summary>Zvolený druh importu pre prepínače v okne: „zlucenie“, „cela“ alebo „ciselnik“.</summary>
+    public string VolbaDruhu
+    {
+        get => DruhCiselnik ? "ciselnik" : DruhCela ? "cela" : "zlucenie";
+        set
+        {
+            switch (value)
+            {
+                case "ciselnik":
+                    DruhCiselnik = true;
+                    break;
+                case "cela":
+                    DruhCela = true;
+                    break;
+                default:
+                    DruhZlucenie = true;
+                    break;
+            }
+
+            OnPropertyChanged();
         }
     }
 

@@ -419,6 +419,9 @@ internal static class Samotest
 
             Krok("import v poriadku");
 
+            // po prenose celej databázy majú položky nové interné Id
+            riadky = sluzba.NacitajRiadky();
+
             // obrazovky a okná
             var okno = new MainWindow();
             aplikacia.MainWindow = okno;

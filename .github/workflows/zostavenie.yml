@@ -57,7 +57,7 @@ jobs:
           }
           if (Test-Path $log) {
             Get-Content $log
-            Get-Content $log | Where-Object { $_ -match 'CHYBA' } | Select-Object -First 5 | ForEach-Object {
+            Get-Content $log | Where-Object { $_ -cmatch 'CHYBA' } | Select-Object -First 5 | ForEach-Object {
               $riadok = $_ -replace "`r", '' -replace '%', '%25'
               Write-Host "::error::$riadok"
             }

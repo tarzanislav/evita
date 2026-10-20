@@ -78,7 +78,9 @@ public partial class ImportViewModel : ObservableObject
     [ObservableProperty] private bool _druhZlucenie = true;
     [ObservableProperty] private bool _druhCela;
 
-    public string PriecinokVzorov => VzoryService.Priecinok;
+    public IReadOnlyList<VzorovySubor> Vzory => VzoryService.Zoznam;
+
+    [ObservableProperty] private string _stiahnutyVzor = "";
 
     public DruhImportu Druh => DruhCela ? DruhImportu.CelaDatabaza : DruhImportu.Zlucenie;
 
@@ -102,16 +104,41 @@ public partial class ImportViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OtvoritVzory()
+    private void StiahnutVzor(VzorovySubor? vzor)
     {
+        if (vzor is null)
+        {
+            return;
+        }
+
         try
         {
-            Dialogy.Cakaj(() => VzoryService.Vytvor());
-            Tlac.OtvorPriecinok(VzoryService.Priecinok, Path.Combine(VzoryService.Priecinok, VzoryService.Excel));
+            string? cesta = null;
+            Dialogy.Cakaj(() => cesta = VzoryService.Stiahni(vzor));
+            StiahnutyVzor = cesta!;
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Vzorové súbory sa nepodarilo vytvoriť.", ex);
+            Dialogy.Chyba("Vzorový súbor sa nepodarilo uložiť do priečinka Stiahnuté.", ex);
+        }
+    }
+
+    [RelayCommand]
+    private void ZobrazitStiahnuty()
+    {
+        if (StiahnutyVzor.Length > 0)
+        {
+            Tlac.OtvorPriecinok(Path.GetDirectoryName(StiahnutyVzor)!, StiahnutyVzor);
+        }
+    }
+
+    /// <summary>Stiahnutý vzor rovno použije ako súbor na import.</summary>
+    [RelayCommand]
+    private void PouzitStiahnuty()
+    {
+        if (StiahnutyVzor.Length > 0)
+        {
+            Cesta = StiahnutyVzor;
         }
     }
 

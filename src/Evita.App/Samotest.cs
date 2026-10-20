@@ -334,6 +334,15 @@ internal static class Samotest
             Over(csvTest.Count == 2 && csvTest[0][1] == "b;c" && csvTest[0][2] == "d\"e" && csvTest[1][1] == "x\ny", "CSV s úvodzovkami a zalomením riadku");
 
             Over(Directory.Exists(VzoryService.Vytvor()) && VzoryService.Existuju, "vzorové súbory");
+            foreach (var vzor in VzoryService.Zoznam)
+            {
+                var stiahnuty = VzoryService.Stiahni(vzor);
+                Over(File.Exists(stiahnuty) && Path.GetFileName(stiahnuty) == vzor.Subor
+                     && Path.GetDirectoryName(stiahnuty) == VzoryService.PriecinokStiahnutych, $"stiahnutie vzoru {vzor.Nazov}");
+            }
+
+            Over(File.Exists(Path.Combine(VzoryService.PriecinokStiahnutych, XsdEviTA.NazovSuboru)), "pri vzore XML sa stiahne aj evita.xsd");
+            Over(Path.GetFileName(VzoryService.Stiahni(VzoryService.Zoznam[0])) == "EviTA_vzor_Excel (2).xlsx", "opakované stiahnutie neprepíše súbor");
             foreach (var vzorovy in new[] { VzoryService.Excel, VzoryService.Csv, VzoryService.Json, VzoryService.Xml })
             {
                 var zdroj = import.Nacitaj(Path.Combine(VzoryService.Priecinok, vzorovy));
@@ -440,6 +449,13 @@ internal static class Samotest
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
+                if (sekcia is "import")
+                {
+                    model.ImportExport.StiahnutVzorCommand.Execute(VzoryService.Zoznam[0]);
+                    Pumpuj();
+                    Over(model.ImportExport.StiahnutyVzor.EndsWith(".xlsx", StringComparison.Ordinal), "obrazovka Import a export: stiahnutie vzoru");
+                }
+
                 if (sekcia is "import" or "evidencia")
                 {
                     Snimka(okno, "okno_" + sekcia);
@@ -525,6 +541,10 @@ internal static class Samotest
             var oknoImportu = new ImportWindow(sprievodca);
             oknoImportu.Show();
             Pumpuj();
+            sprievodca.StiahnutVzorCommand.Execute(VzoryService.Zoznam[1]);
+            Pumpuj();
+            Over(File.Exists(sprievodca.StiahnutyVzor), "sprievodca: stiahnutie vzoru");
+            sprievodca.Cesta = Path.Combine(VzoryService.Priecinok, VzoryService.Csv);
             Snimka(oknoImportu, "import_1");
             sprievodca.DalejCommand.Execute(null);
             Pumpuj();

@@ -67,16 +67,25 @@
                                Text="Zálohu EviTA (súbor ZIP) obnovíte v časti Servis → Obnova." />
 
                     <Border Style="{StaticResource Karta}" Margin="0,22,0,0" Padding="14,12">
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="Otvoriť vzorové súbory" Padding="12,5" VerticalAlignment="Center"
-                                    Command="{Binding OtvoritVzoryCommand}" />
-                            <StackPanel Margin="0,0,12,0">
-                                <TextBlock Text="Vzorové súbory" FontWeight="SemiBold" />
-                                <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"
-                                           Text="vzor_import.xlsx (s návodom a výberovými zoznamami), vzor_import.csv, vzor_import.json, vzor_import.xml a popis formátu evita.xsd." />
-                                <TextBlock Style="{StaticResource Popis}" Text="{Binding PriecinokVzorov}" />
+                        <StackPanel>
+                            <TextBlock Text="Vzorové súbory pre import" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                       Text="Kliknutím sa vzor uloží do priečinka Stiahnuté." />
+                            <ItemsControl ItemsSource="{Binding Vzory}" ItemTemplate="{StaticResource TlacidloVzoru}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding StiahnutyVzor, Converter={StaticResource NieJePrazdne}}">
+                                <TextBlock Text="{Binding StiahnutyVzor, StringFormat=Uložené: {0}}" Style="{StaticResource Popis}"
+                                           VerticalAlignment="Center" Margin="0,0,12,0" />
+                                <Button Content="Zobraziť v priečinku" Padding="10,3" Command="{Binding ZobrazitStiahnutyCommand}" />
+                                <Button Content="Importovať tento súbor" Padding="10,3" Margin="6,0,0,0" Command="{Binding PouzitStiahnutyCommand}" />
                             </StackPanel>
-                        </DockPanel>
+                        </StackPanel>
                     </Border>
                 </StackPanel>
             </ScrollViewer>

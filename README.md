@@ -22,8 +22,9 @@ v časti *Servis → Databáza → Vymazať dáta a začať nanovo*.
   kliknutím vrátiť. Duplicity sa hľadajú podľa identifikátora, sériového čísla a zhody názvu, kategórie a miestnosti.
 - **Prenos celej databázy** na iný počítač: úplný export JSON alebo XML naimportovaný do prázdnej evidencie
   zachová prírastkové čísla, číselníky aj históriu zmien.
-- **Vzorové súbory** `vzor_import.xlsx` (s návodom a výberovými zoznamami), `.csv`, `.json`, `.xml`
-  sú v priečinku `Dokumenty\EviTA\Vzory`.
+- **Vzorové súbory** sú priamo v programe (*Import a export → Vzorové súbory pre import*, aj v sprievodcovi).
+  Kliknutím sa uloží do priečinka Stiahnuté: `EviTA_vzor_Excel.xlsx` (s návodom a výberovými zoznamami),
+  `EviTA_vzor_CSV.csv`, `EviTA_vzor_JSON.json` a `EviTA_vzor_XML.xml` (spolu s popisom formátu `evita.xsd`).
 
 ## Aktualizácie
 

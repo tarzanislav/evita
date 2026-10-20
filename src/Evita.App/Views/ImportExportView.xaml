@@ -41,16 +41,34 @@
             </Grid>
 
             <Border Style="{StaticResource Karta}" Margin="0,16,0,0">
-                <DockPanel>
-                    <Button DockPanel.Dock="Right" Content="Otvoriť vzorové súbory" Padding="12,6" VerticalAlignment="Center"
-                            Command="{Binding OtvoritVzoryCommand}" />
-                    <StackPanel Margin="0,0,16,0">
-                        <TextBlock Text="Vzorové súbory pre import" Style="{StaticResource Podnadpis}" />
-                        <TextBlock TextWrapping="Wrap"
-                                   Text="vzor_import.xlsx – hárok Položky s ukážkovými riadkami a výberovými zoznamami pre kategóriu a stav, hárok Návod s popisom každého stĺpca; vzor_import.csv (UTF-8, oddeľovač bodkočiarka); vzor_import.json a vzor_import.xml s popisom formátu evita.xsd." />
-                        <TextBlock Style="{StaticResource Popis}" Margin="0,4,0,0" Text="{Binding PriecinokVzorov}" />
-                    </StackPanel>
-                </DockPanel>
+                <StackPanel>
+                    <TextBlock Text="Vzorové súbory pre import" Style="{StaticResource Podnadpis}" />
+                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,12"
+                               Text="Kliknutím sa vzor uloží do priečinka Stiahnuté. Vyplňte ho vlastnými údajmi a naimportujte sprievodcom. Každý vzor obsahuje 5 ukážkových položiek so všetkými stĺpcami." />
+                    <ItemsControl ItemsSource="{Binding Vzory}" ItemTemplate="{StaticResource TlacidloVzoru}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                    <DockPanel Margin="0,2,0,0">
+                        <Button DockPanel.Dock="Right" Content="Zobraziť v priečinku" Padding="12,4"
+                                Command="{Binding ZobrazitStiahnutyCommand}" />
+                        <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,12,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Popis}">
+                                    <Setter Property="Text" Value="{Binding StiahnutyVzor, StringFormat=Uložené: {0}}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding StiahnutyVzor}" Value="">
+                                            <Setter Property="Text" Value="{Binding PriecinokStiahnutych, StringFormat=Súbory sa ukladajú do priečinka {0}}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </DockPanel>
+                </StackPanel>
             </Border>
 
             <Border Style="{StaticResource Karta}" Margin="0,16,0,0">

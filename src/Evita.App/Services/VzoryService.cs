@@ -1,19 +1,95 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using ClosedXML.Excel;
 using Evita.Data;
 using Evita.Models;
 
 namespace Evita.Services;
 
-/// <summary>Vzorové súbory pre import (Dokumenty\EviTA\Vzory) – vždy v aktuálnom formáte programu.</summary>
+/// <summary>Jeden vzorový súbor tak, ako sa ponúka v programe na stiahnutie.</summary>
+public sealed record VzorovySubor(string Nazov, string Popis, string Subor);
+
+/// <summary>
+/// Vzorové súbory pre import – vytvára ich priamo program (vždy v aktuálnom formáte) a ponúka ich na stiahnutie.
+/// Pracovná kópia je v Dokumenty\EviTA\Vzory.
+/// </summary>
 public static class VzoryService
 {
-    public const string Excel = "vzor_import.xlsx";
-    public const string Csv = "vzor_import.csv";
-    public const string Json = "vzor_import.json";
-    public const string Xml = "vzor_import.xml";
+    public const string Excel = "EviTA_vzor_Excel.xlsx";
+    public const string Csv = "EviTA_vzor_CSV.csv";
+    public const string Json = "EviTA_vzor_JSON.json";
+    public const string Xml = "EviTA_vzor_XML.xml";
 
     private static readonly string[] Subory = { Excel, Csv, Json, Xml, XsdEviTA.NazovSuboru };
+
+    /// <summary>Názvy zo starších verzií – pri vytvorení vzorov sa odstránia.</summary>
+    private static readonly string[] StareSubory = { "vzor_import.xlsx", "vzor_import.csv", "vzor_import.json", "vzor_import.xml" };
+
+    /// <summary>Vzory v poradí a s názvami formátov ako pri exporte.</summary>
+    public static IReadOnlyList<VzorovySubor> Zoznam { get; } = new VzorovySubor[]
+    {
+        new("Excel (.xlsx)", "s návodom a výberovými zoznamami", Excel),
+        new("CSV (.csv)", "UTF-8, oddeľovač bodkočiarka", Csv),
+        new("JSON (.json)", "úplná štruktúra s číselníkmi", Json),
+        new("XML (.xml)", "spolu s popisom formátu evita.xsd", Xml),
+    };
+
+    /// <summary>Priečinok Stiahnuté (pri teste v testovacom priečinku).</summary>
+    public static string PriecinokStiahnutych
+    {
+        get
+        {
+            if (Environment.GetEnvironmentVariable("EVITA_DATA_DIR") is { Length: > 0 } test)
+            {
+                return Path.Combine(test, "Stiahnute");
+            }
+
+            try
+            {
+                var id = new Guid("374DE290-123F-4565-9164-39C4925E467B"); // FOLDERID_Downloads
+                if (SHGetKnownFolderPath(ref id, 0, IntPtr.Zero, out var cesta) == 0 && !string.IsNullOrEmpty(cesta))
+                {
+                    return cesta;
+                }
+            }
+            catch (Exception)
+            {
+                // náhradná cesta nižšie
+            }
+
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        }
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern int SHGetKnownFolderPath(ref Guid id, uint priznaky, IntPtr token, out string cesta);
+
+    /// <summary>
+    /// Uloží vzor do priečinka Stiahnuté (ak tam súbor s rovnakým názvom už je, pridá číslo „(2)“).
+    /// Pri XML uloží vedľa aj popis formátu evita.xsd. Vráti cestu k uloženému súboru.
+    /// </summary>
+    public static string Stiahni(VzorovySubor vzor)
+    {
+        var zdroj = Vytvor();
+        var ciel = PriecinokStiahnutych;
+        Directory.CreateDirectory(ciel);
+
+        var zaklad = Path.GetFileNameWithoutExtension(vzor.Subor);
+        var pripona = Path.GetExtension(vzor.Subor);
+        var cesta = Path.Combine(ciel, vzor.Subor);
+        for (var i = 2; File.Exists(cesta); i++)
+        {
+            cesta = Path.Combine(ciel, $"{zaklad} ({i}){pripona}");
+        }
+
+        File.Copy(Path.Combine(zdroj, vzor.Subor), cesta);
+        if (vzor.Subor == Xml)
+        {
+            File.Copy(Path.Combine(zdroj, XsdEviTA.NazovSuboru), Path.Combine(ciel, XsdEviTA.NazovSuboru), overwrite: true);
+        }
+
+        return cesta;
+    }
 
     /// <summary>Dokumenty\EviTA\Vzory (pri teste v testovacom priečinku).</summary>
     public static string Priecinok =>
@@ -26,6 +102,18 @@ public static class VzoryService
     {
         var priecinok = Priecinok;
         Directory.CreateDirectory(priecinok);
+        foreach (var stary in StareSubory)
+        {
+            try
+            {
+                File.Delete(Path.Combine(priecinok, stary));
+            }
+            catch (Exception)
+            {
+                // starý vzor môže byť otvorený – nevadí
+            }
+        }
+
         var polozky = Ukazky();
         var stlpce = StlpcePrenosu.Vsetky
             .Where(s => s.Kluc is not (StlpcePrenosu.DatumZmeny or StlpcePrenosu.Identifikator))

@@ -399,7 +399,7 @@ public static class CitacSuborov
 
         if (zoznam is not { } pole || pole.ValueKind != JsonValueKind.Array)
         {
-            throw new EvitaException("V súbore JSON sa nenašiel zoznam položiek. Pozrite si vzorový súbor vzor_import.json.");
+            throw new EvitaException("V súbore JSON sa nenašiel zoznam položiek. Pozrite si vzorový súbor EviTA_vzor_JSON.json.");
         }
 
         var objekty = pole.EnumerateArray().Where(o => o.ValueKind == JsonValueKind.Object)
@@ -453,7 +453,7 @@ public static class CitacSuborov
             prvky = NajdiOpakovane(koren);
             if (prvky.Count == 0)
             {
-                throw new EvitaException("V súbore XML sa nenašiel zoznam položiek. Pozrite si vzorový súbor vzor_import.xml.");
+                throw new EvitaException("V súbore XML sa nenašiel zoznam položiek. Pozrite si vzorový súbor EviTA_vzor_XML.xml.");
             }
         }
 

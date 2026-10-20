@@ -18,7 +18,12 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
         _hlavne = hlavne;
     }
 
-    public string PriecinokVzorov => VzoryService.Priecinok;
+    public IReadOnlyList<VzorovySubor> Vzory => VzoryService.Zoznam;
+
+    public string PriecinokStiahnutych => VzoryService.PriecinokStiahnutych;
+
+    /// <summary>Kam sa uložil naposledy stiahnutý vzor.</summary>
+    [ObservableProperty] private string _stiahnutyVzor = "";
 
     [ObservableProperty] private string _pocetPoloziek = "";
     [ObservableProperty] private string _poslednyImport = "";
@@ -67,16 +72,35 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
     }
 
     [RelayCommand]
-    private void OtvoritVzory()
+    private void StiahnutVzor(VzorovySubor? vzor)
     {
+        if (vzor is null)
+        {
+            return;
+        }
+
         try
         {
-            Dialogy.Cakaj(() => VzoryService.Vytvor());
-            Tlac.OtvorPriecinok(VzoryService.Priecinok, System.IO.Path.Combine(VzoryService.Priecinok, VzoryService.Excel));
+            string? cesta = null;
+            Dialogy.Cakaj(() => cesta = VzoryService.Stiahni(vzor));
+            StiahnutyVzor = cesta!;
         }
         catch (Exception ex)
         {
-            Dialogy.Chyba("Vzorové súbory sa nepodarilo vytvoriť.", ex);
+            Dialogy.Chyba("Vzorový súbor sa nepodarilo uložiť do priečinka Stiahnuté.", ex);
+        }
+    }
+
+    [RelayCommand]
+    private void ZobrazitStiahnuty()
+    {
+        if (StiahnutyVzor.Length > 0)
+        {
+            Tlac.OtvorPriecinok(System.IO.Path.GetDirectoryName(StiahnutyVzor)!, StiahnutyVzor);
+        }
+        else
+        {
+            Tlac.OtvorPriecinok(VzoryService.PriecinokStiahnutych);
         }
     }
 

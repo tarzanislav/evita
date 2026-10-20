@@ -396,7 +396,7 @@ public static class CiarovyKod
         {
             throw new EvitaException(druh is "HEIC" or "AVIF"
                 ? Preklad.F($"Fotka je vo formáte {druh}, ktorý Windows bez doplnku neotvorí. Vo fotoaparáte mobilu vypnite formát HEIF (vysoká účinnosť) a odfoťte kód znova.")
-                : Preklad.F($"Súbor sa nedá otvoriť ako obrázok ({druh}, {subor.Length / 1024} kB)."), ex);
+                : Preklad.F($"Súbor sa nedá otvoriť ako obrázok ({druh}, {Math.Max(1, subor.Length / 1024)} kB)."), ex);
         }
 
         var povodny = $"{snimka.PixelWidth}×{snimka.PixelHeight}" + (otocenie != 0 ? $" ↻{otocenie:0}°" : "");

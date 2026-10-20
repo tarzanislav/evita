@@ -116,6 +116,9 @@ aj s exportom konfigurácie programu.
 - **Kamera počítača** (webkamera, notebook, tablet) číta kódy priamo z obrazu.
 - **Mobil ako skener:** EviTA ukáže QR kód s adresou stránky v miestnej sieti; mobil kód na zariadení odfotí alebo ho
   napíšete a počítač ho spracuje ako kód z čítačky. Bez aplikácie v mobile, stačí prehliadač a rovnaká Wi-Fi.
+  Stránku otvorte v prehliadači (Chrome) – vnútorný prehliadač aplikácie Skener (MIUI) posiela z fotoaparátu len malý
+  náhľad, z ktorého sa kód prečítať nedá; mobil vtedy ponúkne „Otvoriť v prehliadači Chrome“. Fotka sa číta v plnom
+  rozlíšení, pri neúspechu aj zaostrená; posledná nečitateľná fotka sa odloží do `Data\Diagnostika` na rozbor.
   Inštalátor povolí program vo Windows Firewall (porty 8765 – 8769, súkromná a doménová sieť).
 - **EAN výrobku** v karte položky (aj v exporte a importe): tlačidlo *Doplniť z internetu* vyhľadá výrobcu, model, názov
   a kategóriu vo vlastnej evidencii, v katalógu IT produktov **Open Icecat** a v databáze **UPCitemdb** (bez registrácie,

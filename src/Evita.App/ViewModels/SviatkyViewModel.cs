@@ -49,11 +49,21 @@ public partial class SviatkyViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private List<SviatokRiadok> _riadky = new();
     [ObservableProperty] private string _suhrn = "";
 
-    partial void OnRokChanged(int value) => Obnov();
+    /// <summary>Dni pracovného pokoja sa dajú meniť, len keď je zaškrtnuté „Zmeniť“ (ochrana pred omylom).</summary>
+    [ObservableProperty] private bool _rezimZmien;
 
-    partial void OnUkazPamatneChanged(bool value) => Obnov();
+    partial void OnRokChanged(int value) => Nacitaj();
 
+    partial void OnUkazPamatneChanged(bool value) => Nacitaj();
+
+    /// <summary>Pri každom otvorení obrazovky je zmena zamknutá.</summary>
     public void Obnov()
+    {
+        RezimZmien = false;
+        Nacitaj();
+    }
+
+    private void Nacitaj()
     {
         try
         {
@@ -91,11 +101,16 @@ public partial class SviatkyViewModel : ObservableObject, IObnovitelny
             KalendariumDb.Spolocna.ZrusZmenu(riadok.Sviatok.Id, Rok);
         }
 
-        Obnov();
+        Nacitaj();
     }
 
     private void PriZmene(SviatokRiadok riadok)
     {
+        if (!RezimZmien)
+        {
+            return;
+        }
+
         KalendariumDb.Spolocna.NastavDenPracovnehoPokoja(riadok.Sviatok.Id, Rok, riadok.DenPracovnehoPokoja);
         AktualizujSuhrn(KalendariumDb.Spolocna.Sviatky(Rok));
     }

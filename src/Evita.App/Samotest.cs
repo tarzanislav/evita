@@ -304,7 +304,13 @@ internal static class Samotest
             // sviatky: prepnutie dňa pracovného pokoja v tabuľke
             model.Sviatky.Rok = 2026;
             model.Sviatky.Obnov();
+            Over(!model.Sviatky.RezimZmien, "sviatky sú pri otvorení zamknuté");
             var riadokNovembra = model.Sviatky.Riadky.Single(r => r.Sviatok.Datum == new DateOnly(2026, 11, 17));
+            riadokNovembra.DenPracovnehoPokoja = true;
+            Over(!kalendar.JeSviatokVolno(new DateOnly(2026, 11, 17)), "bez „Zmeniť“ sa zmena neuloží");
+            model.Sviatky.RezimZmien = true;
+            riadokNovembra = model.Sviatky.Riadky.Single(r => r.Sviatok.Datum == new DateOnly(2026, 11, 17));
+            riadokNovembra.DenPracovnehoPokoja = false;
             riadokNovembra.DenPracovnehoPokoja = true;
             Over(kalendar.JeSviatokVolno(new DateOnly(2026, 11, 17)), "zmena v tabuľke sviatkov sa uloží");
             model.Sviatky.VratitPodlaZakonaCommand.Execute(null);

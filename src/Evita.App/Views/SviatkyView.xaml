@@ -4,15 +4,18 @@
     <DockPanel>
         <TextBlock DockPanel.Dock="Top" Text="Sviatky a dni pracovného pokoja" Style="{StaticResource Nadpis}" />
         <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,-8,0,12"
-                   Text="Podľa zákona č. 241/1993 Z. z. Zákon sa v posledných rokoch často mení – ak sa niektorý sviatok v danom roku stane alebo prestane byť dňom pracovného pokoja, zaškrtnite to tu. Zmena platí len pre zvolený rok." />
+                   Text="Podľa zákona č. 241/1993 Z. z. Zákon sa v posledných rokoch často mení – ak sa niektorý sviatok v danom roku stane alebo prestane byť dňom pracovného pokoja, zaškrtnite najprv „Zmeniť“ a potom políčko pri sviatku. Zmena platí len pre zvolený rok." />
 
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBlock Text="Rok:" VerticalAlignment="Center" Margin="0,0,8,0" />
             <ComboBox ItemsSource="{Binding Roky}" SelectedItem="{Binding Rok}" Width="110" />
             <CheckBox Content="Zobraziť aj pamätné dni" Margin="20,0,0,0" VerticalAlignment="Center"
                       IsChecked="{Binding UkazPamatne}" />
+            <CheckBox Content="Zmeniť" Margin="20,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"
+                      IsChecked="{Binding RezimZmien}"
+                      ToolTip="Odomkne políčka v stĺpci Deň pracovného pokoja – až potom sa dajú meniť." />
             <Button Content="Vrátiť pravidlá zo zákona" Margin="20,0,0,0" Padding="12,4"
-                    Command="{Binding VratitPodlaZakonaCommand}" />
+                    Command="{Binding VratitPodlaZakonaCommand}" IsEnabled="{Binding RezimZmien}" />
         </StackPanel>
 
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding Suhrn}" Margin="0,8,0,0" FontWeight="SemiBold" />
@@ -23,16 +26,17 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Dátum" Binding="{Binding Datum}" Width="100" />
                 <DataGridTextColumn Header="Deň" Binding="{Binding DenVTyzdni}" Width="90" />
-                <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="*" />
-                <DataGridTextColumn Header="Druh" Binding="{Binding Druh}" Width="120" />
                 <DataGridTemplateColumn Header="Deň pracovného pokoja" Width="170">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <CheckBox IsChecked="{Binding DenPracovnehoPokoja, UpdateSourceTrigger=PropertyChanged}"
+                                      IsEnabled="{Binding DataContext.RezimZmien, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                       HorizontalAlignment="Center" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="*" />
+                <DataGridTextColumn Header="Druh" Binding="{Binding Druh}" Width="120" />
                 <DataGridTextColumn Header="Poznámka" Binding="{Binding Poznamka}" Width="120" />
             </DataGrid.Columns>
         </DataGrid>

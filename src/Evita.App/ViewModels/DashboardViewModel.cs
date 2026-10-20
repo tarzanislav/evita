@@ -50,7 +50,7 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private string _velkostDatabazy = "";
     [ObservableProperty] private string _poslednaKontrola = "";
     [ObservableProperty] private string _kalendariumText = "";
-    public string VerziaProgramu => $"EviTA {AktualizaciaService.AktualnaVerzia}, verzia dátovej štruktúry {Databaza.VerziaSchemy}";
+    public string VerziaProgramu => Preklad.F($"EviTA {AktualizaciaService.AktualnaVerzia}, verzia dátovej štruktúry {Databaza.VerziaSchemy}");
 
     // ktoré panely sú zobrazené
     [ObservableProperty] private bool _ukazDnes = true;

@@ -39,7 +39,7 @@ public sealed record MoznostiExportu(
 public sealed class ExportService
 {
     public const string KlucStlpce = "Export.Stlpce";
-    public const string Titulok = "Evidencia IT techniky";
+    public static string Titulok => Preklad.T("Evidencia IT techniky");
 
     public static IReadOnlyList<PopisFormatu> Formaty => new PopisFormatu[]
     {
@@ -666,7 +666,7 @@ public sealed class ExportService
         static string E(string? text) => WebUtility.HtmlEncode(text ?? "");
 
         var sb = new StringBuilder();
-        sb.Append("<!DOCTYPE html>\n<html lang=\"sk\">\n<head>\n<meta charset=\"utf-8\">\n");
+        sb.Append($"<!DOCTYPE html>\n<html lang=\"{Preklad.Kod}\">\n<head>\n<meta charset=\"utf-8\">\n");
         sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
         sb.Append("<title>").Append(E(titulok)).Append("</title>\n");
         sb.Append("""
@@ -715,8 +715,9 @@ public sealed class ExportService
         }
 
         sb.Append("</tbody>\n</table>\n");
-        sb.Append("<footer>Vytvorené programom EviTA ").Append(E(AktualizaciaService.AktualnaVerzia.ToString(3)))
-            .Append(", ").Append(E(Sk.DatumCas(DateTime.Now))).Append(".</footer>\n");
+        sb.Append("<footer>")
+            .Append(E(Preklad.F($"Vytvorené programom EviTA {AktualizaciaService.AktualnaVerzia.ToString(3)}, {Sk.DatumCas(DateTime.Now)}.")))
+            .Append("</footer>\n");
         sb.Append("</body>\n</html>\n");
         File.WriteAllText(cesta, sb.ToString(), new UTF8Encoding(false));
     }

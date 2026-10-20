@@ -162,7 +162,7 @@ public sealed class PdfZostava
         paticka.Format.Font.Color = Colors.Gray;
         paticka.AddText(Preklad.F($"Vytlačené {Sk.DatumCas(Cas)} · EviTA · strana "));
         paticka.AddPageField();
-        paticka.AddText(" z ");
+        paticka.AddText(Preklad.T(" z "));
         paticka.AddNumPagesField();
     }
 

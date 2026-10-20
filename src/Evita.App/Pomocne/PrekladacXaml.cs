@@ -172,7 +172,9 @@ public static class PrekladacXaml
         var zdroj = DependencyPropertyHelper.GetValueSource(prvok, vlastnost);
         if (zdroj.IsExpression)
         {
-            if (BindingOperations.GetBindingBase(prvok, vlastnost) is { } vazba && PrelozenaVazba(vazba) is { } nova)
+            // väzbu zo štýlu alebo jeho spúšťača nemožno nahradiť (lokálna hodnota by prebila spúšťače)
+            if (zdroj.BaseValueSource is BaseValueSource.Local or BaseValueSource.ParentTemplate
+                && BindingOperations.GetBindingBase(prvok, vlastnost) is { } vazba && PrelozenaVazba(vazba) is { } nova)
             {
                 BindingOperations.SetBinding(prvok, vlastnost, nova);
             }

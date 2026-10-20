@@ -18,7 +18,7 @@ public partial class AktualizaciaWindow : Window
         _verzia = verzia;
         Nadpis.Text = Preklad.F($"Je dostupná nová verzia EviTA {verzia.Verzia}");
         Podnadpis.Text = Preklad.F($"Máte nainštalovanú verziu {AktualizaciaService.AktualnaVerzia}") +
-                         (verzia.Zverejnene is { } datum ? $". Nová verzia je zverejnená {Sk.DatumCas(datum)}." : ".");
+                         (verzia.Zverejnene is { } datum ? Preklad.F($". Nová verzia je zverejnená {Sk.DatumCas(datum)}.") : ".");
         Novinky.Text = UpravNovinky(verzia.Novinky);
         Closing += (_, e) =>
         {

@@ -1068,6 +1068,115 @@ internal static class Samotest
             okno.Close();
             Pumpuj();
 
+            // ------------------------------------------------------------ jazyky: celé rozhranie v každom jazyku
+            foreach (var jazyk in Preklad.Jazyky.Where(j => j.Kod != "sk"))
+            {
+                Preklad.Nastav(jazyk.Kod);
+                servis.NacitatUkazkoveData();
+                Preklad.Chybajuce.Clear();
+                Preklad.ZbieratChybajuce = true;
+                var neprelozene = new SortedSet<string>(StringComparer.Ordinal);
+                void Zbieraj(Window w)
+                {
+                    foreach (var text in PrekladacXaml.NeprelozeneTexty(w))
+                    {
+                        neprelozene.Add(text.Replace("\n", " ⏎ "));
+                    }
+                }
+
+                var oknoJazyka = new MainWindow();
+                aplikacia.MainWindow = oknoJazyka;
+                oknoJazyka.Show();
+                Pumpuj();
+                var modelJazyka = (MainViewModel)oknoJazyka.DataContext;
+                foreach (var sekcia in new[] { "dashboard", "evidencia", "kalendar", "ulohy", "poznamky", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "nastavenia" })
+                {
+                    oknoJazyka.OznacSekciu(sekcia);
+                    Pumpuj();
+                    if (sekcia == "dashboard")
+                    {
+                        var cakanieJazyka = System.Diagnostics.Stopwatch.StartNew();
+                        while (!modelJazyka.Dashboard.PosledneNacitanieZoSiete.IsCompleted && cakanieJazyka.Elapsed < TimeSpan.FromSeconds(20))
+                        {
+                            Pumpuj();
+                            Thread.Sleep(50);
+                        }
+
+                        Pumpuj();
+                    }
+
+                    PrejdiZalozky(oknoJazyka);
+                    Zbieraj(oknoJazyka);
+                    if (sekcia is "dashboard" or "evidencia" or "kalendar" or "poznamky" or "nastavenia" or "servis")
+                    {
+                        Snimka(oknoJazyka, $"jazyk_{jazyk.Kod}_{sekcia}");
+                    }
+                }
+
+                modelJazyka.Kalendar.Rezim = RezimKalendara.Tyzden;
+                Pumpuj();
+                Zbieraj(oknoJazyka);
+                modelJazyka.Kalendar.Rezim = RezimKalendara.Zoznam;
+                Pumpuj();
+                Zbieraj(oknoJazyka);
+
+                var riadkyJazyka = sluzba.NacitajRiadky();
+                var udalostJazyka = kalendarSluzba.Vyskyty(DateTime.Today, DateTime.Today.AddDays(30), automaticke: false).First(v => v.UdalostId is not null);
+                var oknaJazyka = new (Func<Window> Okno, string Nazov)[]
+                {
+                    (() => new PolozkaEditWindow(new PolozkaEditViewModel(riadkyJazyka[0].Id, null)), "polozka"),
+                    (() => new UdalostWindow(new UdalostEditViewModel(udalostJazyka.UdalostId, null, null)), "udalost"),
+                    (() => new PoznamkaWindow(new PoznamkaEditViewModel(null, DateTime.Today)), "poznamka"),
+                    (() => new ExportWindow(new ExportViewModel(riadkyJazyka.Select(r => r.Id).ToList(), null, "")), "export"),
+                    (() => new ImportWindow(new ImportViewModel()), "import"),
+                    (() => new NastaveniaKalendaraWindow(), "nastavenia_kalendara"),
+                    (() => new TypyUdalostiWindow(), "typy_udalosti"),
+                    (() => new PrehladDnaWindow(), "prehlad_dna"),
+                    (() => new VymazanieWindow(), "vymazanie"),
+                    (() => new PrveSpustenieWindow(), "prve_spustenie"),
+                    (() => new HesloWindow(true, null), "heslo"),
+                    (() => new AktualizaciaWindow(vydanie), "aktualizacia"),
+                    (() => new HromadnaZmenaWindow(new HromadnaZmenaViewModel(new List<int> { riadkyJazyka[0].Id })), "hromadna_zmena"),
+                    (() => new VstupWindow(Preklad.T("Nová kategória"), Preklad.T("Názov novej kategórie:"), "", false), "vstup"),
+                    (() => new UpozornenieWindow(udalostJazyka), "upozornenie"),
+                    (() => modelJazyka.Evidencia.VytvorNahladTlace(), "nahlad"),
+                };
+                foreach (var (vytvor, nazov) in oknaJazyka)
+                {
+                    var w = vytvor();
+                    w.Show();
+                    Pumpuj();
+                    PrejdiZalozky(w);
+                    Zbieraj(w);
+                    if (nazov is "polozka" or "udalost" or "export" or "prehlad_dna" or "prve_spustenie")
+                    {
+                        Snimka(w, $"jazyk_{jazyk.Kod}_okno_{nazov}");
+                    }
+
+                    w.Close();
+                    Pumpuj();
+                }
+
+                // zostavy a exporty v jazyku
+                zostavy.UlozPdf(new MoznostiZostavy { Druh = DruhZostavy.PoMiestnostiach, Podpis = true }, Path.Combine(exportPriecinok, $"jazyk_{jazyk.Kod}_zostava.pdf"));
+                zostavy.UlozPdf(new MoznostiZostavy { Druh = DruhZostavy.Kalendar, NaSirku = true }, Path.Combine(exportPriecinok, $"jazyk_{jazyk.Kod}_kalendar.pdf"));
+                export.Exportuj(new MoznostiExportu(FormatExportu.Excel, Path.Combine(exportPriecinok, $"jazyk_{jazyk.Kod}.xlsx"), null,
+                    StlpcePrenosu.Vsetky.Where(st => st.PredvolenyExport).Select(st => st.Kluc).ToList()));
+                var zdrojJazyka = import.Nacitaj(Path.Combine(exportPriecinok, $"jazyk_{jazyk.Kod}.xlsx"));
+                Over(ImportService.AutomatickePriradenie(zdrojJazyka.Hlavicky).Count(p => p is not null) >= 15,
+                    $"{jazyk.Kod}: import rozpozná stĺpce exportu v tomto jazyku");
+
+                oknoJazyka.Close();
+                Pumpuj();
+                Preklad.ZbieratChybajuce = false;
+                var chybajuce = Preklad.Chybajuce.Keys.OrderBy(k => k, StringComparer.Ordinal).Select(k => "[T] " + k.Replace("\n", " ⏎ ")).ToList();
+                File.WriteAllLines(Path.Combine(exportPriecinok, $"preklad_{jazyk.Kod}.txt"), neprelozene.Concat(chybajuce), Encoding.UTF8);
+                Krok($"jazyk {jazyk.Kod}: na obrazovkách {neprelozene.Count} textov so slovenskými znakmi, v kóde {chybajuce.Count} textov bez prekladu");
+            }
+
+            Preklad.Nastav("sk");
+            servis.NacitatUkazkoveData();
+
             // nový začiatok
             servis.VymazatData(ponechatMiestnosti: false, ponechatOsoby: false);
             Over(sluzba.NacitajRiadky().Count == 0, "vymazanie dát");

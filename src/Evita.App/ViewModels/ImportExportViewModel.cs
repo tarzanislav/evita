@@ -23,7 +23,14 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
     public string PriecinokStiahnutych => VzoryService.PriecinokStiahnutych;
 
     /// <summary>Kam sa uložil naposledy stiahnutý vzor.</summary>
-    [ObservableProperty] private string _stiahnutyVzor = "";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StiahnutyText))]
+    private string _stiahnutyVzor = "";
+
+    /// <summary>Kam sa uložil vzorový súbor (alebo kam sa ukladajú).</summary>
+    public string StiahnutyText => StiahnutyVzor.Length > 0
+        ? Preklad.F($"Uložené: {StiahnutyVzor}")
+        : Preklad.F($"Súbory sa ukladajú do priečinka {PriecinokStiahnutych}");
 
     [ObservableProperty] private string _pocetPoloziek = "";
     [ObservableProperty] private string _poslednyImport = "";

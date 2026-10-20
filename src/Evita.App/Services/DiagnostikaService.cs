@@ -12,7 +12,7 @@ public sealed record VysledokKontroly(string Nastroj, bool Ok, List<string> Riad
 /// <summary>Nástroje na kontrolu, údržbu a opravu databázy.</summary>
 public sealed class DiagnostikaService
 {
-    private const string Upozornenie = "UPOZORNENIE: ";
+    private static string Upozornenie => Preklad.T("UPOZORNENIE: ");
 
     /// <summary>Kľúč v nastaveniach: čas, nástroj a výsledok poslednej kontroly integrity.</summary>
     public const string KlucPoslednaKontrola = "Kontrola.Posledna";

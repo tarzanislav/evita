@@ -176,7 +176,7 @@ public sealed record VysledokImportu(int Pridane, int Preskocene, string Zaloha,
 /// </summary>
 public sealed class KontrolaImportu
 {
-    public const string Nezaradene = "nezaradené";
+    public static string Nezaradene => Preklad.T("nezaradené");
 
     private readonly ZdrojImportu _zdroj;
     private readonly HashSet<Guid> _guidy = new();
@@ -970,7 +970,7 @@ public sealed class ImportService
             : dalsie - 1;
         Databaza.Zapis(db, Databaza.KlucPoslednePrirastkove, posledne.ToString());
 
-        var popis = $"{Sk.DatumCas(teraz)} – súbor {nazovSuboru}, pridané {ExportService.PocetPoloziek(nove.Count)}";
+        var popis = Preklad.F($"{Sk.DatumCas(teraz)} – súbor {nazovSuboru}, pridané {ExportService.PocetPoloziek(nove.Count)}");
         Databaza.Zapis(db, KlucPoslednaZaloha, zaloha);
         Databaza.Zapis(db, KlucPoslednyPopis, popis);
         db.SaveChanges();

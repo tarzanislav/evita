@@ -1158,7 +1158,11 @@ internal static class Samotest
                 }
 
                 // zostavy a exporty v jazyku
-                zostavy.UlozPdf(new MoznostiZostavy { Druh = DruhZostavy.PoMiestnostiach, Podpis = true }, Path.Combine(exportPriecinok, $"jazyk_{jazyk.Kod}_zostava.pdf"));
+                zostavy.UlozPdf(new MoznostiZostavy
+                {
+                    Druh = DruhZostavy.PoMiestnostiach, Podpis = true,
+                    Stlpce = new[] { StlpcePrenosu.Cislo, StlpcePrenosu.Nazov, StlpcePrenosu.Kategoria, StlpcePrenosu.Pridelene, StlpcePrenosu.Stav, StlpcePrenosu.Cena },
+                }, Path.Combine(exportPriecinok, $"jazyk_{jazyk.Kod}_zostava.pdf"));
                 zostavy.UlozPdf(new MoznostiZostavy { Druh = DruhZostavy.Kalendar, NaSirku = true }, Path.Combine(exportPriecinok, $"jazyk_{jazyk.Kod}_kalendar.pdf"));
                 export.Exportuj(new MoznostiExportu(FormatExportu.Excel, Path.Combine(exportPriecinok, $"jazyk_{jazyk.Kod}.xlsx"), null,
                     StlpcePrenosu.Vsetky.Where(st => st.PredvolenyExport).Select(st => st.Kluc).ToList()));

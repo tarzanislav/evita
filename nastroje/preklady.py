@@ -273,7 +273,7 @@ def kluce_cs(cesta):
 
 
 XAML_ATRIBUTY = {'Text', 'Content', 'Header', 'ToolTip', 'Title', 'Description'}
-VAZBA_FORMAT = re.compile(r"(StringFormat|TargetNullValue|FallbackValue)\s*=\s*('(?:[^']*)'|[^,}]+(?:\{[^}]*\}[^,}]*)*)")
+VAZBA_FORMAT = re.compile(r"(StringFormat|TargetNullValue|FallbackValue)\s*=\s*('(?:[^']*)'|[^,{}]+(?:\{[^}]*\}[^,{}]*)*)")
 
 
 def _ma_pismeno(text):

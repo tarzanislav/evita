@@ -763,7 +763,7 @@ public sealed class ZalohaService
         var argumenty = new List<string>
         {
             "/Create", "/F", "/TN", NazovUlohyPlanovaca,
-            "/TR", Preklad.F($"\"{program}\" --zaloha"),
+            "/TR", $"\"{program}\" --zaloha",
             "/ST", nastavenia.Cas,
         };
         argumenty.AddRange(nastavenia.Perioda switch

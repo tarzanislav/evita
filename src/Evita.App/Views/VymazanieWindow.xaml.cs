@@ -18,7 +18,9 @@ public partial class VymazanieWindow : Window
 
     private void Potvrdenie_TextChanged(object sender, TextChangedEventArgs e)
     {
-        Vymazat.IsEnabled = Sk.BezDiakritiky(Potvrdenie.Text.Trim()) == "vymazat";
+        // slovo na potvrdenie v jazyku programu (po slovensky platí vždy)
+        var text = Sk.BezDiakritiky(Potvrdenie.Text.Trim());
+        Vymazat.IsEnabled = text == "vymazat" || text == Sk.BezDiakritiky(Preklad.T("VYMAZAŤ"));
     }
 
     private void Vymazat_Click(object sender, RoutedEventArgs e) => DialogResult = true;

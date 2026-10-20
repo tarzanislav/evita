@@ -18,6 +18,13 @@ public partial class App : Application
         NastavSlovencinu();
         DispatcherUnhandledException += NeosetrenaChyba;
 
+        if (e.Args.Contains("--samotest", StringComparer.OrdinalIgnoreCase))
+        {
+            Dialogy.TichyRezim = true;
+            Shutdown(Samotest.Spusti(this));
+            return;
+        }
+
         var prveSpustenie = !Databaza.Existuje;
         try
         {
@@ -74,6 +81,13 @@ public partial class App : Application
 
     private void NeosetrenaChyba(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
+        if (Dialogy.TichyRezim)
+        {
+            Samotest.Chyby.Add(e.Exception.ToString());
+            e.Handled = true;
+            return;
+        }
+
         Mouse.OverrideCursor = null;
         if (e.Exception is EvitaException chyba)
         {

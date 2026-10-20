@@ -8,6 +8,11 @@ public static class Dialogy
 {
     private const string Titulok = "EviTA";
 
+    /// <summary>V tichom režime (samotest) sa nezobrazuje žiadne okno – hlásenia sa len zapíšu.</summary>
+    public static bool TichyRezim { get; set; }
+
+    public static List<string> TicheHlasenia { get; } = new();
+
     public static Window? Vlastnik
     {
         get
@@ -39,6 +44,12 @@ public static class Dialogy
     /// <summary>Zobrazí okno s jedným textovým poľom. Vráti null, ak používateľ zrušil.</summary>
     public static string? Vstup(string titulok, string otazka, string predvolene = "", bool viacRiadkov = false)
     {
+        if (TichyRezim)
+        {
+            TicheHlasenia.Add($"[Vstup] {otazka}");
+            return predvolene;
+        }
+
         var okno = new Views.VstupWindow(titulok, otazka, predvolene, viacRiadkov) { Owner = Vlastnik };
         return okno.ShowDialog() == true ? okno.Text : null;
     }
@@ -59,6 +70,12 @@ public static class Dialogy
 
     private static MessageBoxResult Ukaz(string sprava, MessageBoxButton tlacidla, MessageBoxImage ikona)
     {
+        if (TichyRezim)
+        {
+            TicheHlasenia.Add($"[{ikona}] {sprava}");
+            return tlacidla == MessageBoxButton.YesNo ? MessageBoxResult.Yes : MessageBoxResult.OK;
+        }
+
         var vlastnik = Vlastnik;
         return vlastnik is null
             ? MessageBox.Show(sprava, Titulok, tlacidla, ikona)

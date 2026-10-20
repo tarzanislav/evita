@@ -22,13 +22,18 @@ public static class Databaza
         "slúchadlá", "switch", "tablet", "tlačiareň",
     };
 
+    /// <summary>Iný priečinok s dátami (na testovanie). Bežne nie je nastavený.</summary>
+    private static string? PrepisPriecinka => Environment.GetEnvironmentVariable("EVITA_DATA_DIR") is { Length: > 0 } p ? p : null;
+
     public static string Priecinok =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EviTA", "Data");
+        PrepisPriecinka ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EviTA", "Data");
 
     public static string Cesta => Path.Combine(Priecinok, "evita.db");
 
     public static string PriecinokZaloh =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EviTA", "Zálohy");
+        PrepisPriecinka is { } prepis
+            ? Path.Combine(prepis, "Zalohy")
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EviTA", "Zálohy");
 
     public static bool Existuje => File.Exists(Cesta);
 

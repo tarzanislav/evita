@@ -140,7 +140,7 @@
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Import" Width="62">
+                        <DataGridTemplateColumn Header="Import" Width="72">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <CheckBox IsChecked="{Binding Importovat, UpdateSourceTrigger=PropertyChanged}"
@@ -148,7 +148,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Riadok" Binding="{Binding CisloRiadku, Mode=OneWay}" IsReadOnly="True" Width="60" />
+                        <DataGridTextColumn Header="Riadok" Binding="{Binding CisloRiadku, Mode=OneWay}" IsReadOnly="True" Width="72" />
                         <DataGridTextColumn Header="Výsledok" Binding="{Binding VysledokText, Mode=OneWay}" IsReadOnly="True" Width="120" />
                         <DataGridTextColumn Header="Problém" Binding="{Binding Problem, Mode=OneWay}" IsReadOnly="True" Width="300">
                             <DataGridTextColumn.ElementStyle>

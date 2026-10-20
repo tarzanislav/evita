@@ -149,7 +149,7 @@ public sealed class KalendariumDb
                     VALUES ($guid, 'SK', $m, $d, $meno, $poradie, 'zabudovane', $zdroj, $cas, $cas);
                     """, transakcia,
                     ("$guid", StalyGuid($"SK|meniny|{datum}|{mena[i]}")), ("$m", mesiac), ("$d", den),
-                    ("$meno", mena[i]), ("$poradie", i), ("$zdroj", ZdrojMenin), ("$cas", teraz));
+                    ("$meno", mena[i].Normalize(NormalizationForm.FormC)), ("$poradie", i), ("$zdroj", ZdrojMenin), ("$cas", teraz));
             }
         }
     }

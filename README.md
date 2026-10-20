@@ -160,6 +160,7 @@ Odinštalovanie programu databázu ani zálohy nemaže.
       a čiarovým kódom na hárky A4 aj tlačiarne štítkov, inventúra skenovaním po miestnostiach s protokolom, kamera
       počítača a mobil ako skener, EAN výrobku s doplnením údajov z Open Icecat a UPCitemdb
 - [ ] Etapa 9 – Dokončenie
+  - [ ] vyskúšať čítanie kódov webovou kamerou notebooku (Kamera ako skener) na skutočných krabiciach
 
 ## Technické informácie
 

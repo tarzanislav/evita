@@ -275,13 +275,157 @@ internal static class Samotest
             Over(diagnostika.UplnaKontrola().Ok, "databáza po záchrane je v poriadku");
             Krok("kontrola a oprava v poriadku");
 
+            // ------------------------------------------------------------ export
+            var exportPriecinok = Path.Combine(Databaza.Priecinok, "Export");
+            Directory.CreateDirectory(exportPriecinok);
+            var export = new ExportService();
+            var import = new ImportService();
+            var vsetkyStlpce = StlpcePrenosu.Vsetky.Select(s => s.Kluc).ToList();
+            var pocetPoloziek = sluzba.NacitajRiadky().Count;
+            foreach (var format in Enum.GetValues<FormatExportu>())
+            {
+                var cesta = Path.Combine(exportPriecinok, "evita" + ExportService.Pripona(format));
+                var vyexportovane = export.Exportuj(new MoznostiExportu(format, cesta, null, vsetkyStlpce,
+                    SHistoriou: true, HarokPreKategoriu: format == FormatExportu.Excel, Popis: "test"));
+                Over(vyexportovane == pocetPoloziek && File.Exists(cesta) && new FileInfo(cesta).Length > 500, $"export {format}");
+            }
+
+            Over(File.Exists(Path.Combine(exportPriecinok, XsdEviTA.NazovSuboru)), "pri exporte XML sa uloží evita.xsd");
+            var tri = sluzba.NacitajRiadky().Take(3).Select(r => r.Id).ToList();
+            Over(export.Exportuj(new MoznostiExportu(FormatExportu.Csv, Path.Combine(exportPriecinok, "oznacene.csv"), tri, vsetkyStlpce)) == 3,
+                "export označených položiek");
+            Over(File.ReadAllText(Path.Combine(exportPriecinok, "evita.csv")).StartsWith("Prírastkové číslo;Názov;Kategória", StringComparison.Ordinal),
+                "CSV má slovenské názvy stĺpcov a bodkočiarku");
+
+            // čo sa vyexportuje, dá sa naimportovať: stĺpce sa rozpoznajú a položky sa spoznajú ako existujúce
+            foreach (var pripona in new[] { ".xlsx", ".csv", ".json", ".xml" })
+            {
+                var zdroj = import.Nacitaj(Path.Combine(exportPriecinok, "evita" + pripona));
+                var priradenie = ImportService.AutomatickePriradenie(zdroj.Hlavicky);
+                Over(zdroj.Riadky.Count == pocetPoloziek, $"načítanie {pripona}: {zdroj.Riadky.Count} riadkov");
+                Over(priradenie.Contains(StlpcePrenosu.Nazov) && priradenie.Contains(StlpcePrenosu.Identifikator) && priradenie.Contains(StlpcePrenosu.Seriove)
+                     && priradenie.Contains(StlpcePrenosu.DatumNakupu) && priradenie.Contains(StlpcePrenosu.Cena),
+                    $"stĺpce {pripona} sa rozpoznajú automaticky");
+                var riadkyZdroja = ImportService.Priprav(zdroj, priradenie);
+                new KontrolaImportu(DruhImportu.Zlucenie, zdroj).SkontrolujVsetky(riadkyZdroja);
+                Over(riadkyZdroja.All(r => r.Vysledok == StavRiadku.Duplicita),
+                    $"{pripona}: všetky položky sa spoznajú ako existujúce ({string.Join(" | ", riadkyZdroja.Where(r => r.Vysledok != StavRiadku.Duplicita).Take(3).Select(r => r.Problem))})");
+            }
+
+            Krok("export v poriadku");
+
+            // ------------------------------------------------------------ vzory a import
+            Over(Prevod.SkusDatum("20.10.2026", out var d1) && Prevod.SkusDatum("20. 10. 2026", out var d2) && Prevod.SkusDatum("2026-10-20", out var d3)
+                 && d1 == new DateTime(2026, 10, 20) && d2 == d1 && d3 == d1, "dátumy 20.10.2026, 20. 10. 2026 a 2026-10-20");
+            Over(!Prevod.SkusDatum("31.2.2026", out _) && !Prevod.SkusDatum("zajtra", out _), "nezmyselný dátum sa nerozpozná");
+            Over(Prevod.SkusStav("V prevadzke", out var st1) && st1 == StavPolozky.VPrevadzke && Prevod.SkusStav("vyradené", out var st2) && st2 == StavPolozky.Vyradene
+                 && !Prevod.SkusStav("stratené", out _), "rozpoznanie stavu");
+            Over(StlpcePrenosu.Rozpoznaj("S/N") == StlpcePrenosu.Seriove && StlpcePrenosu.Rozpoznaj("Umiestnenie") == StlpcePrenosu.Miestnost
+                 && StlpcePrenosu.Rozpoznaj("Dátum nákupu") == StlpcePrenosu.DatumNakupu, "rozpoznanie názvov stĺpcov");
+            var csvTest = CitacSuborov.RozdelCsv("a;\"b;c\";\"d\"\"e\"\r\n1;\"x\ny\";3", ';');
+            Over(csvTest.Count == 2 && csvTest[0][1] == "b;c" && csvTest[0][2] == "d\"e" && csvTest[1][1] == "x\ny", "CSV s úvodzovkami a zalomením riadku");
+
+            Over(Directory.Exists(VzoryService.Vytvor()) && VzoryService.Existuju, "vzorové súbory");
+            foreach (var vzorovy in new[] { VzoryService.Excel, VzoryService.Csv, VzoryService.Json, VzoryService.Xml })
+            {
+                var zdroj = import.Nacitaj(Path.Combine(VzoryService.Priecinok, vzorovy));
+                var riadkyVz = ImportService.Priprav(zdroj, ImportService.AutomatickePriradenie(zdroj.Hlavicky));
+                new KontrolaImportu(DruhImportu.Zlucenie, zdroj).SkontrolujVsetky(riadkyVz);
+                Over(riadkyVz.Count == 5 && riadkyVz.All(r => r.Vysledok is not (StavRiadku.Chyba or StavRiadku.Duplicita)),
+                    $"vzor {vzorovy}: 5 riadkov bez chyby ({string.Join(" | ", riadkyVz.Where(r => !r.MozeImportovat).Take(3).Select(r => r.Problem))})");
+                Over(!zdroj.Upozornenia.Any(u => u.Contains(XsdEviTA.NazovSuboru)), $"vzor {vzorovy} zodpovedá popisu formátu ({string.Join(" | ", zdroj.Upozornenia)})");
+            }
+
+            var zdrojVzoru = import.Nacitaj(Path.Combine(VzoryService.Priecinok, VzoryService.Csv));
+            var riadkyVzoru = ImportService.Priprav(zdrojVzoru, ImportService.AutomatickePriradenie(zdrojVzoru.Hlavicky));
+            var kontrolaVzoru = new KontrolaImportu(DruhImportu.Zlucenie, zdrojVzoru);
+            kontrolaVzoru.SkontrolujVsetky(riadkyVzoru);
+            riadkyVzoru[0].Nazov = "";
+            kontrolaVzoru.SkontrolujVsetky(riadkyVzoru);
+            Over(riadkyVzoru[0].Vysledok == StavRiadku.Chyba && !riadkyVzoru[0].Importovat, "riadok bez názvu je chybný");
+            riadkyVzoru[0].Nazov = "Notebook (opravený pri importe)";
+            riadkyVzoru[1].DatumNakupu = "31.2.2026";
+            kontrolaVzoru.SkontrolujVsetky(riadkyVzoru);
+            Over(riadkyVzoru[0].MozeImportovat && riadkyVzoru[1].Vysledok == StavRiadku.Chyba, "opravený riadok je v poriadku, nezmyselný dátum je chyba");
+            riadkyVzoru[1].DatumNakupu = "4. 11. 2025";
+            kontrolaVzoru.SkontrolujVsetky(riadkyVzoru);
+            foreach (var r in riadkyVzoru.Where(r => r.MozeImportovat))
+            {
+                r.Importovat = true;
+            }
+
+            var predImportom = sluzba.NacitajRiadky().Count;
+            var nahladVzoru = kontrolaVzoru.Nahlad(riadkyVzoru);
+            Over(nahladVzoru.Pridat == 5 && nahladVzoru.CisloOd is not null, $"náhľad importu: pribudne 5 (je {nahladVzoru.Pridat})");
+            var vysledokVzoru = import.Importuj(zdrojVzoru, riadkyVzoru, DruhImportu.Zlucenie);
+            Over(vysledokVzoru.Pridane == 5 && sluzba.NacitajRiadky().Count == predImportom + 5, "import vzoru CSV pridal 5 položiek");
+            Over(vysledokVzoru.CisloOd == nahladVzoru.CisloOd, "nové prírastkové čísla od posledného + 1");
+            var importovana = sluzba.NacitajRiadky().Single(r => r.PrirastkoveCislo == vysledokVzoru.CisloOd);
+            Over(importovana.Nazov == "Notebook (opravený pri importe)" && importovana.Osoba == "Ján Novák" && importovana.Miestnost == "Kancelária 101",
+                "importovaná položka má opravený názov, osobu a miestnosť");
+            Over(sluzba.Historia(importovana.Id).Any(h => h.Akcia == PolozkaService.AkciaImport && (h.NovaHodnota ?? "").Contains("pôvodné prírastkové číslo 1")),
+                "pôvodné prírastkové číslo je v histórii");
+            Over(sluzba.NacitajRiadky().Any(r => r.Nazov.StartsWith("PC Lenovo") && r.Vyradena), "vyradená položka sa naimportovala ako vyradená");
+            Over(new ZalohaService().Zaznamy().Any(z => z.Typ == "pred importom" && z.Uspech), "záloha pred importom");
+            Over(import.PoslednyImport() is not null, "posledný import sa dá vrátiť");
+
+            var opakovane = ImportService.Priprav(zdrojVzoru, ImportService.AutomatickePriradenie(zdrojVzoru.Hlavicky));
+            new KontrolaImportu(DruhImportu.Zlucenie, zdrojVzoru).SkontrolujVsetky(opakovane);
+            Over(opakovane.All(r => r.Vysledok == StavRiadku.Duplicita), "opakovaný import toho istého súboru nič nezdvojí");
+
+            import.VratPoslednyImport();
+            Over(sluzba.NacitajRiadky().Count == predImportom, "vrátenie importu");
+            Over(import.PoslednyImport() is null, "po vrátení už nie je čo vracať");
+
+            // prenos celej databázy do prázdnej (JSON aj XML, s históriou)
+            foreach (var format in new[] { FormatExportu.Json, FormatExportu.Xml })
+            {
+                var celySubor = Path.Combine(exportPriecinok, "cela" + ExportService.Pripona(format));
+                export.Exportuj(new MoznostiExportu(format, celySubor, null, vsetkyStlpce, SHistoriou: true));
+                var povodne = sluzba.NacitajRiadky();
+                int historiaPred, dalsieCisloPred, osobyPred;
+                using (var db = Databaza.Otvor())
+                {
+                    historiaPred = db.Historia.Count();
+                    dalsieCisloPred = Databaza.DalsiePrirastkoveCislo(db);
+                    osobyPred = db.Osoby.Count();
+                }
+
+                var skusobny = import.Nacitaj(celySubor);
+                var skusobne = ImportService.Priprav(skusobny, ImportService.AutomatickePriradenie(skusobny.Hlavicky));
+                Over(Ocakavaj<EvitaException>(() => import.Importuj(skusobny, skusobne, DruhImportu.CelaDatabaza)),
+                    $"{format}: prenos celej databázy do neprázdnej evidencie je odmietnutý");
+                servis.VymazatData(ponechatMiestnosti: false, ponechatOsoby: false);
+                var zdrojCely = import.Nacitaj(celySubor);
+                Over(zdrojCely.Balik is { Osoby.Count: > 0, Kategorie.Count: > 0 } && zdrojCely.Balik.Historia is { Count: > 0 }, $"{format}: export obsahuje číselníky a históriu");
+                var riadkyCele = ImportService.Priprav(zdrojCely, ImportService.AutomatickePriradenie(zdrojCely.Hlavicky));
+                var kontrolaCela = new KontrolaImportu(DruhImportu.CelaDatabaza, zdrojCely);
+                kontrolaCela.SkontrolujVsetky(riadkyCele);
+                Over(riadkyCele.All(r => r.Importovat), $"{format}: všetky riadky v poriadku ({string.Join(" | ", riadkyCele.Where(r => !r.Importovat).Take(3).Select(r => r.Problem))})");
+                import.Importuj(zdrojCely, riadkyCele, DruhImportu.CelaDatabaza);
+                var prenesene = sluzba.NacitajRiadky();
+                static string Odtlacok(PolozkaRiadok r) =>
+                    $"{r.PrirastkoveCislo}|{r.Nazov}|{r.Kategoria}|{r.Miestnost}|{r.Osoba}|{r.SerioveCislo}|{r.Stav}|{r.ZarukaDo:yyyyMMdd}|{r.Poznamka}";
+                Over(prenesene.Count == povodne.Count
+                     && prenesene.Select(Odtlacok).OrderBy(x => x, StringComparer.Ordinal).SequenceEqual(povodne.Select(Odtlacok).OrderBy(x => x, StringComparer.Ordinal)),
+                    $"{format}: prenos celej databázy zachoval čísla a údaje");
+                using (var db = Databaza.Otvor())
+                {
+                    Over(db.Historia.Count() >= historiaPred, $"{format}: prenesená história zmien ({db.Historia.Count()} z {historiaPred})");
+                    Over(Databaza.DalsiePrirastkoveCislo(db) == dalsieCisloPred, $"{format}: ďalšie prírastkové číslo zostalo {dalsieCisloPred}");
+                    Over(db.Osoby.Count() == osobyPred, $"{format}: prenesené osoby ({db.Osoby.Count()} z {osobyPred})");
+                }
+            }
+
+            Krok("import v poriadku");
+
             // obrazovky a okná
             var okno = new MainWindow();
             aplikacia.MainWindow = okno;
             okno.Show();
             Pumpuj();
             var model = (MainViewModel)okno.DataContext;
-            foreach (var sekcia in new[] { "dashboard", "evidencia", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "dashboard" })
+            foreach (var sekcia in new[] { "dashboard", "evidencia", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "dashboard" })
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
@@ -334,6 +478,66 @@ internal static class Samotest
             OtvorAZatvor(new HesloWindow(true, null), "nové heslo");
             OtvorAZatvor(new HesloWindow(false, null), "zadanie hesla");
             OtvorAZatvor(new AktualizaciaWindow(vydanie), "ponuka aktualizácie");
+            Over(model.Evidencia.PopisFiltra().Contains("ucebna"), "popis filtra pre export");
+
+            // okno exportu
+            var exportModel = new ExportViewModel(riadky.Take(10).Select(r => r.Id).ToList(), riadky.Take(2).Select(r => r.Id).ToList(), "test")
+            {
+                CestaBezDialogu = Path.Combine(exportPriecinok, "z_okna.pdf"),
+                OtvoritPoExporte = false,
+            };
+            var oknoExportu = new ExportWindow(exportModel);
+            oknoExportu.Show();
+            Pumpuj();
+            exportModel.Formaty.First(f => f.Popis.Format == FormatExportu.Pdf).Vybrany = true;
+            Pumpuj();
+            Over(exportModel.Format == FormatExportu.Pdf && exportModel.UkazStlpce && exportModel.RozsahOznacene, "okno exportu: formát a rozsah");
+            exportModel.ExportovatCommand.Execute(null);
+            Pumpuj();
+            Over(File.Exists(exportModel.CestaBezDialogu), "export z okna");
+            if (oknoExportu.IsVisible)
+            {
+                oknoExportu.Close();
+            }
+
+            Krok("okno: export");
+
+            // sprievodca importom krok za krokom
+            var predSprievodcom = sluzba.NacitajRiadky().Count;
+            var sprievodca = new ImportViewModel { Cesta = Path.Combine(VzoryService.Priecinok, VzoryService.Csv) };
+            var oknoImportu = new ImportWindow(sprievodca);
+            oknoImportu.Show();
+            Pumpuj();
+            sprievodca.DalejCommand.Execute(null);
+            Pumpuj();
+            Over(sprievodca.Krok == 2 && sprievodca.Priradenia.Count >= 15, $"sprievodca: priradenie stĺpcov (krok {sprievodca.Krok})");
+            sprievodca.DalejCommand.Execute(null);
+            Pumpuj();
+            Over(sprievodca.Krok == 3 && sprievodca.Riadky.Count == 5, $"sprievodca: kontrola (krok {sprievodca.Krok})");
+            sprievodca.Riadky[0].Nazov = "";
+            Pumpuj();
+            Over(sprievodca.Riadky[0].Vysledok == StavRiadku.Chyba, "sprievodca: zmena v tabuľke sa hneď skontroluje");
+            sprievodca.Riadky[0].Nazov = "Notebook zo sprievodcu";
+            Pumpuj();
+            Over(sprievodca.Riadky[0].MozeImportovat, "sprievodca: opravený riadok");
+            sprievodca.VybratVsetkyCommand.Execute(null);
+            sprievodca.LenProblemove = true;
+            Pumpuj();
+            sprievodca.LenProblemove = false;
+            sprievodca.DalejCommand.Execute(null);
+            Pumpuj();
+            Over(sprievodca.Krok == 4 && sprievodca.NahladPridat.Contains("5 položiek"), $"sprievodca: náhľad ({sprievodca.NahladPridat})");
+            sprievodca.ImportovatCommand.Execute(null);
+            Pumpuj();
+            Over(sprievodca.Krok == 5 && sprievodca.Vysledok?.Pridane == 5 && sluzba.NacitajRiadky().Count == predSprievodcom + 5, "sprievodca: import");
+            Over(sprievodca.Protokol.Contains("Notebook zo sprievodcu"), "sprievodca: protokol");
+            sprievodca.VytlacitProtokolCommand.Execute(null);
+            sprievodca.VratitImportCommand.Execute(null);
+            Pumpuj();
+            Over(sprievodca.ImportVrateny && sluzba.NacitajRiadky().Count == predSprievodcom, "sprievodca: vrátenie importu");
+            oknoImportu.Close();
+            Pumpuj();
+            Krok("okno: sprievodca importom");
             model.NovaVerzia = vydanie;
             Pumpuj();
             Over(model.JeNovaVerzia, "pruh s novou verziou");

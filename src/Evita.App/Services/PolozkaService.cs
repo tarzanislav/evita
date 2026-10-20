@@ -20,6 +20,7 @@ public sealed class PolozkaService
     public const string AkciaVyradenie = "vyradenie";
     public const string AkciaObnovenie = "obnovenie";
     public const string AkciaVymazanie = "vymazanie";
+    public const string AkciaImport = "import";
 
     private static string Pouzivatel => Environment.UserName;
 

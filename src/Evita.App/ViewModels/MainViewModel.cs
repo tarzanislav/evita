@@ -23,6 +23,7 @@ public partial class MainViewModel : ObservableObject
         Osoby = new CiselnikViewModel(TypCiselnika.Osoby, this);
         Servis = new ServisViewModel(this);
         Sviatky = new SviatkyViewModel();
+        ImportExport = new ImportExportViewModel(this);
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -32,6 +33,7 @@ public partial class MainViewModel : ObservableObject
     public CiselnikViewModel Osoby { get; }
     public ServisViewModel Servis { get; }
     public SviatkyViewModel Sviatky { get; }
+    public ImportExportViewModel ImportExport { get; }
 
     public string TitulokOkna => $"EviTA {AktualizaciaService.AktualnaVerzia} – evidencia IT techniky";
 
@@ -98,6 +100,7 @@ public partial class MainViewModel : ObservableObject
             "osoby" => Osoby,
             "servis" => Servis,
             "sviatky" => Sviatky,
+            "import" => ImportExport,
             _ => Dashboard,
         };
 

@@ -53,10 +53,12 @@ public partial class App : Application
 
         PripravKalendarium();
 
+        var spustitImport = false;
         if (prveSpustenie)
         {
             var uvod = new PrveSpustenieWindow();
             uvod.ShowDialog();
+            spustitImport = uvod.Import;
             if (uvod.UkazkoveData)
             {
                 try
@@ -79,6 +81,18 @@ public partial class App : Application
         MainWindow = okno;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         okno.Show();
+
+        if (spustitImport && okno.DataContext is ViewModels.MainViewModel hlavny)
+        {
+            okno.Dispatcher.InvokeAsync(() =>
+            {
+                hlavny.PrejdiNaSekciu("import");
+                hlavny.ImportExport.Importovat();
+            });
+        }
+
+        // vzorové súbory pre import (Dokumenty\EviTA\Vzory), ak ešte nie sú
+        Task.Run(VzoryService.VytvorAkChybaju);
 
         // prečíslovanie záloh zo starších verzií a pravidelná záloha na pozadí, ak už je čas
         Task.Run(() =>

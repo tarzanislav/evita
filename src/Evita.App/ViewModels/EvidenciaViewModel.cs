@@ -276,6 +276,62 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         PoZmene(0);
     }
 
+    [RelayCommand]
+    private void Exportovat()
+    {
+        var vyfiltrovane = Pohlad?.Cast<PolozkaRiadok>().Select(r => r.Id).ToList() ?? new List<int>();
+        var oznacene = Oznacene.Select(r => r.Id).ToList();
+        var okno = new ExportWindow(new ExportViewModel(vyfiltrovane, oznacene, PopisFiltra())) { Owner = Dialogy.Vlastnik };
+        okno.ShowDialog();
+    }
+
+    /// <summary>Čitateľný popis zapnutých filtrov (do hlavičky exportu).</summary>
+    public string PopisFiltra()
+    {
+        var casti = new List<string>();
+        if (FilterKategoria != 0 && FilterKategorie.FirstOrDefault(v => v.Id == FilterKategoria) is { } k)
+        {
+            casti.Add("kategória " + k.Nazov);
+        }
+
+        if (FilterMiestnost != 0 && FilterMiestnosti.FirstOrDefault(v => v.Id == FilterMiestnost) is { } m)
+        {
+            casti.Add("miestnosť " + m.Nazov);
+        }
+
+        if (FilterOsoba != 0 && FilterOsoby.FirstOrDefault(v => v.Id == FilterOsoba) is { } o)
+        {
+            casti.Add("pridelené " + o.Nazov);
+        }
+
+        if (FilterStav != FilterStavBezVyradenych && FilterStavy.FirstOrDefault(v => v.Id == FilterStav) is { } s)
+        {
+            casti.Add("stav " + s.Nazov);
+        }
+
+        if (PridaneOd is { } od)
+        {
+            casti.Add("pridané od " + Sk.Datum(od));
+        }
+
+        if (PridaneDo is { } po)
+        {
+            casti.Add("pridané do " + Sk.Datum(po));
+        }
+
+        if (!string.IsNullOrWhiteSpace(RychlyFilterPopis) && RychlyFilter is not null)
+        {
+            casti.Add(RychlyFilterPopis);
+        }
+
+        if (!string.IsNullOrWhiteSpace(HladanyText))
+        {
+            casti.Add($"hľadanie „{HladanyText.Trim()}“");
+        }
+
+        return string.Join(", ", casti);
+    }
+
     private List<PolozkaRiadok> OznaceneAleboVybrana()
     {
         if (Oznacene.Count > 0)

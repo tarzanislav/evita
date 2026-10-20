@@ -55,6 +55,13 @@
                     Content="Vymazať" />
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding ObnovZoznamCommand}"
                     Content="Obnoviť zoznam" ToolTip="F5" />
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding ExportovatCommand}"
+                    ToolTip="Exportovať zobrazené (vyfiltrované) alebo označené položky do Excelu, CSV, JSON, XML, HTML alebo PDF">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xEDE1;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Export…" />
+                </StackPanel>
+            </Button>
         </WrapPanel>
 
         <!-- filtre -->

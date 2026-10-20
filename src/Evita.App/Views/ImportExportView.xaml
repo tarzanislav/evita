@@ -1,0 +1,68 @@
+<UserControl x:Class="Evita.Views.ImportExportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="1000" HorizontalAlignment="Left">
+            <TextBlock Text="Import a export" Style="{StaticResource Nadpis}" />
+            <TextBlock Text="{Binding PocetPoloziek}" Style="{StaticResource Popis}" FontSize="13" Margin="0,-8,0,16" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Style="{StaticResource Karta}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xEDE1;" FontSize="20" Margin="0,0,10,0" />
+                            <TextBlock Text="Export" Style="{StaticResource Podnadpis}" Margin="0" />
+                        </StackPanel>
+                        <Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Padding="16,7" Margin="0,14,0,0"
+                                Style="{DynamicResource AccentButtonStyle}" Command="{Binding ExportovatCommand}" Content="Exportovať evidenciu…" />
+                        <TextBlock TextWrapping="Wrap"
+                                   Text="Celú evidenciu do Excelu, CSV, JSON, XML, HTML alebo PDF, s voľbou stĺpcov. Vyfiltrované alebo označené položky exportujete z obrazovky Evidencia tlačidlom Export." />
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource Karta}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE8B5;" FontSize="20" Margin="0,0,10,0" />
+                            <TextBlock Text="Import" Style="{StaticResource Podnadpis}" Margin="0" />
+                        </StackPanel>
+                        <Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Padding="16,7" Margin="0,14,0,0"
+                                Style="{DynamicResource AccentButtonStyle}" Command="{Binding ImportovatCommand}" Content="Spustiť sprievodcu importom…" />
+                        <TextBlock TextWrapping="Wrap"
+                                   Text="Zo starej evidencie v Exceli alebo CSV, alebo z exportu inej EviTA. Sprievodca priradí stĺpce, skontroluje údaje a duplicity a ukáže náhľad. Pred zápisom sa urobí záloha." />
+                    </DockPanel>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Karta}" Margin="0,16,0,0">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Otvoriť vzorové súbory" Padding="12,6" VerticalAlignment="Center"
+                            Command="{Binding OtvoritVzoryCommand}" />
+                    <StackPanel Margin="0,0,16,0">
+                        <TextBlock Text="Vzorové súbory pre import" Style="{StaticResource Podnadpis}" />
+                        <TextBlock TextWrapping="Wrap"
+                                   Text="vzor_import.xlsx – hárok Položky s ukážkovými riadkami a výberovými zoznamami pre kategóriu a stav, hárok Návod s popisom každého stĺpca; vzor_import.csv (UTF-8, oddeľovač bodkočiarka); vzor_import.json a vzor_import.xml s popisom formátu evita.xsd." />
+                        <TextBlock Style="{StaticResource Popis}" Margin="0,4,0,0" Text="{Binding PriecinokVzorov}" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <Border Style="{StaticResource Karta}" Margin="0,16,0,0">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Vrátiť posledný import" Padding="12,6" VerticalAlignment="Center"
+                            Command="{Binding VratitImportCommand}" IsEnabled="{Binding MozeVratit}" />
+                    <StackPanel Margin="0,0,16,0">
+                        <TextBlock Text="Vrátenie importu" Style="{StaticResource Podnadpis}" />
+                        <TextBlock TextWrapping="Wrap" Text="{Binding PoslednyImport}" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

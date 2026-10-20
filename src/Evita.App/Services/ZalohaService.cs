@@ -18,6 +18,7 @@ public enum TypZalohy
     PredAktualizaciou,
     PredObnovou,
     PredVymazanim,
+    PredImportom,
 }
 
 public enum PeriodaZaloh
@@ -91,6 +92,7 @@ public sealed class ZalohaService
         TypZalohy.PredAktualizaciou => "pred aktualizáciou",
         TypZalohy.PredObnovou => "pred obnovou",
         TypZalohy.PredVymazanim => "pred vymazaním dát",
+        TypZalohy.PredImportom => "pred importom",
         _ => "pred operáciou",
     };
 
@@ -362,6 +364,7 @@ public sealed class ZalohaService
                     TypZalohy.PredAktualizaciou => "EviTA_pred_aktualizaciou_",
                     TypZalohy.PredObnovou => "EviTA_pred_obnovou_",
                     TypZalohy.PredVymazanim => "EviTA_pred_vymazanim_",
+                    TypZalohy.PredImportom => "EviTA_pred_importom_",
                     _ => "EviTA_pred_",
                 };
                 ciel = CislovanaCesta(priecinok, $"{predpona}{cas:yyyy-MM-dd_HHmmss}", ".zip");

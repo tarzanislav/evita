@@ -389,7 +389,7 @@ public sealed class ExportService
     /// <summary>Zapíše XML a vedľa neho popis formátu evita.xsd.</summary>
     internal static void ZapisXml(string cesta, BalikEviTAPolozky balik)
     {
-        var nastavenia = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false) };
+        var nastavenia = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false), NewLineHandling = NewLineHandling.Entitize };
         using (var w = XmlWriter.Create(cesta, nastavenia))
         {
             w.WriteStartDocument();

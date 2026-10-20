@@ -436,7 +436,7 @@ public static class CitacSuborov
 
     private static ZdrojImportu Xml(string cesta)
     {
-        var dokument = XDocument.Load(cesta, LoadOptions.None);
+        var dokument = XDocument.Load(cesta);
         var koren = dokument.Root ?? throw new EvitaException("Súbor XML je prázdny.");
         var zdroj = new ZdrojImportu { Cesta = cesta, Format = "XML" };
 

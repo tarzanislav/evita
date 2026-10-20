@@ -26,7 +26,15 @@
             </StackPanel>
         </Button>
 
+        <Button Click="Import_Click" HorizontalContentAlignment="Left" Padding="16,12" Margin="0,12,0,0">
+            <StackPanel>
+                <TextBlock Text="Naimportovať existujúcu evidenciu" FontWeight="SemiBold" FontSize="15" />
+                <TextBlock TextWrapping="Wrap" Margin="0,4,0,0"
+                           Text="Zo starej evidencie v Exceli alebo CSV, alebo z exportu EviTA z iného počítača. Otvorí sa sprievodca importom." />
+            </StackPanel>
+        </Button>
+
         <TextBlock Style="{StaticResource Popis}" Margin="0,20,0,0"
-                   Text="Import zálohy alebo starej evidencie pribudne v ďalšej verzii programu." />
+                   Text="Zálohu EviTA (súbor ZIP) obnovíte po otvorení programu v časti Servis → Obnova." />
     </StackPanel>
 </Window>

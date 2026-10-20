@@ -1,0 +1,220 @@
+<Window x:Class="Evita.Views.ImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:s="clr-namespace:Evita.Services"
+        Title="Import do evidencie"
+        Width="1100" Height="740" MinWidth="860" MinHeight="560"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PozadieChyba" Color="#33E53935" />
+        <SolidColorBrush x:Key="PozadieMoznaDuplicita" Color="#33FFA000" />
+        <SolidColorBrush x:Key="PozadieUpozornenie" Color="#22FFD54F" />
+        <SolidColorBrush x:Key="PozadieDuplicita" Color="#22808080" />
+    </Window.Resources>
+
+    <DockPanel Margin="24,20,24,20">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,14">
+            <TextBlock Text="Import do evidencie" Style="{StaticResource Podnadpis}" FontSize="20" Margin="0" />
+            <TextBlock Text="{Binding NadpisKroku}" Style="{StaticResource Popis}" FontSize="13" />
+        </StackPanel>
+
+        <!-- tlačidlá sprievodcu -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="‹ Späť" MinWidth="100" Command="{Binding SpatCommand}"
+                        Visibility="{Binding MozeSpat, Converter={StaticResource BoolNaViditelnost}}" />
+                <Button Content="Ďalej ›" MinWidth="110" Margin="8,0,0,0" Command="{Binding DalejCommand}"
+                        Style="{DynamicResource AccentButtonStyle}" IsDefault="True"
+                        Visibility="{Binding MozeDalej, Converter={StaticResource BoolNaViditelnost}}" />
+                <Button Content="Importovať" MinWidth="130" Margin="8,0,0,0" Command="{Binding ImportovatCommand}"
+                        Style="{DynamicResource AccentButtonStyle}"
+                        Visibility="{Binding MozeImportovat, Converter={StaticResource BoolNaViditelnost}}" />
+                <Button Content="Zavrieť" MinWidth="110" Margin="8,0,0,0" Command="{Binding ZavrietCommand}" IsCancel="True" />
+            </StackPanel>
+            <TextBlock Style="{StaticResource Popis}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0"
+                       Text="Pred zápisom do databázy sa automaticky urobí záloha, takže import sa dá vrátiť." />
+        </DockPanel>
+
+        <Grid>
+            <!-- 1. súbor a druh -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding JeKrok1, Converter={StaticResource BoolNaViditelnost}}">
+                <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+                    <TextBlock Text="Súbor" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Vybrať…" Padding="14,5" Margin="8,0,0,0" Command="{Binding VybratSuborCommand}" />
+                        <TextBox Text="{Binding Cesta, UpdateSourceTrigger=PropertyChanged}" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Popis}" Margin="0,4,0,0"
+                               Text="Excel (.xlsx), CSV, JSON alebo XML. Stĺpce sa priradia podľa názvov; dátumy môžu byť v tvare 20.10.2026, 20. 10. 2026 aj 2026-10-20." />
+
+                    <TextBlock Text="Druh importu" Style="{StaticResource Stitok}" Margin="0,20,0,6" />
+                    <RadioButton GroupName="druh" IsChecked="{Binding DruhZlucenie}" Margin="0,0,0,8">
+                        <StackPanel>
+                            <TextBlock Text="Doplniť položky do evidencie" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"
+                                       Text="Prvé naplnenie zo starej evidencie, hromadné doplnenie alebo spojenie dvoch evidencií. Pridajú sa len položky, ktoré v evidencii ešte nie sú. Nové položky dostanú prírastkové čísla od posledného + 1, pôvodné číslo sa zapíše do histórie." />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton GroupName="druh" IsChecked="{Binding DruhCela}">
+                        <StackPanel>
+                            <TextBlock Text="Preniesť celú databázu do prázdnej evidencie" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"
+                                       Text="Prechod na nový počítač z úplného exportu EviTA (JSON alebo XML). Zachovajú sa prírastkové čísla, číselníky aj história zmien. Evidencia musí byť prázdna." />
+                        </StackPanel>
+                    </RadioButton>
+                    <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0"
+                               Text="Zálohu EviTA (súbor ZIP) obnovíte v časti Servis → Obnova." />
+
+                    <Border Style="{StaticResource Karta}" Margin="0,22,0,0" Padding="14,12">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Otvoriť vzorové súbory" Padding="12,5" VerticalAlignment="Center"
+                                    Command="{Binding OtvoritVzoryCommand}" />
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Vzorové súbory" FontWeight="SemiBold" />
+                                <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap"
+                                           Text="vzor_import.xlsx (s návodom a výberovými zoznamami), vzor_import.csv, vzor_import.json, vzor_import.xml a popis formátu evita.xsd." />
+                                <TextBlock Style="{StaticResource Popis}" Text="{Binding PriecinokVzorov}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- 2. priradenie stĺpcov -->
+            <DockPanel Visibility="{Binding JeKrok2, Converter={StaticResource BoolNaViditelnost}}">
+                <TextBlock DockPanel.Dock="Top" Text="{Binding InfoOSubore}" TextWrapping="Wrap" Margin="0,0,0,6" />
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,0,0,10" TextWrapping="Wrap"
+                           Text="Ku každému stĺpcu zo súboru vyberte pole EviTA. Stĺpce, ktoré nepotrebujete, nechajte „(nepoužiť)“. Ak priradíte jedno pole dvom stĺpcom (napr. Meno a Priezvisko → Pridelené), hodnoty sa spoja." />
+                <DataGrid x:Name="TabulkaPriradeni" ItemsSource="{Binding Priradenia}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          CanUserDeleteRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Stĺpec v súbore" Binding="{Binding Hlavicka, Mode=OneWay}" IsReadOnly="True" Width="220" />
+                        <DataGridTextColumn Header="Ukážka hodnoty" Binding="{Binding Ukazka, Mode=OneWay}" IsReadOnly="True" Width="*" />
+                        <DataGridTemplateColumn Header="Pole v EviTA" Width="240">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding DataContext.PolaEviTA, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              DisplayMemberPath="Nazov" SelectedValuePath="Kluc"
+                                              SelectedValue="{Binding Kluc, UpdateSourceTrigger=PropertyChanged}" Margin="0,1" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <!-- 3. kontrola -->
+            <DockPanel Visibility="{Binding JeKrok3, Converter={StaticResource BoolNaViditelnost}}">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <CheckBox Content="Len riadky s problémom" IsChecked="{Binding LenProblemove}" VerticalAlignment="Center" Margin="0,0,14,0" />
+                        <Button Content="Vybrať všetky" Padding="10,4" Command="{Binding VybratVsetkyCommand}" />
+                        <Button Content="Zrušiť výber" Padding="10,4" Margin="6,0,0,0" Command="{Binding ZrusitVyberCommand}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding SuhrnKontroly}" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" />
+                </DockPanel>
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource Popis}" Margin="0,0,0,8" TextWrapping="Wrap"
+                           Text="Chybné hodnoty opravíte priamo v tabuľke (dvojklik na bunku), riadok sa hneď znova skontroluje. Riadky, ktoré nechcete importovať, odškrtnite. Pri možnej duplicite rozhodnite zaškrtnutím." />
+                <DataGrid x:Name="TabulkaRiadkov" ItemsSource="{Binding PohladRiadkov}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          CanUserDeleteRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single"
+                          SelectionUnit="Cell" FrozenColumnCount="3"
+                          EnableRowVirtualization="True" EnableColumnVirtualization="True">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Vysledok}" Value="{x:Static s:StavRiadku.Chyba}">
+                                    <Setter Property="Background" Value="{StaticResource PozadieChyba}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Vysledok}" Value="{x:Static s:StavRiadku.MoznaDuplicita}">
+                                    <Setter Property="Background" Value="{StaticResource PozadieMoznaDuplicita}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Vysledok}" Value="{x:Static s:StavRiadku.Upozornenie}">
+                                    <Setter Property="Background" Value="{StaticResource PozadieUpozornenie}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Vysledok}" Value="{x:Static s:StavRiadku.Duplicita}">
+                                    <Setter Property="Background" Value="{StaticResource PozadieDuplicita}" />
+                                    <Setter Property="Opacity" Value="0.7" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Import" Width="62">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding Importovat, UpdateSourceTrigger=PropertyChanged}"
+                                              IsEnabled="{Binding MozeImportovat}" HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Riadok" Binding="{Binding CisloRiadku, Mode=OneWay}" IsReadOnly="True" Width="60" />
+                        <DataGridTextColumn Header="Výsledok" Binding="{Binding VysledokText, Mode=OneWay}" IsReadOnly="True" Width="120" />
+                        <DataGridTextColumn Header="Problém" Binding="{Binding Problem, Mode=OneWay}" IsReadOnly="True" Width="300">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                    <Setter Property="FontSize" Value="12" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="220" />
+                        <DataGridTextColumn Header="Kategória" Binding="{Binding Kategoria}" Width="120" />
+                        <DataGridTextColumn Header="Miestnosť" Binding="{Binding Miestnost}" Width="130" />
+                        <DataGridTextColumn Header="Pridelené" Binding="{Binding Pridelene}" Width="140" />
+                        <DataGridTextColumn Header="Stav" Binding="{Binding Stav}" Width="100" />
+                        <DataGridTextColumn Header="Výrobca" Binding="{Binding Vyrobca}" Width="100" />
+                        <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="130" />
+                        <DataGridTextColumn Header="Sériové číslo" Binding="{Binding Seriove}" Width="130" />
+                        <DataGridTextColumn Header="Inventárne číslo" Binding="{Binding Inventarne}" Width="120" />
+                        <DataGridTextColumn Header="Dátum nákupu" Binding="{Binding DatumNakupu}" Width="110" />
+                        <DataGridTextColumn Header="Cena" Binding="{Binding Cena}" Width="90" />
+                        <DataGridTextColumn Header="Záruka do" Binding="{Binding ZarukaDo}" Width="110" />
+                        <DataGridTextColumn Header="Ďalšia revízia" Binding="{Binding DalsiaRevizia}" Width="110" />
+                        <DataGridTextColumn Header="Dátum pridania" Binding="{Binding DatumPridania}" Width="130" />
+                        <DataGridTextColumn Header="Dátum vyradenia" Binding="{Binding DatumVyradenia}" Width="120" />
+                        <DataGridTextColumn Header="Dôvod vyradenia" Binding="{Binding DovodVyradenia}" Width="150" />
+                        <DataGridTextColumn Header="Prírastkové číslo" Binding="{Binding Cislo}" Width="120" />
+                        <DataGridTextColumn Header="Poznámka" Binding="{Binding Poznamka}" Width="200" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <!-- 4. náhľad -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding JeKrok4, Converter={StaticResource BoolNaViditelnost}}">
+                <StackPanel MaxWidth="820" HorizontalAlignment="Left">
+                    <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Čo sa stane" Style="{StaticResource Podnadpis}" />
+                            <TextBlock Text="{Binding NahladPridat}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding NahladPreskocit}" TextWrapping="Wrap" Margin="0,10,0,0" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Kategórie, miestnosti a osoby" Style="{StaticResource Podnadpis}" />
+                            <TextBlock Text="{Binding NahladCiselniky}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock TextWrapping="Wrap"
+                               Text="Po kliknutí na Importovať program najprv urobí zálohu databázy a potom zapíše položky. Ak výsledok nebude v poriadku, import vrátite jedným kliknutím na tlačidlo Vrátiť import." />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- 5. výsledok -->
+            <DockPanel Visibility="{Binding JeKrok5, Converter={StaticResource BoolNaViditelnost}}">
+                <TextBlock DockPanel.Dock="Top" Text="{Binding VysledokText}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,10" />
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button Content="Uložiť protokol…" Padding="12,5" Command="{Binding UlozitProtokolCommand}" />
+                    <Button Content="Vytlačiť protokol…" Padding="12,5" Margin="8,0,0,0" Command="{Binding VytlacitProtokolCommand}" />
+                    <Button Content="Vrátiť import" Padding="12,5" Margin="24,0,0,0" Command="{Binding VratitImportCommand}"
+                            IsEnabled="{Binding ImportVrateny, Converter={StaticResource InverzBool}}"
+                            ToolTip="Obnoví databázu zo zálohy urobenej tesne pred importom." />
+                </StackPanel>
+                <TextBox Text="{Binding Protokol, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="NoWrap" AcceptsReturn="True" />
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

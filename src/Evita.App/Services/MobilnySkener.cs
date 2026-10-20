@@ -188,11 +188,13 @@ public sealed class MobilnySkener : IDisposable
                 case ("POST", "/foto"):
                 {
                     // na fotke býva viac kódov (EAN, sériové číslo, QR s odkazom) – spracuje sa ten najvhodnejší
-                    var kody = await PrecitajFotkuAsync(telo);
+                    var (kody, chyba) = await PrecitajFotkuAsync(telo);
                     var text = kody.Count == 0 ? null : await Task.Run(() => new SkenovanieService().VyberKod(kody));
-                    var vysledok = text is null
-                        ? new VysledokSpracovania(false, Preklad.T("Na fotke sa nenašiel žiadny kód. Odfoťte ho zblízka, ostro a bez odleskov."))
-                        : await DoplnZInternetuAsync(text, await SpracujAsync(text));
+                    var vysledok = text is not null
+                        ? await DoplnZInternetuAsync(text, await SpracujAsync(text))
+                        : chyba is not null
+                            ? new VysledokSpracovania(false, Preklad.F($"Fotku sa nepodarilo spracovať: {chyba}"))
+                            : new VysledokSpracovania(false, Preklad.T("Na fotke sa nenašiel žiadny kód. Odfoťte ho zblízka, ostro a bez odleskov."));
                     if (kody.Count > 1)
                     {
                         vysledok = vysledok with { Text = vysledok.Text + " " + Preklad.F($"Na fotke: {string.Join(", ", kody)}.") };
@@ -247,18 +249,19 @@ public sealed class MobilnySkener : IDisposable
     }
 
     /// <summary>Fotka sa číta vo vlastnom vlákne (dekódovanie obrázka potrebuje vlákno STA).</summary>
-    private static Task<List<string>> PrecitajFotkuAsync(byte[] fotka)
+    /// <remarks>Chyba sa nezahodí – vráti sa jej popis, aby mobil ukázal skutočnú príčinu a zapísala sa do denníka.</remarks>
+    private static Task<(List<string> Kody, string? Chyba)> PrecitajFotkuAsync(byte[] fotka)
     {
-        var hotovo = new TaskCompletionSource<List<string>>();
+        var hotovo = new TaskCompletionSource<(List<string>, string?)>();
         var vlakno = new Thread(() =>
         {
             try
             {
-                hotovo.SetResult(CiarovyKod.PrecitajVsetkyZObrazka(fotka));
+                hotovo.SetResult((CiarovyKod.PrecitajVsetkyZObrazka(fotka), null));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                hotovo.SetResult(new List<string>());
+                hotovo.SetResult((new List<string>(), ex.GetBaseException().Message));
             }
         })
         {

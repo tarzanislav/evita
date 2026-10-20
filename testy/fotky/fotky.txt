@@ -1,0 +1,5 @@
+# Skutočné fotky z mobilu na samotest čítania kódov (Mobil ako skener).
+# súbor | kód, ktorý sa musí na fotke nájsť
+6972470564259__krabica.jpg | 6972470564259
+9120072379208__krabica.jpg | 9120072379208
+eaton_3s_mini.jpg | http://eaton.eu/3SMini

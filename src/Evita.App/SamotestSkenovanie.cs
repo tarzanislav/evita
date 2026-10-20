@@ -72,6 +72,9 @@ internal static partial class Samotest
         var dvaPng = Png(dveData, dveSirka, dveVyska);
         File.WriteAllBytes(Path.Combine(exportPriecinok, "sken_dva_kody.png"), dvaPng);
 
+        // skutočné fotky krabíc z mobilu (JPEG) – celá cesta fotky ako v programe
+        SkenovanieFotky();
+
         // --------------------------------------------------------------- vyhľadanie položky podľa kódu
         var sluzba = new PolozkaService();
         var riadky = sluzba.NacitajRiadky().Where(r => !r.Vyradena).OrderBy(r => r.PrirastkoveCislo).ToList();

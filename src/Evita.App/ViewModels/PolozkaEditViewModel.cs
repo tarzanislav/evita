@@ -394,10 +394,7 @@ public partial class PolozkaEditViewModel : ObservableObject
         Ean = vysledok.Ean;
         if (vysledok.Najdene.Count == 0)
         {
-            Dialogy.Info(Preklad.F($"Výrobok s EAN {vysledok.Ean} sa nenašiel.
-
-{string.Join("
-", vysledok.Spravy)}"));
+            Dialogy.Info(Preklad.F($"Výrobok s EAN {vysledok.Ean} sa nenašiel.\n\n{string.Join("\n", vysledok.Spravy)}"));
             return;
         }
 

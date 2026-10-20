@@ -64,6 +64,20 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private bool _ukazPocasie = true;
     [ObservableProperty] private bool _ukazKurzy = true;
     [ObservableProperty] private bool _ukazPoznamky = true;
+    [ObservableProperty] private bool _ukazCitat = true;
+    [ObservableProperty] private bool _ukazVyrocia = true;
+
+    partial void OnUkazCitatChanged(bool value) => UlozPanely();
+    partial void OnUkazVyrociaChanged(bool value) => UlozPanely();
+
+    // citát dňa a výročia
+    private int? _citatId;
+    [ObservableProperty] private string _citatText = "";
+    [ObservableProperty] private string _citatAutor = "";
+    [ObservableProperty] private List<VyrocieRiadok> _vyrociaDna = new();
+    [ObservableProperty] private string _vyrociaStav = "";
+    [ObservableProperty] private string _dalsieVyrocia = "";
+    private const int VyrociNaPaneli = 6;
 
     partial void OnUkazKalendarChanged(bool value) => UlozPanely();
     partial void OnUkazUlohyChanged(bool value) => UlozPanely();
@@ -146,6 +160,8 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     public void Obnov()
     {
         AktualizujDen();
+        AktualizujCitat();
+        AktualizujVyrocia();
         AktualizujGrafADatabazu();
         var dnes = DateTime.Today;
         var o30 = dnes.AddDays(30);
@@ -398,6 +414,30 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
                 }
             }
 
+            if (UkazVyrocia && CitatyVyrociaService.StahovatAutomaticky)
+            {
+                try
+                {
+                    var dnes = DateOnly.FromDateTime(DateTime.Today);
+                    if (vynutit)
+                    {
+                        await CitatyVyrociaService.StiahniDenAsync(dnes.Month, dnes.Day);
+                    }
+
+                    if (await CitatyVyrociaService.DoplnDniAsync(dnes, 8) || vynutit)
+                    {
+                        AktualizujVyrocia();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (VyrociaDna.Count == 0)
+                    {
+                        VyrociaStav = Preklad.F($"Výročia sa nepodarilo stiahnuť z Wikipédie: {Chyba(ex)}");
+                    }
+                }
+            }
+
             if (UkazKurzy && (vynutit || kurzySluzba.TrebaObnovit(listok)))
             {
                 try
@@ -477,6 +517,79 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
 
     [RelayCommand]
     private void OtvorSviatky() => _hlavne.PrejdiNaSekciu("sviatky");
+
+    // ------------------------------------------------------------------ citát dňa a výročia
+
+    private void AktualizujCitat()
+    {
+        try
+        {
+            ZobrazCitat(CitatyVyrociaService.Db.CitatDna(DateOnly.FromDateTime(DateTime.Today), CitatyVyrociaService.Jazyk));
+        }
+        catch (Exception)
+        {
+            ZobrazCitat(null);
+        }
+    }
+
+    private void ZobrazCitat(Citat? citat)
+    {
+        _citatId = citat?.Id;
+        CitatText = citat is null ? Preklad.T("Žiadny citát – pridajte vlastný v časti Citáty a výročia.") : $"„{citat.Text}“";
+        CitatAutor = citat?.Autor is { Length: > 0 } autor ? "— " + autor : "";
+    }
+
+    /// <summary>Výročia dňa z Kalendária (najprv domáce a okrúhle).</summary>
+    public void AktualizujVyrocia()
+    {
+        try
+        {
+            var dnes = DateOnly.FromDateTime(DateTime.Today);
+            var vsetky = CitatyVyrociaService.Vyrocia(dnes);
+            VyrociaDna = CitatyVyrociaService.VyberNaDashboard(vsetky, VyrociNaPaneli);
+            DalsieVyrocia = vsetky.Count > VyrociNaPaneli ? Preklad.F($"Všetky výročia dňa ({vsetky.Count})…") : "";
+            VyrociaStav = vsetky.Count > 0
+                ? ""
+                : CitatyVyrociaService.Db.Stiahnute(CitatyVyrociaService.Jazyk, dnes.Month, dnes.Day) is not null
+                    ? Preklad.T("Na dnešný deň nie sú žiadne výročia.")
+                    : CitatyVyrociaService.StahovatAutomaticky
+                        ? Preklad.T("Výročia sa sťahujú z Wikipédie…")
+                        : Preklad.T("Sťahovanie výročí z Wikipédie je vypnuté – zapnete ho v časti Citáty a výročia.");
+        }
+        catch (Exception ex)
+        {
+            VyrociaDna = new List<VyrocieRiadok>();
+            VyrociaStav = Chyba(ex);
+        }
+    }
+
+    [RelayCommand]
+    private void DalsiCitat()
+    {
+        try
+        {
+            ZobrazCitat(CitatyVyrociaService.Db.NahodnyCitat(CitatyVyrociaService.Jazyk, _citatId));
+        }
+        catch (Exception)
+        {
+            // citát nie je nevyhnutný
+        }
+    }
+
+    [RelayCommand]
+    private void SkrytCitat()
+    {
+        if (_citatId is not { } id)
+        {
+            return;
+        }
+
+        CitatyVyrociaService.Db.NastavSkrytyCitat(id, true);
+        DalsiCitat();
+    }
+
+    [RelayCommand]
+    private void OtvorCitatyAVyrocia() => _hlavne.PrejdiNaSekciu("kalendarium");
 
     /// <summary>Meniny, sviatky a najbližší voľný deň pre dnešok.</summary>
     private void AktualizujDen()
@@ -585,6 +698,8 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
             UkazPocasie = !skryte.Contains("pocasie");
             UkazKurzy = !skryte.Contains("kurzy");
             UkazPoznamky = !skryte.Contains("poznamky");
+            UkazCitat = !skryte.Contains("citat");
+            UkazVyrocia = !skryte.Contains("vyrocia");
         }
         catch (Exception)
         {
@@ -615,6 +730,8 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         if (!UkazPocasie) skryte.Add("pocasie");
         if (!UkazKurzy) skryte.Add("kurzy");
         if (!UkazPoznamky) skryte.Add("poznamky");
+        if (!UkazCitat) skryte.Add("citat");
+        if (!UkazVyrocia) skryte.Add("vyrocia");
 
         using var db = Databaza.Otvor();
         Databaza.Zapis(db, "Dashboard.Skryte", string.Join(',', skryte));
@@ -636,8 +753,10 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         TyzdenText = Preklad.F($"{ISOWeek.GetWeekOfYear(teraz)}. týždeň");
         if (_zobrazenyDen != default && _zobrazenyDen != teraz.Date)
         {
-            // o polnoci sa zmenia meniny aj sviatky
+            // o polnoci sa zmenia meniny, sviatky, citát aj výročia
             AktualizujDen();
+            AktualizujCitat();
+            AktualizujVyrocia();
         }
     }
 }

@@ -70,6 +70,74 @@
                 </Grid>
             </Border>
 
+            <!-- Citát dňa a výročia -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Style="{StaticResource Karta}" Margin="0,0,12,12"
+                        Visibility="{Binding UkazCitat, Converter={StaticResource BoolNaViditelnost}}">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Style="{StaticResource MaleTlacidlo}" Command="{Binding DalsiCitatCommand}" ToolTip="Ďalší citát">
+                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE72C;" FontSize="12" />
+                                </Button>
+                                <Button Style="{StaticResource MaleTlacidlo}" Margin="4,0,0,0" Command="{Binding SkrytCitatCommand}"
+                                        ToolTip="Tento citát už nezobrazovať">
+                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xED1A;" FontSize="12" />
+                                </Button>
+                                <Button Style="{StaticResource MaleTlacidlo}" Margin="4,0,0,0" Command="{Binding OtvorCitatyAVyrociaCommand}"
+                                        ToolTip="Citáty a výročia – pridať vlastné, skryť nechcené">
+                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE712;" FontSize="12" />
+                                </Button>
+                            </StackPanel>
+                            <TextBlock Text="Citát dňa" Style="{StaticResource Podnadpis}" Margin="0" />
+                        </DockPanel>
+                        <TextBlock DockPanel.Dock="Bottom" Text="{Binding CitatAutor}" Style="{StaticResource Popis}" FontSize="13"
+                                   HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding CitatText}" FontSize="16" FontStyle="Italic" TextWrapping="Wrap" Margin="0,10,0,0" />
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource Karta}" Margin="0,0,12,12"
+                        Visibility="{Binding UkazVyrocia, Converter={StaticResource BoolNaViditelnost}}">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                            <Button DockPanel.Dock="Right" Style="{StaticResource MaleTlacidlo}" Content="Všetky…"
+                                    Command="{Binding OtvorCitatyAVyrociaCommand}" />
+                            <TextBlock Text="Výročia dňa" Style="{StaticResource Podnadpis}" Margin="0" />
+                        </DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="{Binding VyrociaStav}" Style="{StaticResource Popis}" TextWrapping="Wrap"
+                                   Visibility="{Binding VyrociaStav, Converter={StaticResource NieJePrazdne}}" />
+                        <Button DockPanel.Dock="Bottom" Template="{StaticResource BezRamceka}" Cursor="Hand" HorizontalAlignment="Left" Margin="0,4,0,0"
+                                Command="{Binding OtvorCitatyAVyrociaCommand}" Visibility="{Binding DalsieVyrocia, Converter={StaticResource NieJePrazdne}}">
+                            <TextBlock Text="{Binding DalsieVyrocia}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                        </Button>
+                        <ItemsControl ItemsSource="{Binding VyrociaDna}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="18" />
+                                            <ColumnDefinition Width="52" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Symbol}" FontWeight="SemiBold" ToolTip="{Binding DruhText}"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding RokText}" FontWeight="SemiBold" ToolTip="{Binding PredText}" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Text}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                                   MaxHeight="40" ToolTip="{Binding Text}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+            </Grid>
+
             <!-- Úlohy, počasie, kurzový lístok -->
             <UniformGrid Rows="1">
                 <!-- Úlohy (To Do) -->
@@ -579,12 +647,11 @@
                 </Border>
             </Grid>
 
-            <TextBlock Style="{StaticResource Popis}" Margin="0,0,12,8"
-                       Text="Citát dňa a výročia osobností pribudnú v etape 7." />
-
             <Expander Header="Prispôsobiť dashboard" Margin="0,0,12,12">
                 <WrapPanel Margin="8">
                     <CheckBox Content="Dnešný deň" IsChecked="{Binding UkazDnes}" Margin="0,0,16,6" />
+                    <CheckBox Content="Citát dňa" IsChecked="{Binding UkazCitat}" Margin="0,0,16,6" />
+                    <CheckBox Content="Výročia dňa" IsChecked="{Binding UkazVyrocia}" Margin="0,0,16,6" />
                     <CheckBox Content="Úlohy" IsChecked="{Binding UkazUlohy}" Margin="0,0,16,6" />
                     <CheckBox Content="Počasie" IsChecked="{Binding UkazPocasie}" Margin="0,0,16,6" />
                     <CheckBox Content="Kurzový lístok" IsChecked="{Binding UkazKurzy}" Margin="0,0,16,6" />

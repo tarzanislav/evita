@@ -34,9 +34,9 @@ public sealed record SviatokDna(int Id, DateOnly Datum, string Nazov, DruhSviatk
 /// Kalendárium – samostatná lokálna databáza (SQLite) spoločná pre všetky naše programy na počítači.
 /// Obsahuje meniny a sviatky; každý záznam má jedinečný identifikátor, pôvod a zdroj.
 /// </summary>
-public sealed class KalendariumDb
+public sealed partial class KalendariumDb
 {
-    public const int VerziaSchemy = 1;
+    public const int VerziaSchemy = 2;
     private const string ZdrojMenin = "Kalendár mien SR (údaje name-day-calendar, licencia MIT)";
     private const string ZdrojSviatkov = "zákon č. 241/1993 Z. z. o štátnych sviatkoch, dňoch pracovného pokoja a pamätných dňoch";
 
@@ -116,7 +116,10 @@ public sealed class KalendariumDb
                 PRIMARY KEY (SviatokId, Rok));
             """);
 
+        VytvorTabulkyCitatovAVyroci(spojenie);
+
         using var transakcia = spojenie.BeginTransaction();
+        DoplnZabudovaneCitaty(spojenie, transakcia);
         if (Pocet(spojenie, transakcia, "Meniny") == 0)
         {
             NaplnMeniny(spojenie, transakcia);

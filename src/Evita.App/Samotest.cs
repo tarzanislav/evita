@@ -220,6 +220,75 @@ internal static class Samotest
             kalendarSluzba.UlozTyp(typyK.First(t => t.Nazov == "porada").Id, "porada", typyK.First(t => t.Nazov == "porada").Farba);
             Krok("pracovný kalendár v poriadku");
 
+            // ------------------------------------------------------------ Kalendárium: citáty a výročia
+            var kal = Kalendarium.KalendariumDb.Spolocna;
+            foreach (var kodJazyka in Preklad.Jazyky.Select(j => j.Kod))
+            {
+                Over(kal.CitatDna(DateOnly.FromDateTime(DateTime.Today), kodJazyka) is { Text.Length: > 0 }, $"citát dňa v jazyku {kodJazyka}");
+            }
+
+            var dnesD = DateOnly.FromDateTime(DateTime.Today);
+            Over(kal.CitatDna(dnesD, "sk")?.Id == kal.CitatDna(dnesD, "sk")?.Id && kal.CitatDna(dnesD, "sk")?.Id != kal.CitatDna(dnesD.AddDays(1), "sk")?.Id,
+                "citát dňa je v daný deň stály a na druhý deň iný");
+            var vlastnyCitat = kal.PridajCitat("sk", "Záloha, ktorú ste neskúsili obnoviť, nie je záloha.", "správca IT");
+            kal.NastavSkrytyCitat(vlastnyCitat.Id, true);
+            Over(kal.Citaty("sk").All(c => c.Id != vlastnyCitat.Id) && kal.Citaty("sk", true).Any(c => c.Id == vlastnyCitat.Id), "skrytý citát sa nezobrazuje");
+            var zabudovany = kal.Citaty("sk").First(c => c.Povod == Kalendarium.Povod.Zabudovane);
+            kal.VymazCitat(zabudovany.Id);
+            Over(kal.Citaty("sk", true).All(c => c.Id != zabudovany.Id), "vymazaný zabudovaný citát");
+            kal.Inicializuj();
+            Over(kal.Citaty("sk", true).All(c => c.Id != zabudovany.Id), "vymazaný zabudovaný citát sa pri aktualizácii neobnoví");
+            Over(kal.ObnovZabudovaneCitaty() >= 1 && kal.Citaty("sk").Any(c => c.Id == zabudovany.Id), "obnovenie zabudovaných citátov");
+
+            const string ukazkaWiki = """
+                {{Október}}
+                * Svetový deň štatistiky
+                == Udalosti ==
+                * [[1740]] – nastúpila na trón [[Mária Terézia]]<ref>zdroj</ref>
+                * 1977 – neďaleko [[Letisko M. R. Štefánika|bratislavského letiska]] sa zrútil vrtuľník
+                * [[44 pred Kr.]] – starovek sa preskočí
+                == Narodenia ==
+                [[Súbor:Foto.jpg|thumb|[[Hana Hegerová]] (* 1931)]]
+                * [[1931]] – [[Hana Hegerová]], slovenská aj česká speváčka († [[2021]])
+                == Úmrtia ==
+                * [[1984]] &ndash; [[Paul Dirac]], britský fyzik (* [[1902]])
+                == Iné projekty ==
+                * [[2000]] – nepatrí do výročí
+                """;
+            var precitane = Kalendarium.VyrociaZWikipedie.Precitaj(ukazkaWiki, "sk");
+            Over(precitane.Count == 4 && precitane[0] is { Rok: 1740, Druh: Kalendarium.DruhVyrocia.Udalost } && precitane[0].Text == "nastúpila na trón Mária Terézia"
+                 && precitane[2] is { Rok: 1931, Druh: Kalendarium.DruhVyrocia.Narodenie, Domace: true } && precitane[3] is { Rok: 1984, Druh: Kalendarium.DruhVyrocia.Umrtie },
+                $"čítanie výročí zo stránky Wikipédie ({precitane.Count})");
+            var precitaneRu = Kalendarium.VyrociaZWikipedie.Precitaj("== События ==\n* [[1822 год|1822]]\n** в Вероне начал работу конгресс\n* {{год|2021}} — событие\n== Родились ==\n* [[1931 год|1931]] — Иван Петров\n", "ru");
+            var precitaneZh = Kalendarium.VyrociaZWikipedie.Precitaj("== 大事记 ==\n* [[1962年]]：中印边境战争爆发。\n== 出生 ==\n* 1961年：-{zh-hans:伊恩·拉什; zh-hant:伊恩·魯殊;}-，足球运动员。\n", "zh");
+            Over(precitaneRu.Count == 3 && precitaneRu[0] is { Rok: 1822 } && precitaneRu[1] is { Rok: 2021 } && precitaneZh.Count == 2 && precitaneZh[1].Text.StartsWith("伊恩·拉什"),
+                "čítanie výročí v ruštine a čínštine");
+            Over(Kalendarium.VyrociaZWikipedie.NazovStranky("sk", 10, 20) == "20. október" && Kalendarium.VyrociaZWikipedie.NazovStranky("hu", 10, 20) == "Október 20."
+                 && Kalendarium.VyrociaZWikipedie.NazovStranky("zh", 10, 20) == "10月20日", "názvy stránok dňa");
+            kal.UlozStiahnute("sk", 2, 29, precitane, "test");
+            var skryteVyrocie = kal.Vyrocia(2, 29, "sk")[0];
+            kal.NastavSkryteVyrocie(skryteVyrocie.Id, true);
+            kal.UlozStiahnute("sk", 2, 29, precitane, "test");
+            Over(kal.Vyrocia(2, 29, "sk").Count == 3 && kal.Vyrocia(2, 29, "sk", true).Count == 4, "skryté výročie zostane skryté aj po novom stiahnutí");
+            var vlastneVyrocie = kal.PridajVyrocie("sk", 2, 29, 2024, Kalendarium.DruhVyrocia.Udalost, "Spustenie evidencie EviTA", true);
+            var exportKalendaria = Path.Combine(Databaza.Priecinok, "kalendarium_export.json");
+            var exportovane = kal.Exportuj(exportKalendaria, lenVlastne: true);
+            kal.VymazVyrocie(vlastneVyrocie.Id);
+            kal.VymazCitat(vlastnyCitat.Id);
+            var importKalendaria = kal.Importuj(exportKalendaria);
+            Over(exportovane.Citaty >= 1 && exportovane.Vyrocia == 1 && importKalendaria.Vyrocia == 1 && importKalendaria.Citaty >= 1
+                 && kal.Vyrocia(2, 29, "sk").Any(v => v.Text == "Spustenie evidencie EviTA"), "export a import citátov a výročí");
+            try
+            {
+                var stiahnuteDnes = CitatyVyrociaService.StiahniDenAsync(dnesD.Month, dnesD.Day).GetAwaiter().GetResult();
+                Krok($"výročia z Wikipédie pre dnešok: {stiahnuteDnes}");
+                Over(stiahnuteDnes > 10, "stiahnutie výročí z Wikipédie");
+            }
+            catch (Exception ex)
+            {
+                Krok($"výročia z Wikipédie sa nepodarilo stiahnuť (bez internetu?): {ex.GetBaseException().Message}");
+            }
+
             // ------------------------------------------------------------ úlohy, poznámky, kurzy, počasie, konfigurácia
             var ulohySluzba = new UlohyService();
             var otvoreneUlohy = ulohySluzba.Nacitaj(ajHotove: false);
@@ -503,40 +572,6 @@ internal static class Samotest
             var exportPriecinok = Path.Combine(Databaza.Priecinok, "Export");
             Directory.CreateDirectory(exportPriecinok);
 
-            // DOČASNÉ: formát stránok Wikipédie pre výročia (etapa 7)
-            try
-            {
-                using var wiki = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(20) };
-                wiki.DefaultRequestHeaders.UserAgent.ParseAdd("EviTA/0.7 (https://github.com/tarzanislav/evita)");
-                foreach (var (jazyk, nazov) in new[] { ("sk", "20._október"), ("cs", "20._říjen"), ("pl", "20_października"), ("hu", "Október_20."),
-                             ("en", "October_20"), ("ru", "20_октября"), ("zh", "10月20日") })
-                {
-                    try
-                    {
-                        var text = wiki.GetStringAsync($"https://{jazyk}.wikipedia.org/w/index.php?title={Uri.EscapeDataString(nazov)}&action=raw").GetAwaiter().GetResult();
-                        File.WriteAllText(Path.Combine(exportPriecinok, $"wiki_{jazyk}.txt"), text, Encoding.UTF8);
-                    }
-                    catch (Exception ex)
-                    {
-                        File.WriteAllText(Path.Combine(exportPriecinok, $"wiki_{jazyk}.txt"), ex.ToString(), Encoding.UTF8);
-                    }
-
-                    try
-                    {
-                        var text = wiki.GetStringAsync($"https://api.wikimedia.org/feed/v1/wikipedia/{jazyk}/onthisday/all/10/20").GetAwaiter().GetResult();
-                        File.WriteAllText(Path.Combine(exportPriecinok, $"onthisday_{jazyk}.json"), text, Encoding.UTF8);
-                    }
-                    catch (Exception ex)
-                    {
-                        File.WriteAllText(Path.Combine(exportPriecinok, $"onthisday_{jazyk}.json"), ex.Message, Encoding.UTF8);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // len diagnostika
-            }
-
             var export = new ExportService();
             var import = new ImportService();
             var vsetkyStlpce = StlpcePrenosu.Vsetky.Select(s => s.Kluc).ToList();
@@ -766,7 +801,7 @@ internal static class Samotest
             okno.Show();
             Pumpuj();
             var model = (MainViewModel)okno.DataContext;
-            foreach (var sekcia in new[] { "dashboard", "kalendar", "ulohy", "poznamky", "evidencia", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "nastavenia", "dashboard" })
+            foreach (var sekcia in new[] { "dashboard", "kalendar", "ulohy", "poznamky", "evidencia", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia", "dashboard" })
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
@@ -777,7 +812,7 @@ internal static class Samotest
                     Over(model.ImportExport.StiahnutyVzor.EndsWith(".xlsx", StringComparison.Ordinal), "obrazovka Import a export: stiahnutie vzoru");
                 }
 
-                if (sekcia is "import" or "evidencia" or "tlac" or "kalendar" or "dashboard" or "ulohy" or "poznamky" or "nastavenia")
+                if (sekcia is "import" or "evidencia" or "tlac" or "kalendar" or "dashboard" or "ulohy" or "poznamky" or "nastavenia" or "kalendarium")
                 {
                     Snimka(okno, "okno_" + sekcia);
                 }
@@ -804,6 +839,33 @@ internal static class Samotest
             Pumpuj();
             Krok($"dashboard: počasie {(model.Dashboard.JePocasie ? model.Dashboard.Pocasie!.TeplotaText : model.Dashboard.PocasieStav)}, kurzy {model.Dashboard.Kurzy.Count} ({model.Dashboard.KurzyStav}), prepočet {model.Dashboard.VysledokPrepoctu}");
             Snimka(okno, "okno_dashboard_pocasie_kurzy");
+            Over(model.Dashboard.CitatText.Length > 3 && model.Dashboard.CitatAutor.Length > 0, "dashboard: citát dňa");
+            Krok($"dashboard: výročia dňa {model.Dashboard.VyrociaDna.Count} ({model.Dashboard.VyrociaStav})");
+            var predCitatom = model.Dashboard.CitatText;
+            model.Dashboard.DalsiCitatCommand.Execute(null);
+            Over(model.Dashboard.CitatText != predCitatom, "dashboard: ďalší citát");
+
+            // obrazovka Citáty a výročia
+            okno.OznacSekciu("kalendarium");
+            Pumpuj();
+            model.CitatyVyrocia.Den = new DateTime(2024, 2, 29);
+            Pumpuj();
+            Over(model.CitatyVyrocia.Vyrocia.Count == 4 && model.CitatyVyrocia.Vyrocia[0].Text == "Spustenie evidencie EviTA",
+                $"obrazovka Citáty a výročia: výročia dňa ({model.CitatyVyrocia.Vyrocia.Count})");
+            model.CitatyVyrocia.NovyRok = "1993";
+            model.CitatyVyrocia.NovyText = "Vznik Slovenskej republiky – test";
+            model.CitatyVyrocia.PridatVyrocieCommand.Execute(null);
+            Over(model.CitatyVyrocia.Vyrocia.Count == 5 && model.CitatyVyrocia.NovyText.Length == 0, "obrazovka Citáty a výročia: pridanie výročia");
+            model.CitatyVyrocia.NovyCitatCommand.Execute(null);
+            model.CitatyVyrocia.EditText = "Najlepší čas na zálohu bol včera. Druhý najlepší je teraz.";
+            model.CitatyVyrocia.EditAutor = "samotest";
+            model.CitatyVyrocia.UlozitCitatCommand.Execute(null);
+            Over(model.CitatyVyrocia.VybranyCitat?.Autor == "samotest", "obrazovka Citáty a výročia: pridanie citátu");
+            model.CitatyVyrocia.Hladat = "zálohu bol";
+            Over(model.CitatyVyrocia.Citaty.Count == 1, "obrazovka Citáty a výročia: hľadanie");
+            Snimka(okno, "okno_citaty");
+            model.CitatyVyrocia.Hladat = "";
+            model.CitatyVyrocia.Den = DateTime.Today;
 
             // úlohy a poznámky na obrazovkách
             okno.OznacSekciu("ulohy");
@@ -1248,7 +1310,7 @@ internal static class Samotest
                 oknoJazyka.Show();
                 Pumpuj();
                 var modelJazyka = (MainViewModel)oknoJazyka.DataContext;
-                foreach (var sekcia in new[] { "dashboard", "evidencia", "kalendar", "ulohy", "poznamky", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "servis", "nastavenia" })
+                foreach (var sekcia in new[] { "dashboard", "evidencia", "kalendar", "ulohy", "poznamky", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia" })
                 {
                     oknoJazyka.OznacSekciu(sekcia);
                     Pumpuj();
@@ -1266,7 +1328,7 @@ internal static class Samotest
 
                     PrejdiZalozky(oknoJazyka);
                     Zbieraj(oknoJazyka);
-                    if (sekcia is "dashboard" or "evidencia" or "kalendar" or "poznamky" or "nastavenia" or "servis")
+                    if (sekcia is "dashboard" or "evidencia" or "kalendar" or "poznamky" or "nastavenia" or "servis" or "kalendarium")
                     {
                         Snimka(oknoJazyka, $"jazyk_{jazyk.Kod}_{sekcia}");
                     }

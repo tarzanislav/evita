@@ -29,6 +29,7 @@ public partial class MainViewModel : ObservableObject
         Ulohy = new UlohyViewModel();
         Poznamky = new PoznamkyViewModel();
         Nastavenia = new NastaveniaViewModel(this);
+        CitatyVyrocia = new CitatyVyrociaViewModel(this);
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -44,6 +45,7 @@ public partial class MainViewModel : ObservableObject
     public UlohyViewModel Ulohy { get; }
     public PoznamkyViewModel Poznamky { get; }
     public NastaveniaViewModel Nastavenia { get; }
+    public CitatyVyrociaViewModel CitatyVyrocia { get; }
 
     public string TitulokOkna => Preklad.F($"EviTA {AktualizaciaService.AktualnaVerzia} – evidencia IT techniky");
 
@@ -116,6 +118,7 @@ public partial class MainViewModel : ObservableObject
             "ulohy" => Ulohy,
             "poznamky" => Poznamky,
             "nastavenia" => Nastavenia,
+            "kalendarium" => CitatyVyrocia,
             _ => Dashboard,
         };
 

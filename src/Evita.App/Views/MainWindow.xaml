@@ -22,6 +22,9 @@
         <DataTemplate DataType="{x:Type vm:SviatkyViewModel}">
             <v:SviatkyView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CitatyVyrociaViewModel}">
+            <v:CitatyVyrociaView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:ImportExportViewModel}">
             <v:ImportExportView />
         </DataTemplate>
@@ -132,6 +135,12 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE787;" Margin="0,0,12,0" />
                             <TextBlock Text="Sviatky" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="kalendarium">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE8BD;" Margin="0,0,12,0" />
+                            <TextBlock Text="Citáty a výročia" />
                         </StackPanel>
                     </ListBoxItem>
 

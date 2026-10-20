@@ -1,0 +1,242 @@
+<UserControl x:Class="Evita.Views.CitatyVyrociaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Citáty a výročia" Style="{StaticResource Nadpis}" />
+
+        <TabControl>
+            <!-- ============================================================ citáty -->
+            <TabItem Header="Citáty">
+                <DockPanel Margin="0,12,0,0">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <CheckBox Content="Zobraziť aj skryté" IsChecked="{Binding AjSkryteCitaty}" VerticalAlignment="Center" Margin="12,0,12,0" />
+                            <Button Content="Obnoviť zabudované…" Padding="12,5" Command="{Binding ObnovitZabudovaneCommand}"
+                                    ToolTip="Znova zobrazí zabudované citáty, ktoré ste skryli alebo vymazali" />
+                        </StackPanel>
+                        <ComboBox DockPanel.Dock="Left" Width="190" ItemsSource="{Binding JazykyFiltra}" DisplayMemberPath="Nazov"
+                                  SelectedValuePath="Kod" SelectedValue="{Binding JazykFiltra}" Margin="0,0,10,0" />
+                        <TextBox Text="{Binding Hladat, UpdateSourceTrigger=PropertyChanged}" ToolTip="Hľadať v texte a autorovi" />
+                    </DockPanel>
+                    <TextBlock DockPanel.Dock="Bottom" Text="{Binding SuhrnCitatov}" Style="{StaticResource Popis}" Margin="2,8,0,0" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="360" />
+                        </Grid.ColumnDefinitions>
+
+                        <DataGrid ItemsSource="{Binding Citaty}" SelectedItem="{Binding VybranyCitat}" AutoGenerateColumns="False"
+                                  IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Skryty}" Value="True">
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Citát" Binding="{Binding Text}" Width="*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextWrapping" Value="Wrap" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Autor" Binding="{Binding Autor}" Width="190" />
+                                <DataGridTextColumn Header="Jazyk" Binding="{Binding JazykNazov}" Width="100" />
+                                <DataGridTextColumn Header="Pôvod" Binding="{Binding PovodText}" Width="100" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Border Grid.Column="2" Style="{StaticResource Karta}" VerticalAlignment="Top">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,8">
+                                    <Button DockPanel.Dock="Right" Padding="12,4" Command="{Binding NovyCitatCommand}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE710;" FontSize="12" Margin="0,0,6,0" />
+                                            <TextBlock Text="Nový citát" />
+                                        </StackPanel>
+                                    </Button>
+                                    <TextBlock Text="{Binding NadpisEditora}" Style="{StaticResource Podnadpis}" Margin="0" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <TextBlock Text="Text" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding EditText, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True"
+                                         MinHeight="90" VerticalScrollBarVisibility="Auto" />
+                                <TextBlock Text="Autor alebo zdroj (nepovinné)" Style="{StaticResource Stitok}" Margin="0,10,0,4" />
+                                <TextBox Text="{Binding EditAutor, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Jazyk" Style="{StaticResource Stitok}" Margin="0,10,0,4" />
+                                <ComboBox ItemsSource="{Binding Jazyky}" DisplayMemberPath="Nazov" SelectedValuePath="Kod"
+                                          SelectedValue="{Binding EditJazyk}"
+                                          IsEnabled="{Binding JeVybranyCitat, Converter={StaticResource InverzBool}}" />
+                                <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                           Text="Na dashboarde sa zobrazujú citáty v jazyku programu; ak v ňom žiadny nie je, v príbuznom jazyku alebo v angličtine." />
+                                <WrapPanel Margin="0,14,0,0">
+                                    <Button Style="{DynamicResource AccentButtonStyle}" Padding="16,6" Margin="0,0,8,6" Command="{Binding UlozitCitatCommand}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE74E;" FontSize="13" Margin="0,0,8,0" />
+                                            <TextBlock Text="Uložiť" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Content="{Binding TextSkrytiaCitatu}" Padding="12,6" Margin="0,0,8,6" Command="{Binding PrepnutSkrytieCitatuCommand}"
+                                            IsEnabled="{Binding JeVybranyCitat}" />
+                                    <Button Content="Vymazať" Padding="12,6" Margin="0,0,0,6" Command="{Binding VymazatCitatCommand}"
+                                            IsEnabled="{Binding JeVybranyCitat}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- ============================================================ výročia -->
+            <TabItem Header="Výročia">
+                <DockPanel Margin="0,12,0,0">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <CheckBox Content="Zobraziť aj skryté" IsChecked="{Binding AjSkryteVyrocia}" VerticalAlignment="Center" Margin="12,0,12,0" />
+                            <Button Padding="12,5" Command="{Binding StiahnutDenCommand}" IsEnabled="{Binding NestahujeSa}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE896;" FontSize="12" Margin="0,0,6,0" />
+                                    <TextBlock Text="Stiahnuť deň z Wikipédie" />
+                                </StackPanel>
+                            </Button>
+                            <Button Content="Otvoriť na Wikipédii" Padding="12,5" Margin="6,0,0,0" Command="{Binding OtvoritWikipediuCommand}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="‹" Padding="10,5" Command="{Binding PredchadzajuciDenCommand}" ToolTip="Predchádzajúci deň" />
+                            <DatePicker SelectedDate="{Binding Den}" Width="150" Margin="6,0" />
+                            <Button Content="›" Padding="10,5" Command="{Binding NasledujuciDenCommand}" ToolTip="Nasledujúci deň" />
+                            <Button Content="Dnes" Padding="12,5" Margin="6,0,0,0" Command="{Binding DnesCommand}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding StavDna}" Style="{StaticResource Popis}" Margin="2,0,0,8" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="360" />
+                        </Grid.ColumnDefinitions>
+
+                        <DataGrid ItemsSource="{Binding Vyrocia}" SelectedItem="{Binding VybraneVyrocie}" AutoGenerateColumns="False"
+                                  IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Skryte}" Value="True">
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Rok" Binding="{Binding RokText}" Width="60" />
+                                <DataGridTextColumn Header="Pred" Binding="{Binding PredText}" Width="120" />
+                                <DataGridTextColumn Header="Druh" Binding="{Binding DruhText}" Width="100" />
+                                <DataGridTextColumn Header="Výročie" Binding="{Binding Text}" Width="*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextWrapping" Value="Wrap" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Pôvod" Binding="{Binding PovodText}" Width="95" />
+                                <DataGridTemplateColumn Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button Padding="5,2" Background="Transparent" BorderThickness="0" ToolTip="Skryť alebo znova zobrazovať"
+                                                        Command="{Binding DataContext.PrepnutSkrytieVyrociaCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}">
+                                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xED1A;" FontSize="12" />
+                                                </Button>
+                                                <Button Padding="5,2" Background="Transparent" BorderThickness="0" ToolTip="Vymazať"
+                                                        Command="{Binding DataContext.VymazatVyrocieCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}">
+                                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE74D;" FontSize="12" />
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <Border Style="{StaticResource Karta}">
+                                    <StackPanel>
+                                        <TextBlock Text="Vlastné výročie v tento deň" Style="{StaticResource Podnadpis}" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90" />
+                                                <ColumnDefinition Width="10" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Rok" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                                <TextBox Text="{Binding NovyRok, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Druh" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                                                <ComboBox ItemsSource="{Binding Druhy}" DisplayMemberPath="Nazov" SelectedValuePath="Druh"
+                                                          SelectedValue="{Binding NovyDruh}" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <TextBlock Text="Čo sa stalo, kto sa narodil alebo zomrel" Style="{StaticResource Stitok}" Margin="0,10,0,4" />
+                                        <TextBox Text="{Binding NovyText, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="60" />
+                                        <CheckBox Content="Domáce (zobrazí sa na dashboarde prednostne)" IsChecked="{Binding NoveDomace}" Margin="0,8,0,0" />
+                                        <Button Style="{DynamicResource AccentButtonStyle}" Padding="16,6" Margin="0,12,0,0" HorizontalAlignment="Left"
+                                                Command="{Binding PridatVyrocieCommand}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource Ikona}" Text="&#xE710;" FontSize="13" Margin="0,0,8,0" />
+                                                <TextBlock Text="Pridať výročie" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Karta}" Margin="0,12,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Wikipédia" Style="{StaticResource Podnadpis}" />
+                                        <CheckBox Content="Sťahovať výročia automaticky (dnes a týždeň dopredu)" IsChecked="{Binding StahovatAutomaticky}" />
+                                        <TextBlock Text="{Binding PocetStiahnutych}" Style="{StaticResource Popis}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                            <Button Content="Stiahnuť celý rok…" Padding="12,5" Command="{Binding StiahnutRokCommand}"
+                                                    IsEnabled="{Binding NestahujeSa}"
+                                                    ToolTip="Stiahne výročia všetkých dní, ktoré ešte nie sú stiahnuté – potom fungujú aj bez internetu" />
+                                            <Button Content="Zrušiť" Padding="12,5" Margin="6,0,0,0" Command="{Binding ZrusitStahovanieCommand}"
+                                                    IsEnabled="{Binding StahujeSa}" />
+                                        </StackPanel>
+                                        <ProgressBar Value="{Binding Priebeh}" Maximum="100" Height="6" Margin="0,8,0,0"
+                                                     Visibility="{Binding StahujeSa, Converter={StaticResource BoolNaViditelnost}}" />
+                                        <TextBlock Text="{Binding PriebehText}" Style="{StaticResource Popis}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                                   Text="Výročia sa sťahujú zo stránky dňa vo Wikipédii v jazyku programu a ukladajú sa do Kalendária na tomto počítači. Skryté a vymazané výročia sa pri ďalšom stiahnutí znova neobjavia." />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Karta}" Margin="0,12,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Export a import" Style="{StaticResource Podnadpis}" />
+                                        <TextBlock Style="{StaticResource Popis}" TextWrapping="Wrap" Margin="0,0,0,8"
+                                                   Text="Citáty a výročia v súbore JSON – na prenos na iný počítač alebo do iného programu." />
+                                        <CheckBox Content="Len vlastné (pridané alebo importované)" IsChecked="{Binding ExportLenVlastne}" Margin="0,0,0,8" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Exportovať…" Padding="12,5" Command="{Binding ExportovatCommand}" />
+                                            <Button Content="Importovať…" Padding="12,5" Margin="6,0,0,0" Command="{Binding ImportovatCommand}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

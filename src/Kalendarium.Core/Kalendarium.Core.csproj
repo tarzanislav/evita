@@ -10,7 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Kalendarium</RootNamespace>
     <AssemblyName>Kalendarium.Core</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Description>Kalendárium – meniny, sviatky a ďalšie dáta pre programy</Description>
   </PropertyGroup>
 
@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Data\meniny_sk.json" LogicalName="Kalendarium.meniny_sk.json" />
+    <EmbeddedResource Include="Data\citaty.json" LogicalName="Kalendarium.citaty.json" />
     <None Include="Data\meniny_sk_LICENSE.txt" />
   </ItemGroup>
 

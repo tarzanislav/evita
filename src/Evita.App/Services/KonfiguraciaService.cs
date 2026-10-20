@@ -41,6 +41,7 @@ public static class KonfiguraciaService
         ("Tlac.", Preklad.N("tlač a zostavy")),
         ("Export.", Preklad.N("export (formát, stĺpce, priečinok)")),
         ("Aktualizacie.Kontrolovat", Preklad.N("kontrola aktualizácií")),
+        ("Kalendarium.", Preklad.N("citáty a výročia (sťahovanie z Wikipédie)")),
     };
 
     /// <summary>Kľúče, ktoré sa neprenášajú: heslo je zašifrované len pre tento počítač, ostatné sú interné.</summary>

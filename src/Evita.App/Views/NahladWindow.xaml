@@ -12,7 +12,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                     <TextBlock Text="Zväčšenie" VerticalAlignment="Center" Margin="0,0,8,0" />
-                    <ComboBox x:Name="Zvacsenie" Width="110" SelectionChanged="Zvacsenie_SelectionChanged">
+                    <ComboBox x:Name="Zvacsenie" Width="160" SelectionChanged="Zvacsenie_SelectionChanged">
                         <ComboBoxItem Content="50 %" Tag="0.5" />
                         <ComboBoxItem Content="75 %" Tag="0.75" />
                         <ComboBoxItem Content="100 %" Tag="1" />

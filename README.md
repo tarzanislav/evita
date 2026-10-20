@@ -35,6 +35,13 @@ Kontrolu možno vypnúť alebo spustiť ručne v časti *Servis → Aktualizáci
 Každá verzia má na GitHube vlastné vydanie (napr. `v0.2.7`) s inštalátorom `EviTA_Setup_0.2.7.exe`
 a zdrojovým kódom `evita-0.2.7.zip` a `evita-0.2.7.tar.gz`.
 
+## Tlač a zostavy
+
+V menu *Tlač a zostavy* vyberiete zostavu, nastavíte obdobie, zoskupenie, stĺpce a ich poradie a orientáciu A4.
+Každá zostava sa dá pozrieť v náhľade, vytlačiť alebo jedným kliknutím uložiť do PDF. Hlavička obsahuje názov
+organizácie a logo (nastavíte na tej istej obrazovke), päta dátum tlače a číslo strany. Zobrazené položky
+z Evidencie vytlačíte tlačidlom *Tlačiť…* alebo klávesmi Ctrl+P.
+
 ## Kde sú dáta
 
 | Čo | Kde |
@@ -56,7 +63,9 @@ Odinštalovanie programu databázu ani zálohy nemaže.
       obnova zo zálohy, kontrola a oprava databázy, automatická aktualizácia štruktúry databázy
 - [x] **Etapa 3 – Dashboard:** počty, graf kategórií, meniny, sviatky a dni pracovného pokoja, upozornenia
 - [x] **Etapa 4 – Import a export:** všetky formáty, sprievodca importom, vzorové súbory, prenos celej databázy
-- [ ] Etapa 5 – Tlač a zostavy
+- [x] **Etapa 5 – Tlač a zostavy:** súhrnný zoznam, vyfiltrované položky, po miestnostiach (inventúrny zoznam s podpismi),
+      po kategóriách, podľa pridelenia (zverená technika s podpisom), prírastkový zoznam, podľa dátumu pridania,
+      vyradené položky, história zmien; náhľad, tlač a PDF; hlavička s názvom organizácie a logom
 - [ ] Etapa 6 – Kalendár
 - [ ] Etapa 7 – Kalendárium (citáty, výročia)
 - [ ] Etapa 8 – Skenovanie a údaje z internetu

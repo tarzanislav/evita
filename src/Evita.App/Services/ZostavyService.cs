@@ -147,6 +147,26 @@ public sealed class ZostavyService
         }
 
         var stlpce = m.Stlpce.Select(StlpcePrenosu.Podla).ToList();
+
+        // stĺpec, podľa ktorého sú položky zoskupené, je v nadpise skupiny – v tabuľke by sa len opakoval
+        var zoskupenyStlpec = m.Druh switch
+        {
+            DruhZostavy.PoMiestnostiach => Miestnost,
+            DruhZostavy.PoKategoriach => Kategoria,
+            DruhZostavy.PodlaPridelenia => Pridelene,
+            DruhZostavy.SuhrnnyZoznam => m.Zoskupenie switch
+            {
+                Zoskupenie.Kategoria => Kategoria,
+                Zoskupenie.Miestnost => Miestnost,
+                _ => Pridelene,
+            },
+            _ => null,
+        };
+        if (zoskupenyStlpec is not null && stlpce.Count > 1)
+        {
+            stlpce.RemoveAll(s => s.Kluc == zoskupenyStlpec);
+        }
+
         if (stlpce.Count == 0)
         {
             throw new EvitaException("Vyberte aspoň jeden stĺpec.");

@@ -56,7 +56,7 @@
 
             <!-- tlačidlo vzorového súboru na stiahnutie (Import a export, sprievodca importom) -->
             <DataTemplate x:Key="TlacidloVzoru">
-                <Button Margin="0,0,10,10" Padding="14,8" MinWidth="200" HorizontalContentAlignment="Left"
+                <Button Margin="0,0,10,10" Padding="14,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                         Command="{Binding DataContext.StiahnutVzorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                         CommandParameter="{Binding}"
                         ToolTip="{Binding Subor, StringFormat=Uložiť súbor {0} do priečinka Stiahnuté}">

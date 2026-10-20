@@ -272,11 +272,11 @@ internal static class Samotest
             Over(kal.Vyrocia(2, 29, "sk").Count == 3 && kal.Vyrocia(2, 29, "sk", true).Count == 4, "skryté výročie zostane skryté aj po novom stiahnutí");
             var vlastneVyrocie = kal.PridajVyrocie("sk", 2, 29, 2024, Kalendarium.DruhVyrocia.Udalost, "Spustenie evidencie EviTA", true);
             var exportKalendaria = Path.Combine(Databaza.Priecinok, "kalendarium_export.json");
-            var exportovane = kal.Exportuj(exportKalendaria, lenVlastne: true);
+            var exportovaneKal = kal.Exportuj(exportKalendaria, lenVlastne: true);
             kal.VymazVyrocie(vlastneVyrocie.Id);
             kal.VymazCitat(vlastnyCitat.Id);
             var importKalendaria = kal.Importuj(exportKalendaria);
-            Over(exportovane.Citaty >= 1 && exportovane.Vyrocia == 1 && importKalendaria.Vyrocia == 1 && importKalendaria.Citaty >= 1
+            Over(exportovaneKal.Citaty >= 1 && exportovaneKal.Vyrocia == 1 && importKalendaria.Vyrocia == 1 && importKalendaria.Citaty >= 1
                  && kal.Vyrocia(2, 29, "sk").Any(v => v.Text == "Spustenie evidencie EviTA"), "export a import citátov a výročí");
             try
             {

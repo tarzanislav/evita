@@ -40,6 +40,8 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private int _revizieDo30;
     [ObservableProperty] private int _vOprave;
     [ObservableProperty] private bool _ziadneUpozornenia;
+    [ObservableProperty] private string _zalohaText = "";
+    [ObservableProperty] private bool _zalohaVarovanie;
 
     [ObservableProperty] private List<PolozkaRiadok> _naposledyPridane = new();
     [ObservableProperty] private List<PolozkaRiadok> _naposledyZmenene = new();
@@ -67,13 +69,45 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
         ZarukyDo30 = aktivne.Count(p => p.ZarukaDo != null && p.ZarukaDo >= dnes && p.ZarukaDo <= o30);
         RevizieDo30 = aktivne.Count(p => p.DalsiaRevizia != null && p.DalsiaRevizia <= o30);
         VOprave = aktivne.Count(p => p.Stav == StavPolozky.VOprave);
-        ZiadneUpozornenia = BezMiestnosti == 0 && ZarukyDo30 == 0 && RevizieDo30 == 0 && VOprave == 0;
+        AktualizujZalohy();
+        ZiadneUpozornenia = BezMiestnosti == 0 && ZarukyDo30 == 0 && RevizieDo30 == 0 && VOprave == 0 && !ZalohaVarovanie;
 
         var riadky = new PolozkaService().NacitajRiadky();
         NaposledyPridane = riadky.OrderByDescending(r => r.DatumPridania).ThenByDescending(r => r.PrirastkoveCislo).Take(5).ToList();
         NaposledyZmenene = riadky.Where(r => r.DatumZmeny > r.DatumPridania)
             .OrderByDescending(r => r.DatumZmeny).Take(5).ToList();
     }
+
+    private void AktualizujZalohy()
+    {
+        var zalohy = new ZalohaService();
+        var nastavenia = zalohy.NacitajNastavenia();
+        var posledna = zalohy.PoslednaUspesna();
+        var poslednyPokus = zalohy.PoslednyZaznam();
+
+        if (poslednyPokus is { Uspech: false })
+        {
+            ZalohaText = $"Posledná záloha sa nepodarila ({Sk.DatumCas(poslednyPokus.Cas)}): {poslednyPokus.Chyba}";
+            ZalohaVarovanie = true;
+        }
+        else if (posledna is null)
+        {
+            ZalohaText = "Zatiaľ nebola urobená žiadna záloha.";
+            ZalohaVarovanie = true;
+        }
+        else
+        {
+            var dni = (int)(DateTime.Now - posledna.Value).TotalDays;
+            var vek = dni switch { 0 => "dnes", 1 => "včera", _ => $"pred {dni} dňami" };
+            ZalohaText = $"Posledná záloha: {Sk.DatumCas(posledna.Value)} ({vek})" + (nastavenia.Zapnuta ? "" : ", pravidelná záloha je vypnutá");
+            // varovanie, ak je záloha staršia ako nastavená perióda (s rezervou jedného dňa)
+            var limit = ZalohaService.DalsiTermin(posledna.Value, nastavenia.Zapnuta ? nastavenia.Perioda : PeriodaZaloh.Mesacne).AddDays(1);
+            ZalohaVarovanie = DateTime.Now > limit;
+        }
+    }
+
+    [RelayCommand]
+    private void OtvorServis() => _hlavne.PrejdiNaSekciu("servis");
 
     [RelayCommand]
     private void OtvorEvidenciu(string? filter)

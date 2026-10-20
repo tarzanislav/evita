@@ -1,9 +1,5 @@
 using System.IO;
-using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text.Json;
 using Evita.Data;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace Evita.Services;
@@ -20,24 +16,17 @@ public sealed record InfoODatabaze(
     int VerziaSchemy,
     bool UkazkoveData);
 
-/// <summary>Zálohy, údržba a vymazanie databázy.</summary>
+/// <summary>Informácie o databáze, ukážkové dáta a vymazanie dát.</summary>
 public sealed class ServisService
 {
+    private readonly ZalohaService _zalohy = new();
+
     public InfoODatabaze Info()
     {
         using var db = Databaza.Otvor();
-        long velkost = 0;
-        foreach (var subor in new[] { Databaza.Cesta, Databaza.Cesta + "-wal" })
-        {
-            if (File.Exists(subor))
-            {
-                velkost += new FileInfo(subor).Length;
-            }
-        }
-
         return new InfoODatabaze(
             Databaza.Cesta,
-            velkost,
+            VelkostDatabazy(),
             db.Polozky.Count(),
             db.Polozky.Count(p => p.Stav == Models.StavPolozky.Vyradene),
             db.Kategorie.Count(),
@@ -48,76 +37,18 @@ public sealed class ServisService
             Databaza.Citaj(db, Databaza.KlucUkazkoveData) == "1");
     }
 
-    /// <summary>
-    /// Vytvorí zálohu celej databázy do jedného súboru ZIP. Kópia databázy sa robí cez SQLite
-    /// (VACUUM INTO), takže je v poriadku aj počas práce s programom. Vráti cestu k súboru.
-    /// </summary>
-    public string Zalohuj(string? priecinok = null, string? poznamka = null)
+    public static long VelkostDatabazy()
     {
-        priecinok ??= Databaza.PriecinokZaloh;
-        Directory.CreateDirectory(priecinok);
-
-        var cas = DateTime.Now;
-        var nazov = $"EviTA_zaloha_{cas:yyyy-MM-dd_HHmmss}";
-        var docasnyPriecinok = Path.Combine(Path.GetTempPath(), "EviTA_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(docasnyPriecinok);
-
-        try
+        long velkost = 0;
+        foreach (var subor in new[] { Databaza.Cesta, Databaza.Cesta + "-wal" })
         {
-            var kopia = Path.Combine(docasnyPriecinok, "evita.db");
-            using (var spojenie = Databaza.OtvorSpojenie())
-            using (var prikaz = spojenie.CreateCommand())
+            if (File.Exists(subor))
             {
-                prikaz.CommandText = "VACUUM INTO $cesta;";
-                prikaz.Parameters.AddWithValue("$cesta", kopia);
-                prikaz.ExecuteNonQuery();
-            }
-
-            SqliteConnection.ClearAllPools();
-
-            var info = Info();
-            string kontrolnySucet;
-            using (var stream = File.OpenRead(kopia))
-            {
-                kontrolnySucet = Convert.ToHexString(SHA256.HashData(stream));
-            }
-
-            var popis = new
-            {
-                program = "EviTA",
-                verziaProgramu = typeof(ServisService).Assembly.GetName().Version?.ToString(),
-                verziaSchemy = info.VerziaSchemy,
-                vytvorene = cas.ToString("yyyy-MM-ddTHH:mm:ss"),
-                pocitac = Environment.MachineName,
-                pouzivatel = Environment.UserName,
-                polozky = info.Polozky,
-                ukazkoveData = info.UkazkoveData,
-                poznamka,
-                sha256 = kontrolnySucet,
-            };
-            File.WriteAllText(Path.Combine(docasnyPriecinok, "info.json"),
-                JsonSerializer.Serialize(popis, new JsonSerializerOptions { WriteIndented = true }));
-
-            var ciel = Path.Combine(priecinok, nazov + ".zip");
-            for (var poradie = 2; File.Exists(ciel); poradie++)
-            {
-                ciel = Path.Combine(priecinok, $"{nazov}_{poradie}.zip");
-            }
-
-            ZipFile.CreateFromDirectory(docasnyPriecinok, ciel, CompressionLevel.Optimal, includeBaseDirectory: false);
-            return ciel;
-        }
-        finally
-        {
-            try
-            {
-                Directory.Delete(docasnyPriecinok, recursive: true);
-            }
-            catch (IOException)
-            {
-                // dočasný priečinok vymaže Windows neskôr
+                velkost += new FileInfo(subor).Length;
             }
         }
+
+        return velkost;
     }
 
     /// <summary>
@@ -126,7 +57,7 @@ public sealed class ServisService
     /// </summary>
     public string VymazatData(bool ponechatMiestnosti, bool ponechatOsoby)
     {
-        var zaloha = Zalohuj(poznamka: "Automatická záloha pred vymazaním dát");
+        var zaloha = _zalohy.Zalohuj(TypZalohy.PredOperaciou, poznamka: "Automatická záloha pred vymazaním dát");
 
         using (var db = Databaza.Otvor())
         using (var transakcia = db.Database.BeginTransaction())
@@ -149,7 +80,7 @@ public sealed class ServisService
             transakcia.Commit();
         }
 
-        Kompaktuj();
+        new DiagnostikaService().Kompaktuj();
         return zaloha;
     }
 
@@ -171,14 +102,5 @@ public sealed class ServisService
         }
 
         return zaloha;
-    }
-
-    /// <summary>Uvoľní nepoužité miesto v súbore databázy.</summary>
-    public void Kompaktuj()
-    {
-        using var spojenie = Databaza.OtvorSpojenie();
-        using var prikaz = spojenie.CreateCommand();
-        prikaz.CommandText = "VACUUM;";
-        prikaz.ExecuteNonQuery();
     }
 }

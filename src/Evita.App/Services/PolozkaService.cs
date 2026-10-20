@@ -108,6 +108,11 @@ public sealed class PolozkaService
             {
                 p.SerioveCislo = serioveCisla[i].Trim();
             }
+            else if (pocet > 1)
+            {
+                // sériové číslo je jedinečné – pri hromadnom pridaní ho nekopírujeme na všetky kusy
+                p.SerioveCislo = null;
+            }
 
             db.Polozky.Add(p);
             nove.Add(p);

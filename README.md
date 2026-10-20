@@ -18,7 +18,7 @@ alebo s **prázdnou databázou**. Ukážkové dáta neskôr vymažete v časti *
 | --- | --- |
 | Program | `C:\Program Files\EviTA` |
 | Databáza | `C:\ProgramData\EviTA\Data\evita.db` |
-| Zálohy | `Dokumenty\EviTA\Zálohy` |
+| Zálohy | `Dokumenty\EviTA\Zálohy` (dá sa zmeniť v Servis → Zálohy) |
 
 Odinštalovanie programu databázu ani zálohy nemaže.
 
@@ -26,13 +26,15 @@ Odinštalovanie programu databázu ani zálohy nemaže.
 
 - [x] **Etapa 1 – Jadro:** evidencia, filtre, karta položky, história zmien, hromadné pridanie a zmena, číselníky,
       ukážková databáza, jednorazová záloha, inštalátor
-- [ ] Etapa 2 – Bezpečnosť dát: pravidelné zálohy, obnova, nástroje na ladenie
+- [x] **Etapa 2 – Bezpečnosť dát:** pravidelné zálohy (aj cez Plánovač úloh Windows), zálohy s heslom,
+      obnova zo zálohy, kontrola a oprava databázy, automatická aktualizácia štruktúry databázy
 - [ ] Etapa 3 – Dashboard: grafy, meniny, sviatky
 - [ ] Etapa 4 – Import a export
 - [ ] Etapa 5 – Tlač a zostavy
 - [ ] Etapa 6 – Kalendár
 - [ ] Etapa 7 – Kalendárium (citáty, výročia)
-- [ ] Etapa 8 – Dokončenie
+- [ ] Etapa 8 – Skenovanie a údaje z internetu
+- [ ] Etapa 9 – Dokončenie
 
 ## Technické informácie
 

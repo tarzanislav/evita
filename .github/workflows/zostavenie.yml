@@ -28,7 +28,7 @@ jobs:
         id: verzia
         shell: pwsh
         run: |
-          $v = "0.1.${{ github.run_number }}"
+          $v = "0.2.${{ github.run_number }}"
           "cislo=$v" >> $env:GITHUB_OUTPUT
           Write-Host "Verzia: $v"
 

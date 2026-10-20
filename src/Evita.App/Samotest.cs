@@ -60,6 +60,7 @@ internal static class Samotest
 
             // pridanie, úprava, história
             var vzor = sluzba.Nacitaj(riadky.First(r => !r.Vyradena && r.MiestnostId is not null).Id)!;
+            vzor.SerioveCislo = null;
             var nove = sluzba.Pridaj(vzor, 3, new[] { "TEST-1", "TEST-2" });
             Over(nove.Count == 3, "hromadné pridanie 3 ks");
             var nova = sluzba.Nacitaj(nove[0])!;
@@ -110,6 +111,68 @@ internal static class Samotest
             Over(duplicita, "duplicitný názov kategórie je zachytený");
             Krok("služby v poriadku");
 
+            // aktualizácia štruktúry zo staršej verzie (simulácia databázy z verzie 0.1)
+            Vykonaj("DROP TABLE \"ZaznamyZaloh\"; UPDATE \"Nastavenia\" SET \"Hodnota\" = '1' WHERE \"Kluc\" = 'Schema.Verzia';");
+            Databaza.Inicializuj();
+            Over(Databaza.VerziaVDatabaze() == Databaza.VerziaSchemy, "aktualizácia štruktúry z verzie 1");
+            Over(Directory.GetFiles(Databaza.PriecinokZaloh, "EviTA_pred_aktualizaciou_*.db").Length == 1, "záloha pred aktualizáciou štruktúry");
+
+            // zálohy
+            var zalohy = new ZalohaService();
+            var nastavenia = zalohy.NacitajNastavenia();
+            Over(nastavenia.Zapnuta && nastavenia.Perioda == PeriodaZaloh.Tyzdenne && nastavenia.Ponechat == 10, "predvolené nastavenia záloh");
+            Over(zalohy.JeCasNaZalohu(nastavenia), "bez zálohy je čas na zálohu");
+            var pocet = sluzba.NacitajRiadky().Count;
+            var obycajna = zalohy.Zalohuj(TypZalohy.Rucna);
+            Over(File.Exists(obycajna) && !zalohy.JeZasifrovana(obycajna), "ručná záloha ZIP");
+            Over(!zalohy.JeCasNaZalohu(nastavenia), "po zálohe ešte nie je čas na ďalšiu");
+            Over(zalohy.PrecitajInfo(obycajna, null).Polozky == pocet, "popis zálohy sedí");
+
+            const string heslo = "tajne-heslo-123";
+            var sHeslom = zalohy.Zalohuj(TypZalohy.Rucna, heslo);
+            Over(zalohy.JeZasifrovana(sHeslom), "záloha s heslom je zašifrovaná");
+            Over(Ocakavaj<HesloPotrebneException>(() => zalohy.PrecitajInfo(sHeslom, null)), "bez hesla sa záloha neotvorí");
+            Over(Ocakavaj<EvitaException>(() => zalohy.PrecitajInfo(sHeslom, "zle-heslo")), "nesprávne heslo je odmietnuté");
+            Over(zalohy.PrecitajInfo(sHeslom, heslo) is { Zasifrovana: true } infoHeslo && infoHeslo.Polozky == pocet, "správne heslo otvorí zálohu");
+
+            // obnova zo zálohy s heslom
+            sluzba.Pridaj(vzor, 2, Array.Empty<string>());
+            Over(sluzba.NacitajRiadky().Count == pocet + 2, "pridané položky po zálohe");
+            var bezpecnostna = zalohy.Obnov(sHeslom, heslo);
+            Over(sluzba.NacitajRiadky().Count == pocet, "obnova vrátila stav zo zálohy");
+            Over(bezpecnostna is not null && File.Exists(bezpecnostna), "bezpečnostná záloha pred obnovou");
+            Over(zalohy.Zaznamy().Any(z => z.Typ == "obnova" && z.Uspech), "obnova je v zázname záloh");
+
+            // rotácia automatických záloh
+            zalohy.UlozNastavenia(nastavenia with { Ponechat = 2 });
+            for (var i = 0; i < 3; i++)
+            {
+                zalohy.Zalohuj(TypZalohy.Automaticka);
+            }
+
+            Over(Directory.GetFiles(nastavenia.Priecinok, "EviTA_auto_*.zip").Length == 2, "rotácia ponechá 2 automatické zálohy");
+            Over(Directory.GetFiles(nastavenia.Priecinok, "EviTA_zaloha_*.zip").Length == 2, "ručné zálohy rotácia nemaže");
+            Krok("zálohy a obnova v poriadku");
+
+            // kontrola a oprava
+            var diagnostika = new DiagnostikaService();
+            foreach (var nastroj in new Func<VysledokKontroly>[]
+                     {
+                         diagnostika.RychlaKontrola, diagnostika.UplnaKontrola, diagnostika.KontrolaVazieb,
+                         diagnostika.KontrolaDat, diagnostika.Optimalizuj, diagnostika.ObnovIndexy, diagnostika.Kompaktuj,
+                     })
+            {
+                var v = nastroj();
+                Over(v.Ok, $"{v.Nastroj}: {string.Join(" | ", v.Riadky)}");
+            }
+
+            var pocetPredZachranou = sluzba.NacitajRiadky().Count;
+            var zachrana = diagnostika.Zachran();
+            Over(zachrana.Ok, $"záchrana dát: {string.Join(" | ", zachrana.Riadky)}");
+            Over(sluzba.NacitajRiadky().Count == pocetPredZachranou, "záchrana dát zachovala všetky položky");
+            Over(diagnostika.UplnaKontrola().Ok, "databáza po záchrane je v poriadku");
+            Krok("kontrola a oprava v poriadku");
+
             // obrazovky a okná
             var okno = new MainWindow();
             aplikacia.MainWindow = okno;
@@ -120,6 +183,7 @@ internal static class Samotest
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
+                PrejdiZalozky(okno);
                 Krok($"obrazovka: {sekcia}");
             }
 
@@ -138,12 +202,12 @@ internal static class Samotest
             OtvorAZatvor(new VymazanieWindow(), "vymazanie dát");
             OtvorAZatvor(new PrveSpustenieWindow(), "prvé spustenie");
             OtvorAZatvor(new VstupWindow("Test", "Otázka", "text", true), "vstup");
+            OtvorAZatvor(new HesloWindow(true, null), "nové heslo");
+            OtvorAZatvor(new HesloWindow(false, null), "zadanie hesla");
             okno.Close();
             Pumpuj();
 
-            // záloha a nový začiatok
-            var zaloha = servis.Zalohuj();
-            Over(File.Exists(zaloha) && new FileInfo(zaloha).Length > 0, "záloha ZIP");
+            // nový začiatok
             servis.VymazatData(ponechatMiestnosti: false, ponechatOsoby: false);
             Over(sluzba.NacitajRiadky().Count == 0, "vymazanie dát");
             Over(!Databaza.SuUkazkoveData(), "príznak ukážkových dát zrušený");
@@ -184,6 +248,60 @@ internal static class Samotest
     }
 
     private static IEnumerable<string> Dialogy_Hlasenia() => Pomocne.Dialogy.TicheHlasenia;
+
+    private static bool Ocakavaj<T>(Action akcia) where T : Exception
+    {
+        try
+        {
+            akcia();
+            return false;
+        }
+        catch (T)
+        {
+            return true;
+        }
+    }
+
+    private static void Vykonaj(string sql)
+    {
+        using var spojenie = Databaza.OtvorSpojenie();
+        using var prikaz = spojenie.CreateCommand();
+        prikaz.CommandText = sql;
+        prikaz.ExecuteNonQuery();
+    }
+
+    /// <summary>Postupne zobrazí všetky záložky na obrazovke, aby sa vytvoril ich obsah.</summary>
+    private static void PrejdiZalozky(DependencyObject koren)
+    {
+        foreach (var zalozky in Potomkovia<System.Windows.Controls.TabControl>(koren).ToList())
+        {
+            for (var i = 0; i < zalozky.Items.Count; i++)
+            {
+                zalozky.SelectedIndex = i;
+                Pumpuj();
+            }
+
+            zalozky.SelectedIndex = 0;
+            Pumpuj();
+        }
+    }
+
+    private static IEnumerable<T> Potomkovia<T>(DependencyObject koren) where T : DependencyObject
+    {
+        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(koren); i++)
+        {
+            var dieta = System.Windows.Media.VisualTreeHelper.GetChild(koren, i);
+            if (dieta is T hladany)
+            {
+                yield return hladany;
+            }
+
+            foreach (var vnoreny in Potomkovia<T>(dieta))
+            {
+                yield return vnoreny;
+            }
+        }
+    }
 
     private static void OtvorAZatvor(Window okno, string nazov)
     {

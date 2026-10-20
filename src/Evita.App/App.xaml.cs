@@ -25,6 +25,13 @@ public partial class App : Application
             return;
         }
 
+        if (e.Args.Contains("--zaloha", StringComparer.OrdinalIgnoreCase))
+        {
+            // spustené Plánovačom úloh Windows – bez okien, len pravidelná záloha
+            Shutdown(ZalohaBezOkien());
+            return;
+        }
+
         var prveSpustenie = !Databaza.Existuje;
         try
         {
@@ -32,11 +39,16 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                $"Databázu sa nepodarilo otvoriť ani vytvoriť.\n\n{Databaza.Cesta}\n\n{ex.Message}",
-                "EviTA", MessageBoxButton.OK, MessageBoxImage.Error);
-            Shutdown(1);
-            return;
+            if (!ObnovaPriChybe(ex))
+            {
+                Shutdown(1);
+                return;
+            }
+        }
+
+        if (!prveSpustenie)
+        {
+            SkontrolujDatabazu();
         }
 
         if (prveSpustenie)
@@ -65,6 +77,98 @@ public partial class App : Application
         MainWindow = okno;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         okno.Show();
+
+        // pravidelná záloha na pozadí, ak už je čas
+        Task.Run(() => new ZalohaService().AutomatickaAkTreba())
+            .ContinueWith(_ => okno.Dispatcher.InvokeAsync(okno.PoAutomatickejZalohe), TaskScheduler.Default);
+    }
+
+    /// <summary>Databáza sa nedá otvoriť – ponúkne obnovu zo zálohy. Vráti true, ak sa dá pokračovať.</summary>
+    private static bool ObnovaPriChybe(Exception chyba)
+    {
+        var otazka = MessageBox.Show(
+            $"Databázu sa nepodarilo otvoriť.\n\n{Databaza.Cesta}\n\n{chyba.GetBaseException().Message}\n\n" +
+            "Chcete ju obnoviť zo zálohy?",
+            "EviTA", MessageBoxButton.YesNo, MessageBoxImage.Error);
+        if (otazka != MessageBoxResult.Yes)
+        {
+            return false;
+        }
+
+        var vyber = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Vyberte zálohu EviTA",
+            Filter = "Zálohy EviTA (*.zip)|*.zip",
+            InitialDirectory = Databaza.PriecinokZaloh,
+        };
+        if (vyber.ShowDialog() != true)
+        {
+            return false;
+        }
+
+        try
+        {
+            var sluzba = new ZalohaService();
+            string? heslo = null;
+            if (sluzba.JeZasifrovana(vyber.FileName))
+            {
+                heslo = HesloWindow.Zadaj(null);
+                if (heslo is null)
+                {
+                    return false;
+                }
+            }
+
+            sluzba.Obnov(vyber.FileName, heslo);
+            MessageBox.Show("Databáza je obnovená zo zálohy.", "EviTA", MessageBoxButton.OK, MessageBoxImage.Information);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Obnova sa nepodarila.\n\n{ex.GetBaseException().Message}", "EviTA",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
+        }
+    }
+
+    /// <summary>Rýchla kontrola pri štarte – pri probléme upozorní a ponúkne riešenie v časti Servis.</summary>
+    private static void SkontrolujDatabazu()
+    {
+        try
+        {
+            var vysledok = new DiagnostikaService().RychlaKontrola();
+            if (!vysledok.Ok)
+            {
+                Dialogy.Upozornenie(
+                    "Rýchla kontrola zistila, že databáza môže byť poškodená.\n\n" +
+                    "Program sa otvorí, ale odporúčame v časti Servis → Kontrola a oprava spustiť úplnú kontrolu " +
+                    "a podľa výsledku obnoviť databázu zo zálohy alebo použiť záchranu dát.\n\n" +
+                    string.Join("\n", vysledok.Riadky.Take(5)));
+            }
+        }
+        catch (Exception ex)
+        {
+            Dialogy.Chyba("Kontrolu databázy sa nepodarilo vykonať. Odporúčame obnovu zo zálohy (Servis → Obnova).", ex);
+        }
+    }
+
+    private static int ZalohaBezOkien()
+    {
+        try
+        {
+            if (!Databaza.Existuje)
+            {
+                return 0;
+            }
+
+            Databaza.Inicializuj();
+            new ZalohaService().AutomatickaAkTreba();
+            return 0;
+        }
+        catch (Exception)
+        {
+            return 1;
+        }
     }
 
     private static void NastavSlovencinu()

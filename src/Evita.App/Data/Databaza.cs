@@ -1,5 +1,6 @@
 using System.IO;
 using Evita.Models;
+using Evita.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,21 @@ namespace Evita.Data;
 /// <summary>Umiestnenie databázy, jej vytvorenie a pomocné nastavenia.</summary>
 public static class Databaza
 {
-    public const int VerziaSchemy = 1;
+    /// <summary>Aktuálna verzia dátovej štruktúry. Pri každej zmene štruktúry sa zvýši a pribudne krok v <see cref="Migracie"/>.</summary>
+    public const int VerziaSchemy = 2;
+
+    /// <summary>
+    /// Kroky, ktoré upravia staršiu databázu na novú verziu štruktúry. Každý príkaz musí byť bezpečný aj pri
+    /// opakovanom spustení (IF NOT EXISTS), lebo rovnaké kroky sa používajú aj pri záchrane dát.
+    /// </summary>
+    private static readonly (int Verzia, string Popis, string[] Prikazy)[] Migracie =
+    {
+        (2, "záznam záloh", new[]
+        {
+            """CREATE TABLE IF NOT EXISTS "ZaznamyZaloh" ("Id" INTEGER NOT NULL CONSTRAINT "PK_ZaznamyZaloh" PRIMARY KEY AUTOINCREMENT, "Cas" TEXT NOT NULL, "Typ" TEXT NOT NULL, "Cesta" TEXT NULL, "Velkost" INTEGER NOT NULL, "Uspech" INTEGER NOT NULL, "Zasifrovana" INTEGER NOT NULL, "Chyba" TEXT NULL);""",
+            """CREATE INDEX IF NOT EXISTS "IX_ZaznamyZaloh_Cas" ON "ZaznamyZaloh" ("Cas");""",
+        }),
+    };
 
     public const string KlucVerziaSchemy = "Schema.Verzia";
     public const string KlucPoslednePrirastkove = "PrirastkoveCislo.Posledne";
@@ -46,14 +61,18 @@ public static class Databaza
         return spojenie;
     }
 
-    /// <summary>Vytvorí databázu, ak neexistuje, a doplní základné údaje.</summary>
+    /// <summary>
+    /// Vytvorí databázu, ak neexistuje, doplní základné údaje a staršiu databázu
+    /// upraví na aktuálnu verziu štruktúry (pred úpravou ju zálohuje).
+    /// </summary>
     public static void Inicializuj()
     {
         Directory.CreateDirectory(Priecinok);
+        bool nova;
 
         using (var db = Otvor())
         {
-            db.Database.EnsureCreated();
+            nova = db.Database.EnsureCreated();
 
             if (!db.Kategorie.Any())
             {
@@ -63,7 +82,7 @@ public static class Databaza
                 }
             }
 
-            if (Citaj(db, KlucVerziaSchemy) is null)
+            if (nova)
             {
                 Zapis(db, KlucVerziaSchemy, VerziaSchemy.ToString());
             }
@@ -71,11 +90,78 @@ public static class Databaza
             db.SaveChanges();
         }
 
-        using var spojenie = OtvorSpojenie();
-        using var prikaz = spojenie.CreateCommand();
-        prikaz.CommandText = "PRAGMA journal_mode=WAL;";
-        prikaz.ExecuteNonQuery();
+        using (var spojenie = OtvorSpojenie())
+        using (var prikaz = spojenie.CreateCommand())
+        {
+            prikaz.CommandText = "PRAGMA journal_mode=WAL;";
+            prikaz.ExecuteNonQuery();
+        }
+
+        if (!nova)
+        {
+            Aktualizuj();
+        }
     }
+
+    /// <summary>Verzia štruktúry uložená v databáze (staršie databázy bez záznamu majú verziu 1).</summary>
+    public static int VerziaVDatabaze()
+    {
+        using var db = Otvor();
+        return int.TryParse(Citaj(db, KlucVerziaSchemy), out var v) ? v : 1;
+    }
+
+    private static void Aktualizuj()
+    {
+        var verzia = VerziaVDatabaze();
+        if (verzia > VerziaSchemy)
+        {
+            throw new EvitaException(
+                $"Databáza pochádza z novšej verzie programu EviTA (verzia štruktúry {verzia}). Nainštalujte najnovšiu verziu programu.");
+        }
+
+        if (verzia == VerziaSchemy)
+        {
+            return;
+        }
+
+        // bezpečnostná kópia pred úpravou štruktúry
+        Directory.CreateDirectory(PriecinokZaloh);
+        var kopia = Path.Combine(PriecinokZaloh, $"EviTA_pred_aktualizaciou_v{verzia}_{DateTime.Now:yyyy-MM-dd_HHmmss}.db");
+
+        using var spojenie = OtvorSpojenie();
+        using (var prikaz = spojenie.CreateCommand())
+        {
+            prikaz.CommandText = "VACUUM INTO $cesta;";
+            prikaz.Parameters.AddWithValue("$cesta", kopia);
+            prikaz.ExecuteNonQuery();
+        }
+
+        using var transakcia = spojenie.BeginTransaction();
+        foreach (var krok in Migracie.Where(m => m.Verzia > verzia).OrderBy(m => m.Verzia))
+        {
+            foreach (var sql in krok.Prikazy)
+            {
+                using var prikaz = spojenie.CreateCommand();
+                prikaz.Transaction = transakcia;
+                prikaz.CommandText = sql;
+                prikaz.ExecuteNonQuery();
+            }
+        }
+
+        using (var prikaz = spojenie.CreateCommand())
+        {
+            prikaz.Transaction = transakcia;
+            prikaz.CommandText = "INSERT OR REPLACE INTO \"Nastavenia\" (\"Kluc\", \"Hodnota\") VALUES ($kluc, $hodnota);";
+            prikaz.Parameters.AddWithValue("$kluc", KlucVerziaSchemy);
+            prikaz.Parameters.AddWithValue("$hodnota", VerziaSchemy.ToString());
+            prikaz.ExecuteNonQuery();
+        }
+
+        transakcia.Commit();
+    }
+
+    /// <summary>Všetky príkazy migrácií (na záchranu dát – vytvoria chýbajúce tabuľky).</summary>
+    public static IEnumerable<string> VsetkyPrikazyMigracii() => Migracie.SelectMany(m => m.Prikazy);
 
     public static string? Citaj(EvitaDbContext db, string kluc) =>
         db.Nastavenia.Where(n => n.Kluc == kluc).Select(n => n.Hodnota).FirstOrDefault();

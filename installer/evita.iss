@@ -61,4 +61,8 @@ Name: "{autodesktop}\EviTA"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,EviTA}"; Flags: nowait postinstall skipifsilent
 
+[UninstallRun]
+; úloha pravidelnej zálohy v Plánovači úloh Windows (ak bola nastavená)
+Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""EviTA zaloha"" /F"; Flags: runhidden; RunOnceId: "ZmazatUlohuZalohy"
+
 ; Databáza (C:\ProgramData\EviTA) a zálohy (Dokumenty\EviTA) sa pri odinštalovaní nemažú.

@@ -114,8 +114,16 @@
                                 <Run Text="Bez pridelenia osobe:" /> <Run Text="{Binding BezPridelenia, Mode=OneWay}" FontWeight="SemiBold" />
                             </TextBlock>
                         </Button>
+                        <Button Style="{StaticResource OdkazUpozornenia}" Command="{Binding OtvorServisCommand}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding ZalohaText}" TextWrapping="Wrap" />
+                                <TextBlock Text="Zálohu treba urobiť – kliknite sem." FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                           Visibility="{Binding ZalohaVarovanie, Converter={StaticResource BoolNaViditelnost}}" />
+                            </StackPanel>
+                        </Button>
                         <TextBlock Style="{StaticResource Popis}" Margin="0,6,0,0"
-                                   Text="Kliknutím otvoríte zoznam príslušných položiek. Stav záloh pribudne v etape 2." />
+                                   Text="Kliknutím otvoríte zoznam príslušných položiek alebo servis záloh." />
                     </StackPanel>
                 </Border>
 

@@ -94,3 +94,17 @@ public class Nastavenie
     public string Kluc { get; set; } = "";
     public string? Hodnota { get; set; }
 }
+
+/// <summary>Jeden záznam o zálohe alebo obnove (aj neúspešnej).</summary>
+public class ZaznamZalohy
+{
+    public int Id { get; set; }
+    public DateTime Cas { get; set; }
+    /// <summary>ručná, automatická, pred operáciou, obnova</summary>
+    public string Typ { get; set; } = "";
+    public string? Cesta { get; set; }
+    public long Velkost { get; set; }
+    public bool Uspech { get; set; }
+    public bool Zasifrovana { get; set; }
+    public string? Chyba { get; set; }
+}

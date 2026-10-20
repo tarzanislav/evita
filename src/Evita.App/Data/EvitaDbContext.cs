@@ -22,6 +22,7 @@ public sealed class EvitaDbContext : DbContext
     public DbSet<Osoba> Osoby => Set<Osoba>();
     public DbSet<HistoriaZmeny> Historia => Set<HistoriaZmeny>();
     public DbSet<Nastavenie> Nastavenia => Set<Nastavenie>();
+    public DbSet<ZaznamZalohy> ZaznamyZaloh => Set<ZaznamZalohy>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -75,6 +76,13 @@ public sealed class EvitaDbContext : DbContext
         {
             e.ToTable("Nastavenia");
             e.HasKey(x => x.Kluc);
+        });
+
+        model.Entity<ZaznamZalohy>(e =>
+        {
+            e.ToTable("ZaznamyZaloh");
+            e.HasIndex(x => x.Cas);
+            e.Property(x => x.Typ).IsRequired();
         });
     }
 }

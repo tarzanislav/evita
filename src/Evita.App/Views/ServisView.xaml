@@ -6,66 +6,213 @@
             <Setter Property="Margin" Value="0,0,8,8" />
             <Setter Property="Padding" Value="14,7" />
         </Style>
+        <Style x:Key="Nastroj" TargetType="Button">
+            <Setter Property="Margin" Value="0,0,8,8" />
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="980" HorizontalAlignment="Left">
-            <TextBlock Text="Servis" Style="{StaticResource Nadpis}" />
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Servis" Style="{StaticResource Nadpis}" />
 
-            <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Databáza" Style="{StaticResource Podnadpis}" />
-                    <TextBlock TextWrapping="Wrap">
-                        <Run Text="Umiestnenie:" /> <Run Text="{Binding CestaDatabazy, Mode=OneWay}" FontWeight="SemiBold" />
-                    </TextBlock>
-                    <TextBlock TextWrapping="Wrap" Margin="0,4,0,0">
-                        <Run Text="Veľkosť:" /> <Run Text="{Binding Velkost, Mode=OneWay}" />
-                        <Run Text="   Verzia dátovej štruktúry:" /> <Run Text="{Binding VerziaSchemy, Mode=OneWay}" />
-                    </TextBlock>
-                    <TextBlock Text="{Binding Pocty}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                    <WrapPanel Margin="0,12,0,0">
-                        <Button Style="{StaticResource Akcia}" Content="Kompaktovať databázu" Command="{Binding KompaktovatCommand}"
-                                ToolTip="Uvoľní nepoužité miesto v súbore databázy" />
-                    </WrapPanel>
+        <TabControl>
+            <!-- ZÁLOHY -->
+            <TabItem Header="Zálohy">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,8,8" MaxWidth="1000" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Stav záloh" Style="{StaticResource Podnadpis}" />
+                                <TextBlock Text="{Binding StavZaloh}" TextWrapping="Wrap" />
+                                <WrapPanel Margin="0,12,0,0">
+                                    <Button Style="{DynamicResource AccentButtonStyle}" Margin="0,0,8,8" Padding="14,7"
+                                            Content="Zálohovať teraz" Command="{Binding ZalohovatTerazCommand}" />
+                                    <Button Style="{StaticResource Akcia}" Content="Zálohovať s heslom…"
+                                            Command="{Binding ZalohovatSHeslomCommand}"
+                                            ToolTip="Záloha zašifrovaná heslom (AES-256)" />
+                                    <Button Style="{StaticResource Akcia}" Content="Otvoriť priečinok záloh"
+                                            Command="{Binding OtvoritPriecinokZalohCommand}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Pravidelná záloha" Style="{StaticResource Podnadpis}" />
+                                <CheckBox Content="Zálohovať pravidelne" IsChecked="{Binding ZalohaZapnuta}" />
+
+                                <Grid Margin="0,4,0,0" IsEnabled="{Binding ZalohaZapnuta}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="180" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Ako často" Style="{StaticResource Stitok}" />
+                                        <ComboBox ItemsSource="{Binding Periody}" DisplayMemberPath="Nazov"
+                                                  SelectedValuePath="Perioda" SelectedValue="{Binding Perioda}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Priečinok na zálohy (aj USB kľúč, sieťový disk, OneDrive)" Style="{StaticResource Stitok}" />
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="Vybrať…" Margin="6,0,0,0" Padding="12,4"
+                                                    Command="{Binding VybratPriecinokCommand}" />
+                                            <TextBox Text="{Binding PriecinokZaloh, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DockPanel>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="4">
+                                        <TextBlock Text="Ponechať posledných" Style="{StaticResource Stitok}" />
+                                        <TextBox Text="{Binding Ponechat, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0"
+                                           Text="Program skontroluje pri každom spustení a zatvorení, či je čas na zálohu. Staršie automatické zálohy nad nastavený počet sa zmažú; ručné zálohy zostávajú." />
+
+                                <CheckBox Margin="0,12,0,0" IsChecked="{Binding PlanovacWindows}" IsEnabled="{Binding ZalohaZapnuta}"
+                                          Content="Zálohovať aj vtedy, keď je program zatvorený (Plánovač úloh Windows)" />
+                                <StackPanel Orientation="Horizontal" Margin="24,4,0,0" IsEnabled="{Binding PlanovacWindows}">
+                                    <TextBlock Text="Čas zálohy:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <TextBox Text="{Binding CasZalohy, UpdateSourceTrigger=PropertyChanged}" Width="80" />
+                                    <TextBlock Style="{StaticResource Popis}" VerticalAlignment="Center" Margin="10,0,0,0"
+                                               Text="(počítač musí byť v tom čase zapnutý a používateľ prihlásený)" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding PlanovacStav}" Style="{StaticResource Popis}" Margin="24,4,0,0" />
+
+                                <Button Content="Uložiť nastavenia" HorizontalAlignment="Left" Margin="0,14,0,0" Padding="14,7"
+                                        Style="{DynamicResource AccentButtonStyle}" Command="{Binding UlozitNastaveniaCommand}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Záznam záloh" Style="{StaticResource Podnadpis}" />
+                                <DataGrid ItemsSource="{Binding Zaznamy}" AutoGenerateColumns="False" IsReadOnly="True"
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False"
+                                          MaxHeight="320">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Dátum a čas" Binding="{Binding Cas, StringFormat='d. M. yyyy H:mm'}" Width="130" />
+                                        <DataGridTextColumn Header="Typ" Binding="{Binding Typ}" Width="160" />
+                                        <DataGridTextColumn Header="Súbor" Binding="{Binding Subor}" Width="*" />
+                                        <DataGridTextColumn Header="Veľkosť" Binding="{Binding Velkost}" Width="80" />
+                                        <DataGridTextColumn Header="Výsledok" Binding="{Binding Vysledok}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- OBNOVA -->
+            <TabItem Header="Obnova zo zálohy">
+                <StackPanel Margin="0,12,8,8" MaxWidth="900" HorizontalAlignment="Left">
+                    <Border Style="{StaticResource Karta}">
+                        <StackPanel>
+                            <TextBlock Text="Obnova zo zálohy" Style="{StaticResource Podnadpis}" />
+                            <TextBlock TextWrapping="Wrap"
+                                       Text="Nahradí súčasnú databázu databázou zo zálohy (súbor ZIP z EviTA). Program pred obnovou skontroluje, či záloha nie je poškodená, ukáže, z ktorého dňa je a koľko položiek obsahuje, a súčasný stav automaticky zálohuje – obnovu sa preto dá vrátiť." />
+                            <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0"
+                                       Text="Takto sa dajú preniesť dáta aj na nový počítač: na starom urobte zálohu, na novom nainštalujte EviTA a zálohu tu obnovte." />
+                            <Button Content="Obnoviť zo zálohy…" HorizontalAlignment="Left" Margin="0,14,0,0" Padding="14,7"
+                                    Style="{DynamicResource AccentButtonStyle}" Command="{Binding ObnovitZoZalohyCommand}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-            </Border>
+            </TabItem>
 
-            <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Záloha" Style="{StaticResource Podnadpis}" />
-                    <TextBlock TextWrapping="Wrap"
-                               Text="Celá databáza sa uloží do jedného súboru ZIP. Pravidelné automatické zálohy a obnova zo zálohy pribudnú v etape 2." />
-                    <TextBlock Text="{Binding PoslednaZaloha}" Style="{StaticResource Popis}" Margin="0,6,0,0" />
-                    <TextBlock Style="{StaticResource Popis}">
-                        <Run Text="Priečinok záloh:" /> <Run Text="{Binding PriecinokZaloh, Mode=OneWay}" />
-                    </TextBlock>
-                    <WrapPanel Margin="0,12,0,0">
-                        <Button Style="{DynamicResource AccentButtonStyle}" Margin="0,0,8,8" Padding="14,7"
-                                Content="Zálohovať teraz" Command="{Binding ZalohovatTerazCommand}" />
-                        <Button Style="{StaticResource Akcia}" Content="Otvoriť priečinok záloh"
-                                Command="{Binding OtvoritPriecinokZalohCommand}" />
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
+            <!-- KONTROLA A OPRAVA -->
+            <TabItem Header="Kontrola a oprava">
+                <Grid Margin="0,12,8,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-            <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Ukážkové dáta a nový začiatok" Style="{StaticResource Podnadpis}" />
-                    <TextBlock TextWrapping="Wrap"
-                               Text="Ukážková databáza obsahuje 200 položiek, 30 osôb, 25 miestností a históriu zmien. Keď ju už nepotrebujete, vymažte dáta a začnite vlastnú evidenciu od prírastkového čísla 1. Pred vymazaním sa vždy urobí záloha." />
-                    <TextBlock Margin="0,6,0,0" FontWeight="SemiBold" Text="Momentálne pracujete s ukážkovými dátami."
-                               Visibility="{Binding UkazkoveData, Converter={StaticResource BoolNaViditelnost}}" />
-                    <WrapPanel Margin="0,12,0,0">
-                        <Button Style="{StaticResource Akcia}" Content="Vymazať dáta a začať nanovo"
-                                Command="{Binding VymazatVsetkoCommand}" />
-                        <Button Style="{StaticResource Akcia}" Content="Načítať ukážkové dáta"
-                                Command="{Binding NacitatUkazkoveCommand}" />
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
+                    <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Kontrola" Style="{StaticResource Podnadpis}" />
+                            <Button Style="{StaticResource Nastroj}" Command="{Binding RychlaKontrolaCommand}"
+                                    Content="Rýchla kontrola" ToolTip="Overí, že súbor databázy nie je poškodený. Robí sa aj pri každom spustení." />
+                            <Button Style="{StaticResource Nastroj}" Command="{Binding UplnaKontrolaCommand}"
+                                    Content="Úplná kontrola integrity" ToolTip="Dôkladne prejde celú databázu. Odporúča sa raz za mesiac." />
+                            <Button Style="{StaticResource Nastroj}" Command="{Binding KontrolaVaziebCommand}"
+                                    Content="Kontrola väzieb" ToolTip="Nájde položky, ktoré odkazujú na neexistujúcu kategóriu, miestnosť alebo osobu." />
+                            <Button Style="{StaticResource Nastroj}" Command="{Binding KontrolaDatCommand}"
+                                    Content="Kontrola dát" ToolTip="Duplicitné sériové čísla, chýbajúce prírastkové čísla, nezmyselné dátumy. Vhodné pred inventúrou." />
 
-            <TextBlock Style="{StaticResource Popis}"
-                       Text="Kontrola integrity, oprava a ďalšie nástroje na ladenie databázy pribudnú v etape 2." />
-        </StackPanel>
-    </ScrollViewer>
+                            <TextBlock Text="Údržba" Style="{StaticResource Podnadpis}" Margin="0,12,0,8" />
+                            <Button Style="{StaticResource Nastroj}" Command="{Binding OptimalizovatCommand}"
+                                    Content="Optimalizovať" ToolTip="Aktualizuje štatistiky pre rýchle vyhľadávanie. Robí sa aj pri zatvorení programu." />
+                            <Button Style="{StaticResource Nastroj}" Command="{Binding ObnovitIndexyCommand}"
+                                    Content="Obnoviť indexy" ToolTip="Keď je vyhľadávanie pomalé alebo nepresné." />
+                            <Button Style="{StaticResource Nastroj}" Command="{Binding KompaktovatCommand}"
+                                    Content="Kompaktovať" ToolTip="Uvoľní nepoužité miesto a zmenší súbor – po veľkom mazaní alebo importe." />
+
+                            <TextBlock Text="Oprava" Style="{StaticResource Podnadpis}" Margin="0,12,0,8" />
+                            <Button Style="{StaticResource Nastroj}" Command="{Binding ZachranitCommand}"
+                                    Content="Záchrana dát…" ToolTip="Pri poškodení prenesie čitateľné dáta do novej databázy." />
+                            <TextBlock Style="{StaticResource Popis}" Margin="0,4,0,0"
+                                       Text="Pri poškodenej databáze je najlepšia obnova zo zálohy. Záchrana dát je posledná možnosť, keď dobrá záloha nie je." />
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <DockPanel Grid.Column="2">
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Content="Uložiť protokol…" Padding="12,4" Command="{Binding UlozitProtokolCommand}" />
+                                <Button Content="Vymazať" Padding="12,4" Margin="6,0,0,0" Command="{Binding VymazatProtokolCommand}" />
+                            </StackPanel>
+                            <TextBlock Text="Protokol" Style="{StaticResource Podnadpis}" Margin="0" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <TextBox Text="{Binding Protokol, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas"
+                                 TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top"
+                                 AcceptsReturn="True" />
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- DATABÁZA A UKÁŽKOVÉ DÁTA -->
+            <TabItem Header="Databáza">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,8,8" MaxWidth="980" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Databáza" Style="{StaticResource Podnadpis}" />
+                                <TextBlock TextWrapping="Wrap">
+                                    <Run Text="Umiestnenie:" /> <Run Text="{Binding CestaDatabazy, Mode=OneWay}" FontWeight="SemiBold" />
+                                </TextBlock>
+                                <TextBlock TextWrapping="Wrap" Margin="0,4,0,0">
+                                    <Run Text="Veľkosť:" /> <Run Text="{Binding Velkost, Mode=OneWay}" />
+                                    <Run Text="   Verzia dátovej štruktúry:" /> <Run Text="{Binding VerziaSchemy, Mode=OneWay}" />
+                                </TextBlock>
+                                <TextBlock Text="{Binding Pocty}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Karta}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Ukážkové dáta a nový začiatok" Style="{StaticResource Podnadpis}" />
+                                <TextBlock TextWrapping="Wrap"
+                                           Text="Ukážková databáza obsahuje 200 položiek, 30 osôb, 25 miestností a históriu zmien. Keď ju už nepotrebujete, vymažte dáta a začnite vlastnú evidenciu od prírastkového čísla 1. Pred vymazaním sa vždy urobí záloha." />
+                                <TextBlock Margin="0,6,0,0" FontWeight="SemiBold" Text="Momentálne pracujete s ukážkovými dátami."
+                                           Visibility="{Binding UkazkoveData, Converter={StaticResource BoolNaViditelnost}}" />
+                                <WrapPanel Margin="0,12,0,0">
+                                    <Button Style="{StaticResource Akcia}" Content="Vymazať dáta a začať nanovo"
+                                            Command="{Binding VymazatVsetkoCommand}" />
+                                    <Button Style="{StaticResource Akcia}" Content="Načítať ukážkové dáta"
+                                            Command="{Binding NacitatUkazkoveCommand}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </UserControl>

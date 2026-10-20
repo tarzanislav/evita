@@ -81,6 +81,15 @@ public partial class MainViewModel : ObservableObject
         AktualizujStav();
     }
 
+    /// <summary>Volá sa po zálohe na pozadí – obnoví stav záloh na dashboarde a v servise.</summary>
+    public void PoZmeneZaloh()
+    {
+        if (AktualnyObsah is IObnovitelny obnovitelny and (DashboardViewModel or ServisViewModel))
+        {
+            obnovitelny.Obnov();
+        }
+    }
+
     public void AktualizujStav()
     {
         UkazkoveData = Databaza.SuUkazkoveData();

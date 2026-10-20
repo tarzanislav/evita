@@ -35,7 +35,7 @@ public sealed class ZdrojImportu
 /// <summary>Načíta súbor Excel, CSV, JSON alebo XML do jednotnej podoby tabuľky.</summary>
 public static class CitacSuborov
 {
-    public const string FilterSuborov =
+    public static string FilterSuborov =>
         Preklad.T("Všetky podporované (*.xlsx;*.csv;*.txt;*.json;*.xml)|*.xlsx;*.csv;*.txt;*.json;*.xml|Excel (*.xlsx)|*.xlsx|CSV (*.csv;*.txt)|*.csv;*.txt|JSON (*.json)|*.json|XML (*.xml)|*.xml");
 
     static CitacSuborov()

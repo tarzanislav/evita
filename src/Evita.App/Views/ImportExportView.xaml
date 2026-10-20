@@ -48,7 +48,7 @@
                     <ItemsControl ItemsSource="{Binding Vzory}" ItemTemplate="{StaticResource TlacidloVzoru}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel />
+                                <UniformGrid Columns="2" HorizontalAlignment="Left" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>

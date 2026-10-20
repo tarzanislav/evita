@@ -541,8 +541,10 @@ internal static class Samotest
                     Stlpce = popisZostavy.PredvoleneStlpce,
                     NaSirku = ZostavyService.OdporucNaSirku(popisZostavy.Druh, popisZostavy.PredvoleneStlpce.Length),
                     VrataneVyradenych = popisZostavy.PredvoleneVyradene,
-                    Od = popisZostavy.MaObdobie ? new DateTime(2019, 1, 1) : null,
-                    Do = popisZostavy.MaObdobie ? dnesTest : null,
+                    Od = popisZostavy.Druh == DruhZostavy.Kalendar ? new DateTime(dnesTest.Year, dnesTest.Month, 1)
+                        : popisZostavy.MaObdobie ? new DateTime(2019, 1, 1) : null,
+                    Do = popisZostavy.Druh == DruhZostavy.Kalendar ? new DateTime(dnesTest.Year, dnesTest.Month, 1).AddMonths(2).AddDays(-1)
+                        : popisZostavy.MaObdobie ? dnesTest : null,
                     Zoskupenie = Zoskupenie.Miestnost,
                     Podpis = popisZostavy.MaPodpis,
                     KazdaNaNovejStrane = popisZostavy.MaNovuStranu,

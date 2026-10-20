@@ -49,6 +49,9 @@ public static class Databaza
     };
 
     public const string KlucVerziaSchemy = "Schema.Verzia";
+
+    /// <summary>Jazyk, v ktorom sú v databáze počiatočné kategórie a typy udalostí (staršie databázy: slovenčina).</summary>
+    public const string KlucJazykNazvov = "Schema.JazykNazvov";
     public const string KlucPoslednePrirastkove = "PrirastkoveCislo.Posledne";
     public const string KlucUkazkoveData = "UkazkoveData";
 
@@ -116,6 +119,7 @@ public static class Databaza
             if (nova)
             {
                 Zapis(db, KlucVerziaSchemy, VerziaSchemy.ToString());
+                Zapis(db, KlucJazykNazvov, Preklad.Aktualny.Kod);
             }
 
             db.SaveChanges();
@@ -134,6 +138,52 @@ public static class Databaza
         }
 
         DoplnTypyUdalosti();
+        PrelozPociatocneNazvy();
+    }
+
+    /// <summary>
+    /// Po zmene jazyka programu premenuje počiatočné kategórie a typy udalostí do nového jazyka – len tie,
+    /// ktoré majú stále pôvodný názov (vlastné a premenované zostávajú, ako sú).
+    /// </summary>
+    public static void PrelozPociatocneNazvy()
+    {
+        using var db = Otvor();
+        var povodny = Citaj(db, KlucJazykNazvov) ?? "sk";
+        var novy = Preklad.Aktualny.Kod;
+        if (povodny == novy)
+        {
+            return;
+        }
+
+        var slovnikPovodny = povodny == "sk" ? null : Preklad.NacitajSlovnik(povodny);
+        var slovnikNovy = novy == "sk" ? null : Preklad.NacitajSlovnik(novy);
+        static string V(Dictionary<string, string>? slovnik, string kluc) =>
+            slovnik is not null && slovnik.TryGetValue(kluc, out var preklad) ? preklad : kluc;
+
+        var kategorie = db.Kategorie.ToList();
+        foreach (var kluc in PociatocneKategorie)
+        {
+            var z = V(slovnikPovodny, kluc);
+            var na = V(slovnikNovy, kluc);
+            if (z != na && kategorie.FirstOrDefault(k => k.Nazov == z) is { } kategoria && kategorie.All(k => k.Nazov != na))
+            {
+                kategoria.Nazov = na;
+            }
+        }
+
+        var typy = db.TypyUdalosti.ToList();
+        foreach (var (kluc, _) in PociatocneTypyUdalosti)
+        {
+            var z = V(slovnikPovodny, kluc);
+            var na = V(slovnikNovy, kluc);
+            if (z != na && typy.FirstOrDefault(t => t.Nazov == z) is { } typ && typy.All(t => t.Nazov != na))
+            {
+                typ.Nazov = na;
+            }
+        }
+
+        Zapis(db, KlucJazykNazvov, novy);
+        db.SaveChanges();
     }
 
     /// <summary>Ak v databáze nie sú žiadne typy udalostí, doplní počiatočné.</summary>

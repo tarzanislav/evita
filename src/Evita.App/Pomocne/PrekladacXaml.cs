@@ -395,5 +395,16 @@ public static class PrekladacXaml
     }
 
     /// <summary>Text so slovenskými znakmi (á, č, ľ, ň, ô, š, ť, ž …) – v inom jazyku je to pravdepodobne nepreložený text.</summary>
-    public static bool JeSlovenskyText(string text) => text.Any(z => "áäčďéíĺľňóôŕšťúýžÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ".Contains(z));
+    public static bool JeSlovenskyText(string text)
+    {
+        // len písmená, ktoré jazyk programu nemá (čeština má á, č, š …, maďarčina á, é, ó …)
+        var pismena = Preklad.Aktualny.Kod switch
+        {
+            "cs" => "äĺľôŕÄĹĽÔŔ",
+            "hu" => "äčďĺľňôŕšťýžÄČĎĹĽŇÔŔŠŤÝŽ",
+            "pl" => "áäčďéíĺľňôŕšťúýžÁÄČĎÉÍĹĽŇÔŔŠŤÚÝŽ",
+            _ => "áäčďéíĺľňóôŕšťúýžÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ",
+        };
+        return text.Any(pismena.Contains);
+    }
 }

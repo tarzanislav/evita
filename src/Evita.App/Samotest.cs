@@ -1072,6 +1072,7 @@ internal static class Samotest
             foreach (var jazyk in Preklad.Jazyky.Where(j => j.Kod != "sk"))
             {
                 Preklad.Nastav(jazyk.Kod);
+                Databaza.PrelozPociatocneNazvy();
                 servis.NacitatUkazkoveData();
                 Preklad.Chybajuce.Clear();
                 Preklad.ZbieratChybajuce = true;
@@ -1179,6 +1180,8 @@ internal static class Samotest
             }
 
             Preklad.Nastav("sk");
+            Databaza.PrelozPociatocneNazvy();
+            Over(Databaza.Otvor().Kategorie.Any(k => k.Nazov == "tlačiareň") && new KalendarService().Typy().Any(t => t.Nazov == "porada"), "počiatočné názvy sa po zmene jazyka vrátili do slovenčiny");
             servis.NacitatUkazkoveData();
 
             // nový začiatok

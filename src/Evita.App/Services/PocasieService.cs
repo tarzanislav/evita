@@ -135,9 +135,9 @@ public sealed class PocasieService
     {
         _poslednyPokus = DateTime.Now;
         var adresa = string.Create(CultureInfo.InvariantCulture,
-            $"https://api.open-meteo.com/v1/forecast?latitude={miesto.Sirka:0.####}&longitude={miesto.Dlzka:0.####}" +
-            "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation,is_day" +
-            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=5");
+                $"https://api.open-meteo.com/v1/forecast?latitude={miesto.Sirka:0.####}&longitude={miesto.Dlzka:0.####}")
+            + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation,is_day"
+            + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=5";
         var json = await Stiahni(adresa, zrusenie).ConfigureAwait(false);
         var pocasie = PrecitajPredpoved(json, miesto, DateTime.Now);
         using (var db = Databaza.Otvor())

@@ -152,6 +152,12 @@ internal static class Samotest
 
             Over(Directory.GetFiles(nastavenia.Priecinok, "EviTA_auto_*.zip").Length == 2, "rotácia ponechá 2 automatické zálohy");
             Over(Directory.GetFiles(nastavenia.Priecinok, "EviTA_zaloha_*.zip").Length == 2, "ručné zálohy rotácia nemaže");
+
+            // Plánovač úloh Windows
+            zalohy.UlozNastavenia(nastavenia with { Ponechat = 2, PlanovacWindows = true, Cas = "21:30" });
+            Over(zalohy.JePlanovacNastaveny(), "úloha v Plánovači úloh Windows je vytvorená");
+            zalohy.UlozNastavenia(nastavenia with { Ponechat = 2, PlanovacWindows = false });
+            Over(!zalohy.JePlanovacNastaveny(), "úloha v Plánovači úloh Windows je zrušená");
             Krok("zálohy a obnova v poriadku");
 
             // kontrola a oprava

@@ -34,7 +34,8 @@ public sealed record NastaveniaZaloh(
     string Priecinok,
     int Ponechat,
     bool PlanovacWindows,
-    string Cas);
+    string Cas,
+    bool AutomatickaSHeslom = false);
 
 public sealed record InfoOZalohe(
     string Subor,
@@ -66,6 +67,11 @@ public sealed class ZalohaService
     private const string KlucPonechat = "Zaloha.Ponechat";
     private const string KlucPlanovac = "Zaloha.PlanovacWindows";
     private const string KlucCas = "Zaloha.Cas";
+    private const string KlucSHeslom = "Zaloha.AutomatickaSHeslom";
+    private const string KlucHeslo = "Zaloha.HesloAutomatickych";
+
+    /// <summary>Doplnková hodnota pri šifrovaní hesla ochranou Windows (DPAPI).</summary>
+    private static readonly byte[] Entropia = "EviTA.Zaloha.Heslo.v1"u8.ToArray();
     private const int PonechatPredOperaciou = 10;
 
     private static readonly object Zamok = new();
@@ -88,6 +94,22 @@ public sealed class ZalohaService
         _ => "pred operáciou",
     };
 
+    /// <summary>
+    /// Celý popis typu pre záznam záloh: „ručná záloha“, „ručná záloha s heslom“, „automatická záloha s heslom“,
+    /// „záloha pred aktualizáciou“, „obnova zo zálohy“ …
+    /// </summary>
+    public static string PopisTypu(ZaznamZalohy zaznam)
+    {
+        var popis = zaznam.Typ switch
+        {
+            "ručná" => "ručná záloha",
+            "automatická" => "automatická záloha",
+            "obnova" => "obnova zo zálohy",
+            _ => "záloha " + zaznam.Typ,
+        };
+        return zaznam.Zasifrovana ? popis + " s heslom" : popis;
+    }
+
     // ------------------------------------------------------------------ nastavenia
 
     public NastaveniaZaloh NacitajNastavenia()
@@ -99,7 +121,8 @@ public sealed class ZalohaService
         var ponechat = int.TryParse(Databaza.Citaj(db, KlucPonechat), out var n) && n > 0 ? n : 10;
         var planovac = Databaza.Citaj(db, KlucPlanovac) == "1";
         var cas = Databaza.Citaj(db, KlucCas) is { Length: > 0 } c ? c : "20:00";
-        return new NastaveniaZaloh(zapnuta, perioda, priecinok, ponechat, planovac, cas);
+        var sHeslom = Databaza.Citaj(db, KlucSHeslom) == "1";
+        return new NastaveniaZaloh(zapnuta, perioda, priecinok, ponechat, planovac, cas, sHeslom);
     }
 
     public void UlozNastavenia(NastaveniaZaloh nastavenia)
@@ -117,6 +140,11 @@ public sealed class ZalohaService
         if (string.IsNullOrWhiteSpace(nastavenia.Priecinok))
         {
             throw new EvitaException("Zadajte priečinok na zálohy.");
+        }
+
+        if (nastavenia.AutomatickaSHeslom && !JeHesloAutomatickychNastavene())
+        {
+            throw new EvitaException("Pre automatické zálohy s heslom najprv nastavte heslo (tlačidlo „Nastaviť heslo…“).");
         }
 
         try
@@ -138,7 +166,55 @@ public sealed class ZalohaService
         Databaza.Zapis(db, KlucPonechat, nastavenia.Ponechat.ToString());
         Databaza.Zapis(db, KlucPlanovac, nastavenia.PlanovacWindows ? "1" : "0");
         Databaza.Zapis(db, KlucCas, casText);
+        Databaza.Zapis(db, KlucSHeslom, nastavenia.AutomatickaSHeslom ? "1" : "0");
         db.SaveChanges();
+    }
+
+    /// <summary>
+    /// Uloží heslo pre automatické zálohy zašifrované ochranou Windows (DPAPI) – rozšifrovať ho dokáže len tento
+    /// počítač. Null heslo zmaže.
+    /// </summary>
+    public void NastavHesloAutomatickych(string? heslo)
+    {
+        string? ulozene = null;
+        if (!string.IsNullOrEmpty(heslo))
+        {
+            var zasifrovane = System.Security.Cryptography.ProtectedData.Protect(
+                System.Text.Encoding.UTF8.GetBytes(heslo), Entropia, System.Security.Cryptography.DataProtectionScope.LocalMachine);
+            ulozene = Convert.ToBase64String(zasifrovane);
+        }
+
+        using var db = Databaza.Otvor();
+        Databaza.Zapis(db, KlucHeslo, ulozene);
+        if (ulozene is null)
+        {
+            Databaza.Zapis(db, KlucSHeslom, "0");
+        }
+
+        db.SaveChanges();
+    }
+
+    public bool JeHesloAutomatickychNastavene() => NacitajHesloAutomatickych() is not null;
+
+    private static string? NacitajHesloAutomatickych()
+    {
+        try
+        {
+            using var db = Databaza.Otvor();
+            if (Databaza.Citaj(db, KlucHeslo) is not { Length: > 0 } ulozene)
+            {
+                return null;
+            }
+
+            var odsifrovane = System.Security.Cryptography.ProtectedData.Unprotect(
+                Convert.FromBase64String(ulozene), Entropia, System.Security.Cryptography.DataProtectionScope.LocalMachine);
+            return System.Text.Encoding.UTF8.GetString(odsifrovane);
+        }
+        catch (Exception)
+        {
+            // heslo sa nedá rozšifrovať (napr. databáza prenesená z iného počítača)
+            return null;
+        }
     }
 
     // ------------------------------------------------------------------ stav
@@ -219,6 +295,24 @@ public sealed class ZalohaService
             var nastavenia = NacitajNastavenia();
             priecinok ??= nastavenia.Priecinok;
             var cas = DateTime.Now;
+            if (typ == TypZalohy.Automaticka && nastavenia.AutomatickaSHeslom && heslo is null)
+            {
+                heslo = NacitajHesloAutomatickych();
+                if (heslo is null)
+                {
+                    Zaznamenaj(new ZaznamZalohy
+                    {
+                        Cas = cas,
+                        Typ = NazovTypu(typ),
+                        Cesta = priecinok,
+                        Uspech = false,
+                        Zasifrovana = true,
+                        Chyba = "Heslo pre automatické zálohy nie je dostupné na tomto počítači. Nastavte ho znova v Servis → Zálohy.",
+                    });
+                    throw new EvitaException("Heslo pre automatické zálohy nie je dostupné. Nastavte ho znova v Servis → Zálohy.");
+                }
+            }
+
             var docasny = Path.Combine(Path.GetTempPath(), "EviTA_" + Guid.NewGuid().ToString("N"));
             string? ciel = null;
 

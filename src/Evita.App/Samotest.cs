@@ -192,6 +192,20 @@ internal static class Samotest
             Over(AktualizaciaService.PrecitajVydanie("""{"tag_name":"v1.0.0","assets":[]}""") is null, "vydanie bez inštalátora sa ignoruje");
             Over(AktualizaciaWindow.UpravNovinky(vydanie.Novinky) == $"Novinky{Environment.NewLine}- oprava", "úprava textu noviniek");
 
+            // automatická záloha s heslom a popisy typov
+            zalohy.NastavHesloAutomatickych("auto-heslo-456");
+            Over(zalohy.JeHesloAutomatickychNastavene(), "heslo automatických záloh je uložené");
+            zalohy.UlozNastavenia(nastavenia with { Ponechat = 2, AutomatickaSHeslom = true });
+            var autoSHeslom = zalohy.Zalohuj(TypZalohy.Automaticka);
+            Over(zalohy.JeZasifrovana(autoSHeslom) && zalohy.PrecitajInfo(autoSHeslom, "auto-heslo-456").Polozky > 0,
+                "automatická záloha je zašifrovaná uloženým heslom");
+            Over(ZalohaService.PopisTypu(zalohy.Zaznamy().First()) == "automatická záloha s heslom", "typ: automatická záloha s heslom");
+            Over(ZalohaService.PopisTypu(new ZaznamZalohy { Typ = "ručná" }) == "ručná záloha", "typ: ručná záloha");
+            Over(ZalohaService.PopisTypu(new ZaznamZalohy { Typ = "ručná", Zasifrovana = true }) == "ručná záloha s heslom", "typ: ručná záloha s heslom");
+            Over(ZalohaService.PopisTypu(new ZaznamZalohy { Typ = "pred aktualizáciou" }) == "záloha pred aktualizáciou", "typ: záloha pred aktualizáciou");
+            zalohy.NastavHesloAutomatickych(null);
+            Over(!zalohy.NacitajNastavenia().AutomatickaSHeslom, "zmazaním hesla sa šifrovanie automatických záloh vypne");
+
             // Plánovač úloh Windows
             zalohy.UlozNastavenia(nastavenia with { Ponechat = 2, PlanovacWindows = true, Cas = "21:30" });
             Over(zalohy.JePlanovacNastaveny(), "úloha v Plánovači úloh Windows je vytvorená");

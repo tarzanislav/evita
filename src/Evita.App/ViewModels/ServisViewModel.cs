@@ -47,6 +47,8 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private int _ponechat;
     [ObservableProperty] private bool _planovacWindows;
     [ObservableProperty] private string _casZalohy = "";
+    [ObservableProperty] private bool _automatickaSHeslom;
+    [ObservableProperty] private string _hesloAutomatickychStav = "";
     [ObservableProperty] private string _stavZaloh = "";
     [ObservableProperty] private string _planovacStav = "";
     [ObservableProperty] private List<ZaznamZalohyRiadok> _zaznamy = new();
@@ -125,6 +127,8 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
         Ponechat = nastavenia.Ponechat;
         PlanovacWindows = nastavenia.PlanovacWindows;
         CasZalohy = nastavenia.Cas;
+        AutomatickaSHeslom = nastavenia.AutomatickaSHeslom;
+        HesloAutomatickychStav = _zalohy.JeHesloAutomatickychNastavene() ? "Heslo je nastavené." : "Heslo nie je nastavené.";
         AktualizujStavZaloh(nastavenia);
     }
 
@@ -157,7 +161,7 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
 
         Zaznamy = _zalohy.Zaznamy().Select(z => new ZaznamZalohyRiadok(
             z.Cas,
-            z.Typ + (z.Zasifrovana ? " (s heslom)" : ""),
+            ZalohaService.PopisTypu(z),
             z.Cesta is null ? "" : Path.GetFileName(z.Cesta),
             z.Velkost > 0 ? $"{z.Velkost / 1024.0:0} kB" : "",
             z.Uspech ? "v poriadku" : $"chyba: {z.Chyba}",
@@ -169,10 +173,27 @@ public partial class ServisViewModel : ObservableObject, IObnovitelny
     [RelayCommand]
     private void UlozitNastavenia()
     {
-        var nastavenia = new NastaveniaZaloh(ZalohaZapnuta, Perioda, PriecinokZaloh, Ponechat, PlanovacWindows, CasZalohy);
+        var nastavenia = new NastaveniaZaloh(ZalohaZapnuta, Perioda, PriecinokZaloh, Ponechat, PlanovacWindows, CasZalohy, AutomatickaSHeslom);
         Dialogy.Cakaj(() => _zalohy.UlozNastavenia(nastavenia));
         Obnov();
         Dialogy.Info("Nastavenia záloh sú uložené.");
+    }
+
+    [RelayCommand]
+    private void NastavitHesloAutomatickych()
+    {
+        var heslo = HesloWindow.Nove(
+            "Týmto heslom sa budú šifrovať automatické zálohy (AES-256). Program si ho uloží chránené ochranou Windows " +
+            "a pri zálohe ho použije sám. Pri obnove zo zálohy ho budete musieť zadať – dobre si ho uschovajte.");
+        if (heslo is null)
+        {
+            return;
+        }
+
+        _zalohy.NastavHesloAutomatickych(heslo);
+        HesloAutomatickychStav = "Heslo je nastavené.";
+        AutomatickaSHeslom = true;
+        Dialogy.Info("Heslo pre automatické zálohy je nastavené. Nezabudnite kliknúť na „Uložiť nastavenia“.");
     }
 
     [RelayCommand]

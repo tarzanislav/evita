@@ -70,6 +70,15 @@
                                     </StackPanel>
                                 </Grid>
 
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0" IsEnabled="{Binding ZalohaZapnuta}">
+                                    <CheckBox Content="Šifrovať automatické zálohy heslom" IsChecked="{Binding AutomatickaSHeslom}"
+                                              VerticalAlignment="Center" />
+                                    <Button Content="Nastaviť heslo…" Margin="12,0,0,0" Padding="12,4"
+                                            Command="{Binding NastavitHesloAutomatickychCommand}" />
+                                    <TextBlock Text="{Binding HesloAutomatickychStav}" Style="{StaticResource Popis}"
+                                               VerticalAlignment="Center" Margin="10,0,0,0" />
+                                </StackPanel>
+
                                 <TextBlock Style="{StaticResource Popis}" Margin="0,8,0,0"
                                            Text="Program skontroluje pri každom spustení a zatvorení, či je čas na zálohu. Staršie automatické zálohy nad nastavený počet sa zmažú; ručné zálohy zostávajú." />
 

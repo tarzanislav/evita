@@ -12,7 +12,14 @@ public partial class PolozkaEditWindow : Window
         DataContext = model;
         InitializeComponent();
         model.Zatvorit += vysledok => DialogResult = vysledok;
-        Loaded += (_, _) => NazovPole.Focus();
+        Loaded += (_, _) =>
+        {
+            NazovPole.Focus();
+            if (Model.HladatEanPoOtvoreni)
+            {
+                Model.DoplnitPodlaEanCommand.Execute(null);
+            }
+        };
         PreviewKeyDown += (_, e) =>
         {
             if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control)

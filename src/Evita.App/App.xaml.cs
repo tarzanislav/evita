@@ -56,6 +56,10 @@ public partial class App : Application
 
         PripravKalendarium();
 
+        // čítačka čiarových a QR kódov v celom programe
+        CitackaKodov.VCelomPrograme = SkenovanieService.Nastavenie(SkenovanieService.KlucCitackaVsade, true);
+        CitackaKodov.Zapni();
+
         var spustitImport = false;
         if (prveSpustenie)
         {

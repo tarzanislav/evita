@@ -30,7 +30,7 @@
             <TextBlock Text="Evidencia" Style="{StaticResource Nadpis}" Margin="0" VerticalAlignment="Center" />
             <TextBox x:Name="Hladanie" Grid.Column="1" VerticalAlignment="Center"
                      Text="{Binding HladanyText, UpdateSourceTrigger=PropertyChanged}"
-                     ToolTip="Hľadá v čísle, názve, kategórii, miestnosti, osobe, výrobcovi, modeli, sériovom a inventárnom čísle a poznámke. Diakritika nehrá rolu. (Ctrl+F)" />
+                     ToolTip="Hľadá v čísle, názve, kategórii, miestnosti, osobe, výrobcovi, modeli, sériovom a inventárnom čísle, EAN a poznámke. Diakritika nehrá rolu. Funguje aj naskenovaný štítok EviTA. (Ctrl+F)" />
         </Grid>
 
         <!-- tlačidlá -->
@@ -61,6 +61,13 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Style="{StaticResource Ikona}" Text="&#xEDE1;" FontSize="13" Margin="0,0,8,0" />
                     <TextBlock Text="Export…" />
+                </StackPanel>
+            </Button>
+            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding StitkyCommand}"
+                    ToolTip="Štítky s QR alebo čiarovým kódom pre označené položky (ak nie sú označené, pre všetky zobrazené)">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xED14;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Štítky…" />
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding TlacitCommand}"

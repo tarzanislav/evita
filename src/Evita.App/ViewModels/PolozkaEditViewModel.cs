@@ -181,6 +181,7 @@ public partial class PolozkaEditViewModel : ObservableObject
             _osobaId = zdroj.OsobaId ?? 0;
             _vyrobca = zdroj.Vyrobca ?? "";
             _model = zdroj.Model ?? "";
+            _ean = zdroj.Ean ?? "";
             _stav = zdroj.Stav;
             _datumNakupu = zdroj.DatumNakupu;
             _cenaText = zdroj.Cena?.ToString("0.00", Sk.Kultura) ?? "";
@@ -225,6 +226,8 @@ public partial class PolozkaEditViewModel : ObservableObject
     [ObservableProperty] private string _model = "";
     [ObservableProperty] private string _serioveCislo = "";
     [ObservableProperty] private string _inventarneCislo = "";
+    [ObservableProperty] private string _ean = "";
+    [ObservableProperty] private bool _hladamEan;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(JeVyradena))]
@@ -272,6 +275,12 @@ public partial class PolozkaEditViewModel : ObservableObject
             return;
         }
 
+        if (!string.IsNullOrWhiteSpace(Ean) && !KodyEvita.JeEan(Ean)
+            && !Dialogy.Potvrd(Preklad.T("EAN nemá platný tvar (8, 12 alebo 13 číslic s kontrolnou číslicou). Uložiť ho aj tak?")))
+        {
+            return;
+        }
+
         if (!Sk.SkusPrecitatSumu(CenaText, out var cena))
         {
             Dialogy.Upozornenie(Preklad.T("Cenu sa nepodarilo prečítať. Napíšte ju ako číslo, napríklad 749,90."));
@@ -290,6 +299,7 @@ public partial class PolozkaEditViewModel : ObservableObject
             Model = Model,
             SerioveCislo = SerioveCislo,
             InventarneCislo = InventarneCislo,
+            Ean = string.IsNullOrWhiteSpace(Ean) ? null : KodyEvita.NormalizujEan(Ean) ?? Ean.Trim(),
             Stav = Stav,
             DatumNakupu = DatumNakupu,
             Cena = cena,
@@ -340,6 +350,101 @@ public partial class PolozkaEditViewModel : ObservableObject
 
     [RelayCommand]
     private void Zrusit() => Zatvorit?.Invoke(false);
+
+    // ------------------------------------------------------------------ EAN a štítok
+
+    /// <summary>Po otvorení karty hneď vyhľadať údaje podľa EAN (nová položka z naskenovaného kódu).</summary>
+    public bool HladatEanPoOtvoreni { get; set; }
+
+    [RelayCommand]
+    private async Task DoplnitPodlaEan()
+    {
+        if (HladamEan)
+        {
+            return;
+        }
+
+        if (KodyEvita.NormalizujEan(Ean) is null)
+        {
+            Dialogy.Upozornenie(Preklad.T("Zadajte alebo naskenujte EAN z krabice výrobku (8, 12 alebo 13 číslic)."));
+            return;
+        }
+
+        VysledokEan vysledok;
+        HladamEan = true;
+        try
+        {
+            vysledok = await new EanService().HladajAsync(Ean, JeNova ? null : _id);
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+            return;
+        }
+        catch (Exception ex)
+        {
+            Dialogy.Chyba(Preklad.T("Údaje o výrobku sa nepodarilo vyhľadať."), ex);
+            return;
+        }
+        finally
+        {
+            HladamEan = false;
+        }
+
+        Ean = vysledok.Ean;
+        if (vysledok.Najdene.Count == 0)
+        {
+            Dialogy.Info(Preklad.F($"Výrobok s EAN {vysledok.Ean} sa nenašiel.
+
+{string.Join("
+", vysledok.Spravy)}"));
+            return;
+        }
+
+        if (Dialogy.TichyRezim)
+        {
+            Dialogy.TicheHlasenia.Add($"[EAN] {vysledok.Najdene[0].Zdroj}: {vysledok.Najdene[0].Nazov}");
+            return;
+        }
+
+        var okno = new Views.EanWindow(vysledok, Kategorie) { Owner = Dialogy.Vlastnik };
+        if (okno.ShowDialog() != true)
+        {
+            return;
+        }
+
+        if (okno.VybranyNazov is { } nazov)
+        {
+            Nazov = nazov;
+        }
+
+        if (okno.VybranyVyrobca is { } vyrobca)
+        {
+            Vyrobca = vyrobca;
+        }
+
+        if (okno.VybranyModel is { } model)
+        {
+            Model = model;
+        }
+
+        if (okno.VybranaKategoria is int kategoria && Kategorie.Any(k => k.Id == kategoria))
+        {
+            KategoriaId = kategoria;
+        }
+    }
+
+    [RelayCommand]
+    private void Stitok()
+    {
+        if (JeNova)
+        {
+            Dialogy.Info(Preklad.T("Štítok sa dá vytlačiť až po uložení položky (vtedy dostane prírastkové číslo)."));
+            return;
+        }
+
+        new Views.StitkyWindow(new StitkyViewModel(new[] { _id }, Titulok)) { Owner = Dialogy.Vlastnik }.ShowDialog();
+    }
 
     [RelayCommand]
     private void NovaKategoria()

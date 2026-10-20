@@ -42,6 +42,7 @@ public sealed class PolozkaRiadok
     public string? Model { get; init; }
     public string? SerioveCislo { get; init; }
     public string? InventarneCislo { get; init; }
+    public string? Ean { get; init; }
     public StavPolozky StavHodnota { get; init; }
     public DateTime? ZarukaDo { get; init; }
     public DateTime? DalsiaRevizia { get; init; }

@@ -1,0 +1,189 @@
+<Window x:Class="Evita.Views.InventuraWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:pom="clr-namespace:Evita.Pomocne"
+        Title="{Binding Nazov}"
+        Width="1240" Height="820" MinWidth="960" MinHeight="600"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="20,16,20,16">
+        <!-- hlavička -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Padding="14,6" Margin="0,0,8,0" Command="{Binding ProtokolCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Text="Protokol…" />
+                    </StackPanel>
+                </Button>
+                <Button Padding="14,6" Margin="0,0,8,0" Command="{Binding UkoncitCommand}">
+                    <Grid>
+                        <TextBlock Text="Ukončiť inventúru…" Visibility="{Binding Ukoncena, Converter={StaticResource InverzBoolNaViditelnost}}" />
+                        <TextBlock Text="Otvoriť znova" Visibility="{Binding Ukoncena, Converter={StaticResource BoolNaViditelnost}}" />
+                    </Grid>
+                </Button>
+                <Button Content="Zavrieť" Padding="14,6" Click="Zavriet_Click" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{Binding Nazov}" Style="{StaticResource Podnadpis}" FontSize="22" Margin="0" TextTrimming="CharacterEllipsis" />
+                <TextBlock Style="{StaticResource Popis}" FontSize="13">
+                    <Run Text="Inventúra" /> · <Run Text="{Binding StavText, Mode=OneWay}" />
+                </TextBlock>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- miestnosť a skenovanie -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Karta}" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Miestnosť, kde práve skenujete" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                    <ComboBox ItemsSource="{Binding Miestnosti}" DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                              SelectedValue="{Binding MiestnostId}" FontSize="15" IsTextSearchEnabled="True" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Naskenujte štítok položky" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                    <Grid>
+                        <TextBox x:Name="Pole" FontSize="17" Padding="10,6" pom:CitackaKodov.SkenovaciePole="True" />
+                        <TextBlock Text="čítačkou, alebo napíšte kód či prírastkové číslo a stlačte Enter" Margin="14,0,0,0"
+                                   VerticalAlignment="Center" IsHitTestVisible="False" TextTrimming="CharacterEllipsis"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   Visibility="{Binding Text, ElementName=Pole, Converter={StaticResource NieJePrazdne}, ConverterParameter=opacne}" />
+                    </Grid>
+                </StackPanel>
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="10,0,0,0">
+                    <Button Padding="12,7" Margin="0,0,8,0" Command="{Binding KameraCommand}" ToolTip="Čítať kódy kamerou počítača">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE722;" FontSize="15" />
+                    </Button>
+                    <Button Padding="12,7" Command="{Binding MobilCommand}" ToolTip="Mobil ako skener">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE8EA;" FontSize="15" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- výsledok posledného skenu -->
+        <Border x:Name="Vysledok" DockPanel.Dock="Top" CornerRadius="6" Padding="14,10" Margin="0,0,0,10"
+                Visibility="{Binding Posledny, Converter={StaticResource NieJePrazdne}}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DruhPosledneho}" Value="1">
+                            <Setter Property="Background" Value="{DynamicResource SystemFillColorSuccessBackgroundBrush}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding DruhPosledneho}" Value="2">
+                            <Setter Property="Background" Value="{DynamicResource SystemFillColorCautionBackgroundBrush}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding DruhPosledneho}" Value="3">
+                            <Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="{Binding Posledny}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+        </Border>
+
+        <!-- celkový stav -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+            <ProgressBar DockPanel.Dock="Right" Width="260" Height="6" Maximum="100" Value="{Binding Percento, Mode=OneWay}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding CelkomText}" VerticalAlignment="Center" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+        </DockPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- položky miestnosti -->
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <CheckBox DockPanel.Dock="Right" Content="Len chýbajúce" IsChecked="{Binding LenChybajuce}" MinWidth="0" />
+                    <TextBlock Text="{Binding MiestnostText}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </DockPanel>
+                <DataGrid ItemsSource="{Binding PolozkyMiestnosti}" AutoGenerateColumns="False" IsReadOnly="True"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="" Width="44">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding Najdena, Mode=OneWay}" MinWidth="0" HorizontalAlignment="Center"
+                                              ToolTip="Označiť ručne ako nájdenú (alebo označenie zrušiť)"
+                                              Command="{Binding DataContext.OznacitRucneCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Č." Binding="{Binding PrirastkoveCislo}" Width="60" />
+                        <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="2*" />
+                        <DataGridTextColumn Header="Kategória" Binding="{Binding Kategoria}" Width="*" />
+                        <DataGridTextColumn Header="Pridelené" Binding="{Binding Osoba}" Width="*" />
+                        <DataGridTextColumn Header="Stav v inventúre" Binding="{Binding StavText, Mode=OneWay}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <!-- nájdené tu, evidované inde -->
+            <Border Grid.Row="1" Style="{StaticResource Karta}" Padding="12" Margin="0,10,0,0"
+                    Visibility="{Binding NajdeneInde.Count, Converter={StaticResource NulaNaViditelnost}, ConverterParameter=opacne}">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Content="Presunúť všetky sem" Padding="10,3" Command="{Binding PresunutSemCommand}" />
+                        <TextBlock Text="Nájdené v tejto miestnosti, ale v evidencii sú inde" FontWeight="SemiBold" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemFillColorCautionBrush}" />
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding NajdeneInde}" MaxHeight="150">
+                        <ItemsControl.Template>
+                            <ControlTemplate TargetType="ItemsControl">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,2">
+                                    <Button DockPanel.Dock="Right" Content="Presunúť sem" Padding="8,2"
+                                            Command="{Binding DataContext.PresunutSemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}" />
+                                    <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                        <Run Text="{Binding Popis, Mode=OneWay}" FontWeight="SemiBold" /> · <Run Text="v evidencii:" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <Run Text="{Binding Miestnost, Mode=OneWay, TargetNullValue='–'}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    </TextBlock>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- naskenované -->
+            <DockPanel Grid.Column="2" Grid.RowSpan="2">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <Button DockPanel.Dock="Right" Content="Zrušiť vybraný" Padding="10,3" Command="{Binding ZrusitZaznamCommand}"
+                            ToolTip="Zruší omylom naskenovaný záznam" />
+                    <TextBlock Text="Naskenované" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </DockPanel>
+                <DataGrid ItemsSource="{Binding Zaznamy}" SelectedItem="{Binding VybranyZaznam}" AutoGenerateColumns="False" IsReadOnly="True"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Čas" Binding="{Binding CasText, Mode=OneWay}" Width="60" />
+                        <DataGridTextColumn Header="Položka" Binding="{Binding PolozkaText, Mode=OneWay}" Width="2*" />
+                        <DataGridTextColumn Header="Miestnosť" Binding="{Binding Miestnost}" Width="*" />
+                        <DataGridTextColumn Header="Spôsob" Binding="{Binding SposobText, Mode=OneWay}" Width="70" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

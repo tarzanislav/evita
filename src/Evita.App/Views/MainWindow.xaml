@@ -43,6 +43,9 @@
         <DataTemplate DataType="{x:Type vm:NastaveniaViewModel}">
             <v:NastaveniaView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SkenovanieViewModel}">
+            <v:SkenovanieView />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -65,7 +68,7 @@
                            Text="{Binding VerziaText}" />
 
                 <ListBox x:Name="Navigacia" Margin="8,0" BorderThickness="0" Background="Transparent"
-                         SelectionChanged="Navigacia_SelectionChanged">
+                         IsTextSearchEnabled="False" SelectionChanged="Navigacia_SelectionChanged">
                     <ListBoxItem Tag="dashboard">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE80F;" Margin="0,0,12,0" />
@@ -100,6 +103,12 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" Margin="0,0,12,0" />
                             <TextBlock Text="Tlač a zostavy" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="skenovanie">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xED14;" Margin="0,0,12,0" />
+                            <TextBlock Text="Skenovanie a inventúra" />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem Tag="import">

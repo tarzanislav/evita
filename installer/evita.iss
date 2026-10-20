@@ -61,11 +61,15 @@ Name: "{autoprograms}\EviTA"; Filename: "{app}\{#AppExe}"
 Name: "{autodesktop}\EviTA"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Run]
+; mobil ako skener: povoliť pripojenie z miestnej siete (súkromná a doménová sieť, len porty EviTA)
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""EviTA mobil ako skener"""; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""EviTA mobil ako skener"" dir=in action=allow program=""{app}\{#AppExe}"" protocol=TCP localport=8765-8769 profile=private,domain"; Flags: runhidden
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,EviTA}"; Flags: nowait postinstall skipifsilent
 ; po automatickej aktualizácii z programu (tichá inštalácia s parametrom /SPUSTIT=1) sa EviTA znova spustí
 Filename: "{app}\{#AppExe}"; Flags: nowait runasoriginaluser; Check: SpustitPoAktualizacii
 
 [UninstallRun]
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""EviTA mobil ako skener"""; Flags: runhidden; RunOnceId: "ZmazatPravidloFirewallu"
 ; úloha pravidelnej zálohy v Plánovači úloh Windows (ak bola nastavená)
 Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""EviTA zaloha"" /F"; Flags: runhidden; RunOnceId: "ZmazatUlohuZalohy"
 

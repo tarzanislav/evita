@@ -1,0 +1,55 @@
+<Window x:Class="Evita.Views.MobilWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mobil ako skener"
+        Width="720" Height="620" MinWidth="560" MinHeight="480"
+        WindowStartupLocation="CenterOwner" Topmost="True">
+    <DockPanel Margin="20,16">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <Button DockPanel.Dock="Right" Content="Zavrieť" Padding="14,5" Click="Zavriet_Click" VerticalAlignment="Top" />
+            <StackPanel>
+                <TextBlock Text="Mobil ako skener" Style="{StaticResource Podnadpis}" FontSize="20" Margin="0" />
+                <TextBlock Style="{StaticResource Popis}" FontSize="13" Margin="0,4,12,0"
+                           Text="Naskenujte QR kód fotoaparátom mobilu a otvorte stránku. Potom kód na zariadení odfoťte (alebo napíšte) – počítač ho prečíta a spracuje ako kód z čítačky. Mobil musí byť v rovnakej sieti (Wi-Fi) ako počítač." />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
+                <Border Background="White" CornerRadius="8" Padding="8" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <Image x:Name="Qr" Width="240" Height="240" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                </Border>
+                <TextBox x:Name="Adresa" IsReadOnly="True" Margin="0,8,0,0" Width="258" FontSize="12" />
+                <ComboBox x:Name="Adresy" Margin="0,8,0,0" Width="258" SelectionChanged="Adresy_SelectionChanged"
+                          ToolTip="Počítač má viac sietí – vyberte tú, v ktorej je mobil" />
+            </StackPanel>
+
+            <DockPanel Grid.Column="2">
+                <TextBlock x:Name="Stav" DockPanel.Dock="Top" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8" />
+                <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Popis}" Margin="0,8,0,0"
+                           Text="Ak sa stránka v mobile neotvorí, povoľte EviTA vo Windows Firewall a skontrolujte, že sieť je v systéme Windows nastavená ako súkromná." />
+                <Border Style="{StaticResource Karta}" Padding="10">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Prijaté kódy" FontWeight="SemiBold" Margin="0,0,0,6" />
+                        <ListBox x:Name="Prijate" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,2">
+                                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Popis}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </Border>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

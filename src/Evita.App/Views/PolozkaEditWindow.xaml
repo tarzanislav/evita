@@ -16,11 +16,21 @@
     </Window.Resources>
 
     <DockPanel Margin="20,16,20,16">
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
-            <Button Content="Uložiť" MinWidth="120" IsDefault="False" Command="{Binding UlozitCommand}"
-                    Style="{DynamicResource AccentButtonStyle}" ToolTip="Ctrl+S" />
-            <Button Content="Zrušiť" MinWidth="120" Margin="8,0,0,0" IsCancel="True" />
-        </StackPanel>
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,14,0,0">
+            <Button DockPanel.Dock="Left" Padding="12,5" Command="{Binding StitokCommand}"
+                    Visibility="{Binding JeNova, Converter={StaticResource InverzBoolNaViditelnost}}"
+                    ToolTip="Vytlačiť štítok s QR kódom pre túto položku">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xED14;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Štítok…" />
+                </StackPanel>
+            </Button>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Uložiť" MinWidth="120" IsDefault="False" Command="{Binding UlozitCommand}"
+                        Style="{DynamicResource AccentButtonStyle}" ToolTip="Ctrl+S" />
+                <Button Content="Zrušiť" MinWidth="120" Margin="8,0,0,0" IsCancel="True" />
+            </StackPanel>
+        </DockPanel>
 
         <TextBlock DockPanel.Dock="Top" Text="{Binding Titulok}" Style="{StaticResource Podnadpis}" FontSize="20"
                    TextTrimming="CharacterEllipsis" />
@@ -103,6 +113,20 @@
 
                             <TextBlock Text="Inventárne číslo" Style="{StaticResource Stitok}" />
                             <TextBox Text="{Binding InventarneCislo, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Text="EAN (čiarový kód výrobku z krabice)" Style="{StaticResource Stitok}" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Margin="6,0,0,0" Padding="10,4" Command="{Binding DoplnitPodlaEanCommand}"
+                                        ToolTip="Vyhľadať výrobcu, model a názov podľa EAN vo vlastnej evidencii a na internete">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE721;" FontSize="12" Margin="0,0,6,0" />
+                                        <TextBlock Text="Doplniť z internetu" />
+                                    </StackPanel>
+                                </Button>
+                                <TextBox Text="{Binding Ean, UpdateSourceTrigger=PropertyChanged}" />
+                            </DockPanel>
+                            <TextBlock Text="Hľadám údaje o výrobku…" Style="{StaticResource Popis}" Margin="0,4,0,0"
+                                       Visibility="{Binding HladamEan, Converter={StaticResource BoolNaViditelnost}}" />
 
                             <Grid>
                                 <Grid.ColumnDefinitions>

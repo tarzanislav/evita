@@ -19,6 +19,7 @@ public partial class MainWindow : Window
         DataContext = _model;
         InitializeComponent();
         _model.ZiadostOSekciu += OznacSekciu;
+        SkenerCentrum.Predvolene = _model.SpracujSken;
         _model.ZiadostOAktualizaciu += verzia => new AktualizaciaWindow(verzia) { Owner = this }.ShowDialog();
         Loaded += (_, _) => Navigacia.SelectedIndex = 0;
         Closing += PriZatvarani;

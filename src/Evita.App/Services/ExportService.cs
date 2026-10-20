@@ -511,6 +511,7 @@ public sealed class ExportService
                 Prvok(w, "Model", p.Model);
                 Prvok(w, "SerioveCislo", p.SerioveCislo);
                 Prvok(w, "InventarneCislo", p.InventarneCislo);
+                Prvok(w, "Ean", p.Ean);
                 Prvok(w, "Stav", p.Stav);
                 Prvok(w, "DatumNakupu", p.DatumNakupu);
                 Prvok(w, "Cena", p.Cena?.ToString(CultureInfo.InvariantCulture));

@@ -49,6 +49,7 @@ public static class StlpcePrenosu
     public const string Model = "model";
     public const string Seriove = "seriove";
     public const string Inventarne = "inventarne";
+    public const string Ean = "ean";
     public const string Stav = "stav";
     public const string DatumNakupu = "datumNakupu";
     public const string Cena = "cena";
@@ -87,6 +88,9 @@ public static class StlpcePrenosu
             "5CD1234XYZ", new[] { "seriovecislo", "sn", "serial", "serialnumber", "sernumber", "vyrobnecislo", "sc" }),
         new(Inventarne, Preklad.N("Inventárne číslo"), TypStlpca.Text, false, true, 2.2,
             Preklad.N("Inventárne číslo z účtovníctva, ak sa používa."), "INV-2026-001", new[] { "inventarnecislo", "invcislo", "inventarne", "inventory", "inventorynumber" }),
+        new(Ean, Preklad.N("EAN"), TypStlpca.Text, false, false, 2.2,
+            Preklad.N("Čiarový kód výrobku z krabice (EAN-13, EAN-8 alebo UPC). Podľa neho sa dajú doplniť údaje o výrobku z internetu."),
+            "5397184800830", new[] { "ean", "ean13", "ean8", "gtin", "upc", "ciarovykod", "barcode", "kodvyrobku" }),
         new(Stav, Preklad.N("Stav"), TypStlpca.Stav, false, true, 1.8,
             Preklad.N("v prevádzke, v sklade, v oprave alebo vyradené. Prázdne = v prevádzke."),
             Preklad.N("v prevádzke"), new[] { "stav", "status", "state" }),
@@ -185,6 +189,7 @@ public static class StlpcePrenosu
         Model => p.Model,
         Seriove => p.SerioveCislo,
         Inventarne => p.InventarneCislo,
+        Ean => p.Ean,
         Stav => StavyPoloziek.Nazov(p.Stav),
         DatumNakupu => p.DatumNakupu,
         Cena => p.Cena,
@@ -487,6 +492,7 @@ public sealed class PolozkaPrenos
     public string? Model { get; set; }
     public string? SerioveCislo { get; set; }
     public string? InventarneCislo { get; set; }
+    public string? Ean { get; set; }
     public string? Stav { get; set; }
     public string? DatumNakupu { get; set; }
     public decimal? Cena { get; set; }
@@ -510,6 +516,7 @@ public sealed class PolozkaPrenos
         Model = p.Model,
         SerioveCislo = p.SerioveCislo,
         InventarneCislo = p.InventarneCislo,
+        Ean = p.Ean,
         Stav = StavyPoloziek.Nazov(p.Stav),
         DatumNakupu = Prevod.TextIso(p.DatumNakupu, false),
         Cena = p.Cena,
@@ -526,7 +533,7 @@ public sealed class PolozkaPrenos
     public string?[] NaRiadok() => new[]
     {
         PrirastkoveCislo?.ToString(CultureInfo.InvariantCulture), Nazov, Kategoria, Miestnost, Pridelene, Vyrobca, Model,
-        SerioveCislo, InventarneCislo, Stav, DatumNakupu, Cena?.ToString(CultureInfo.InvariantCulture), ZarukaDo, DalsiaRevizia,
+        SerioveCislo, InventarneCislo, Ean, Stav, DatumNakupu, Cena?.ToString(CultureInfo.InvariantCulture), ZarukaDo, DalsiaRevizia,
         DatumPridania, DatumZmeny, DatumVyradenia, DovodVyradenia, Poznamka, Guid,
     };
 }
@@ -624,6 +631,7 @@ public static class XsdEviTA
                             <xs:element name="Model" type="xs:string" minOccurs="0" />
                             <xs:element name="SerioveCislo" type="xs:string" minOccurs="0" />
                             <xs:element name="InventarneCislo" type="xs:string" minOccurs="0" />
+                            <xs:element name="Ean" type="xs:string" minOccurs="0" />
                             <xs:element name="Stav" type="Stav" minOccurs="0" />
                             <xs:element name="DatumNakupu" type="xs:date" minOccurs="0" />
                             <xs:element name="Cena" type="xs:decimal" minOccurs="0" />

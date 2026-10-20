@@ -30,6 +30,10 @@ public class Polozka
     public string? Model { get; set; }
     public string? SerioveCislo { get; set; }
     public string? InventarneCislo { get; set; }
+
+    /// <summary>Čiarový kód výrobku (EAN-13, EAN-8, UPC) – podľa neho sa dajú doplniť údaje z internetu.</summary>
+    public string? Ean { get; set; }
+
     public StavPolozky Stav { get; set; } = StavPolozky.VPrevadzke;
     public DateTime? DatumNakupu { get; set; }
     public decimal? Cena { get; set; }
@@ -230,4 +234,53 @@ public class ZaznamZalohy
     public bool Uspech { get; set; }
     public bool Zasifrovana { get; set; }
     public string? Chyba { get; set; }
+}
+
+public enum StavInventury
+{
+    Prebieha = 0,
+    Ukoncena = 1,
+}
+
+/// <summary>Inventúra – súpis položiek skenovaním po miestnostiach.</summary>
+public class Inventura
+{
+    public int Id { get; set; }
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public string Nazov { get; set; } = "";
+    public DateTime Zaciatok { get; set; }
+    public DateTime? Koniec { get; set; }
+    public StavInventury Stav { get; set; } = StavInventury.Prebieha;
+    public string? Poznamka { get; set; }
+
+    /// <summary>Miestnosť, v ktorej sa práve skenuje (pokračovanie po prerušení).</summary>
+    public int? AktualnaMiestnostId { get; set; }
+}
+
+/// <summary>Jedno naskenovanie (alebo ručné označenie) počas inventúry.</summary>
+public class InventuraZaznam
+{
+    public int Id { get; set; }
+    public int InventuraId { get; set; }
+    public Inventura? Inventura { get; set; }
+
+    /// <summary>Nájdená položka; null = naskenovaný kód, ktorý nie je v evidencii.</summary>
+    public int? PolozkaId { get; set; }
+    public Polozka? Polozka { get; set; }
+
+    /// <summary>Naskenovaný text (alebo prírastkové číslo pri ručnom označení).</summary>
+    public string Kod { get; set; } = "";
+
+    /// <summary>Miestnosť, v ktorej bola položka nájdená.</summary>
+    public int? MiestnostId { get; set; }
+
+    /// <summary>Miestnosť, kde bola položka v evidencii v čase skenovania.</summary>
+    public int? EvidovanaMiestnostId { get; set; }
+
+    public DateTime Cas { get; set; }
+
+    /// <summary>čítačka, kamera, mobil, ručne</summary>
+    public string Sposob { get; set; } = "";
+
+    public string Pouzivatel { get; set; } = "";
 }

@@ -30,6 +30,7 @@ public partial class MainViewModel : ObservableObject
         Poznamky = new PoznamkyViewModel();
         Nastavenia = new NastaveniaViewModel(this);
         CitatyVyrocia = new CitatyVyrociaViewModel(this);
+        Skenovanie = new SkenovanieViewModel(this);
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -46,6 +47,7 @@ public partial class MainViewModel : ObservableObject
     public PoznamkyViewModel Poznamky { get; }
     public NastaveniaViewModel Nastavenia { get; }
     public CitatyVyrociaViewModel CitatyVyrocia { get; }
+    public SkenovanieViewModel Skenovanie { get; }
 
     public string TitulokOkna => Preklad.F($"EviTA {AktualizaciaService.AktualnaVerzia} – evidencia IT techniky");
 
@@ -119,6 +121,7 @@ public partial class MainViewModel : ObservableObject
             "poznamky" => Poznamky,
             "nastavenia" => Nastavenia,
             "kalendarium" => CitatyVyrocia,
+            "skenovanie" => Skenovanie,
             _ => Dashboard,
         };
 
@@ -129,6 +132,48 @@ public partial class MainViewModel : ObservableObject
 
         AktualnyObsah = obsah;
         AktualizujStav();
+
+        // kým je otvorená obrazovka Skenovanie, kódy sa zobrazujú v nej
+        if (obsah == Skenovanie)
+        {
+            SkenerCentrum.Zaregistruj(Skenovanie);
+        }
+        else
+        {
+            SkenerCentrum.Odregistruj(Skenovanie);
+        }
+    }
+
+    /// <summary>
+    /// Kód naskenovaný mimo obrazovky Skenovanie a inventúry: jedna nájdená položka sa otvorí, viac položiek sa zobrazí
+    /// v evidencii, neznámy kód na obrazovke Skenovanie (s ponukou pridať novú položku).
+    /// </summary>
+    public VysledokSpracovania SpracujSken(Sken sken)
+    {
+        var vysledok = Skenovanie.Vyhladaj(sken);
+        if (SkenovanieViewModel.JeOtvoreneIneOkno())
+        {
+            // otvorený dialóg (karta položky …) – kód sa len zapíše do zoznamu posledných skenov
+            return new VysledokSpracovania(vysledok.Najdene, vysledok.Popis);
+        }
+
+        if (vysledok.Polozky.Count == 1 && SkenovanieService.Nastavenie(SkenovanieService.KlucOtvoritKartu, true))
+        {
+            var id = vysledok.Polozky[0].Id;
+            System.Windows.Application.Current?.Dispatcher.InvokeAsync(() => Skenovanie.OtvorPolozku(id));
+        }
+        else if (vysledok.Najdene)
+        {
+            Evidencia.Obnov();
+            Evidencia.ZobrazPolozky(vysledok.Polozky.Select(p => p.Id), Preklad.F($"kód {vysledok.PouzityKod}"));
+            PrejdiNaSekciu("evidencia");
+        }
+        else
+        {
+            PrejdiNaSekciu("skenovanie");
+        }
+
+        return new VysledokSpracovania(vysledok.Najdene, vysledok.Popis);
     }
 
     /// <summary>Volá sa po zmene dát, ktorá sa týka viacerých častí programu.</summary>

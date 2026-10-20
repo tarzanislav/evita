@@ -21,6 +21,8 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
     private readonly DispatcherTimer _oneskorenieHladania;
     private List<PolozkaRiadok> _vsetky = new();
     private string[] _hladaneSlova = Array.Empty<string>();
+    private int? _hladaneCislo;
+    private HashSet<int> _vyber = new();
     private bool _trebaObnovit = true;
     private bool _nacitavam;
 
@@ -31,8 +33,13 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         _oneskorenieHladania.Tick += (_, _) =>
         {
             _oneskorenieHladania.Stop();
-            _hladaneSlova = Sk.BezDiakritiky(HladanyText)
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            // naskenovaný štítok EviTA (EVITA-123) hľadá presne položku s týmto číslom
+            _hladaneCislo = KodyEvita.Varianty(HladanyText).Select(KodyEvita.PrirastkoveZKodu).FirstOrDefault(c => c is not null);
+            _hladaneSlova = _hladaneCislo is not null
+                ? Array.Empty<string>()
+                : Sk.BezDiakritiky(KodyEvita.NormalizujEan(HladanyText) ?? HladanyText)
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             Aplikuj();
         };
 
@@ -111,6 +118,7 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         PridaneDo = null;
         HladanyText = "";
         _hladaneSlova = Array.Empty<string>();
+        _hladaneCislo = null;
         FilterStav = filter == "vyradene" ? (int)StavPolozky.Vyradene + 2 : FilterStavBezVyradenych;
         RychlyFilter = filter is "vyradene" or "vsetky" ? null : filter;
         RychlyFilterPopis = RychlyFilter switch
@@ -124,6 +132,17 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
             _ => "",
         };
         _nacitavam = false;
+        Aplikuj();
+    }
+
+    /// <summary>Zobrazí vybrané položky (napr. viac položiek s rovnakým naskenovaným kódom).</summary>
+    public void ZobrazPolozky(IEnumerable<int> idPoloziek, string popis)
+    {
+        PouziRychlyFilter(null);
+        _vyber = idPoloziek.ToHashSet();
+        RychlyFilter = "vyber";
+        RychlyFilterPopis = popis;
+        FilterStav = FilterStavVsetky;
         Aplikuj();
     }
 
@@ -282,6 +301,23 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         var oznacene = Oznacene.Select(r => r.Id).ToList();
         var okno = new ExportWindow(new ExportViewModel(vyfiltrovane, oznacene, PopisFiltra())) { Owner = Dialogy.Vlastnik };
         okno.ShowDialog();
+    }
+
+    [RelayCommand]
+    private void Stitky()
+    {
+        var oznacene = Oznacene.Select(r => r.Id).ToList();
+        var idcka = oznacene.Count > 1 ? oznacene : Pohlad?.Cast<PolozkaRiadok>().Select(r => r.Id).ToList() ?? new List<int>();
+        if (idcka.Count == 0)
+        {
+            Dialogy.Info(Preklad.T("V zozname nie sú žiadne položky. Upravte filter alebo vyhľadávanie."));
+            return;
+        }
+
+        var popis = oznacene.Count > 1
+            ? Preklad.F($"označené položky ({idcka.Count})")
+            : string.IsNullOrEmpty(PopisFiltra()) ? Preklad.F($"všetky zobrazené položky ({idcka.Count})") : Preklad.F($"zobrazené položky ({idcka.Count}): {PopisFiltra()}");
+        new StitkyWindow(new StitkyViewModel(idcka, popis)) { Owner = Dialogy.Vlastnik }.ShowDialog();
     }
 
     [RelayCommand]
@@ -503,6 +539,11 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
             return false;
         }
 
+        if (_hladaneCislo is int cislo)
+        {
+            return r.PrirastkoveCislo == cislo;
+        }
+
         foreach (var slovo in _hladaneSlova)
         {
             if (!r.Hladanie.Contains(slovo, StringComparison.Ordinal))
@@ -525,6 +566,7 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
             "revizie" => r.DalsiaRevizia is { } rev && rev <= dnes.AddDays(30),
             "oprava" => r.StavHodnota == StavPolozky.VOprave,
             "mesiac" => r.DatumPridania >= new DateTime(dnes.Year, dnes.Month, 1),
+            "vyber" => _vyber.Contains(r.Id),
             _ => true,
         };
     }

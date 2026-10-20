@@ -27,6 +27,8 @@ public sealed class EvitaDbContext : DbContext
     public DbSet<Udalost> Udalosti => Set<Udalost>();
     public DbSet<Uloha> Ulohy => Set<Uloha>();
     public DbSet<Poznamka> Poznamky => Set<Poznamka>();
+    public DbSet<Inventura> Inventury => Set<Inventura>();
+    public DbSet<InventuraZaznam> InventuraZaznamy => Set<InventuraZaznam>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -43,6 +45,8 @@ public sealed class EvitaDbContext : DbContext
             e.HasIndex(x => x.Stav);
             e.HasIndex(x => x.DatumPridania);
             e.HasIndex(x => x.SerioveCislo);
+            e.HasIndex(x => x.InventarneCislo);
+            e.HasIndex(x => x.Ean);
             e.Property(x => x.Nazov).IsRequired();
             e.Property(x => x.Verzia).IsConcurrencyToken();
             e.HasOne(x => x.Kategoria).WithMany().HasForeignKey(x => x.KategoriaId).OnDelete(DeleteBehavior.Restrict);
@@ -120,6 +124,25 @@ public sealed class EvitaDbContext : DbContext
             e.Property(x => x.Farba).IsRequired();
             e.HasOne(x => x.Polozka).WithMany().HasForeignKey(x => x.PolozkaId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(x => x.Udalost).WithMany().HasForeignKey(x => x.UdalostId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        model.Entity<Inventura>(e =>
+        {
+            e.ToTable("Inventury");
+            e.HasIndex(x => x.Guid).IsUnique();
+            e.Property(x => x.Nazov).IsRequired();
+        });
+
+        model.Entity<InventuraZaznam>(e =>
+        {
+            e.ToTable("InventuraZaznamy");
+            e.HasIndex(x => x.InventuraId);
+            e.HasIndex(x => x.PolozkaId);
+            e.Property(x => x.Kod).IsRequired();
+            e.Property(x => x.Sposob).IsRequired();
+            e.Property(x => x.Pouzivatel).IsRequired();
+            e.HasOne(x => x.Inventura).WithMany().HasForeignKey(x => x.InventuraId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Polozka).WithMany().HasForeignKey(x => x.PolozkaId).OnDelete(DeleteBehavior.SetNull);
         });
 
         model.Entity<ZaznamZalohy>(e =>

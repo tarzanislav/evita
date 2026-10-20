@@ -239,6 +239,7 @@
                         <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="130" />
                         <DataGridTextColumn Header="Sériové číslo" Binding="{Binding Seriove}" Width="130" />
                         <DataGridTextColumn Header="Inventárne číslo" Binding="{Binding Inventarne}" Width="120" />
+                        <DataGridTextColumn Header="EAN" Binding="{Binding Ean}" Width="120" />
                         <DataGridTextColumn Header="Dátum nákupu" Binding="{Binding DatumNakupu}" Width="110" />
                         <DataGridTextColumn Header="Cena" Binding="{Binding Cena}" Width="90" />
                         <DataGridTextColumn Header="Záruka do" Binding="{Binding ZarukaDo}" Width="110" />

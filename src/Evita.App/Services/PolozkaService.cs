@@ -31,7 +31,7 @@ public sealed class PolozkaService
     {
         Preklad.N("vytvorenie"), Preklad.N("zmena"), Preklad.N("vyradenie"), Preklad.N("obnovenie"), Preklad.N("vymazanie"), Preklad.N("import"),
         Preklad.N("Názov"), Preklad.N("Kategória"), Preklad.N("Miestnosť"), Preklad.N("Pridelené"), Preklad.N("Výrobca"), Preklad.N("Model"),
-        Preklad.N("Sériové číslo"), Preklad.N("Inventárne číslo"), Preklad.N("Stav"), Preklad.N("Dátum nákupu"), Preklad.N("Cena"),
+        Preklad.N("Sériové číslo"), Preklad.N("Inventárne číslo"), Preklad.N("EAN"), Preklad.N("Stav"), Preklad.N("Dátum nákupu"), Preklad.N("Cena"),
         Preklad.N("Záruka do"), Preklad.N("Ďalšia revízia"), Preklad.N("Dátum vyradenia"), Preklad.N("Dôvod vyradenia"), Preklad.N("Poznámka"),
     };
 
@@ -56,6 +56,7 @@ public sealed class PolozkaService
                 Model = p.Model,
                 SerioveCislo = p.SerioveCislo,
                 InventarneCislo = p.InventarneCislo,
+                Ean = p.Ean,
                 StavHodnota = p.Stav,
                 ZarukaDo = p.ZarukaDo,
                 DalsiaRevizia = p.DalsiaRevizia,
@@ -69,7 +70,7 @@ public sealed class PolozkaService
         {
             r.Hladanie = Sk.BezDiakritiky(string.Join(' ',
                 r.PrirastkoveCislo, r.Nazov, r.Kategoria, r.Miestnost, r.Osoba, r.Vyrobca, r.Model,
-                r.SerioveCislo, r.InventarneCislo, r.Poznamka));
+                r.SerioveCislo, r.InventarneCislo, r.Ean, r.Poznamka));
         }
 
         return riadky;
@@ -269,6 +270,7 @@ public sealed class PolozkaService
         na.Model = Sk.Prazdne(z.Model);
         na.SerioveCislo = Sk.Prazdne(z.SerioveCislo);
         na.InventarneCislo = Sk.Prazdne(z.InventarneCislo);
+        na.Ean = Sk.Prazdne(z.Ean);
         na.Stav = z.Stav;
         na.DatumNakupu = z.DatumNakupu?.Date;
         na.Cena = z.Cena;
@@ -341,6 +343,7 @@ public sealed class PolozkaService
         ["Model"] = p.Model ?? "",
         ["Sériové číslo"] = p.SerioveCislo ?? "",
         ["Inventárne číslo"] = p.InventarneCislo ?? "",
+        ["EAN"] = p.Ean ?? "",
         ["Stav"] = StavyPoloziek.Nazov(p.Stav),
         ["Dátum nákupu"] = Sk.Datum(p.DatumNakupu),
         ["Cena"] = Sk.Suma(p.Cena),

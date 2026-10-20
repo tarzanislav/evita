@@ -104,5 +104,8 @@ public static class Sk
         return false;
     }
 
+    /// <summary>Desatinné číslo bez zbytočných núl (70; 42,3).</summary>
+    public static string Cislo(double cislo) => cislo.ToString("0.##", Kultura);
+
     public static string? Prazdne(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
 }

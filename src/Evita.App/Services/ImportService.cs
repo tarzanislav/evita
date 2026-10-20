@@ -59,6 +59,7 @@ public sealed partial class RiadokImportu : ObservableObject
     [ObservableProperty] private string? _model;
     [ObservableProperty] private string? _seriove;
     [ObservableProperty] private string? _inventarne;
+    [ObservableProperty] private string? _ean;
     [ObservableProperty] private string? _stav;
     [ObservableProperty] private string? _datumNakupu;
     [ObservableProperty] private string? _cena;
@@ -115,6 +116,7 @@ public sealed partial class RiadokImportu : ObservableObject
         StlpcePrenosu.Model => Model,
         StlpcePrenosu.Seriove => Seriove,
         StlpcePrenosu.Inventarne => Inventarne,
+        StlpcePrenosu.Ean => Ean,
         StlpcePrenosu.Stav => Stav,
         StlpcePrenosu.DatumNakupu => DatumNakupu,
         StlpcePrenosu.Cena => Cena,
@@ -142,6 +144,7 @@ public sealed partial class RiadokImportu : ObservableObject
             case StlpcePrenosu.Model: Model = hodnota; break;
             case StlpcePrenosu.Seriove: Seriove = hodnota; break;
             case StlpcePrenosu.Inventarne: Inventarne = hodnota; break;
+            case StlpcePrenosu.Ean: Ean = hodnota; break;
             case StlpcePrenosu.Stav: Stav = hodnota; break;
             case StlpcePrenosu.DatumNakupu: DatumNakupu = hodnota; break;
             case StlpcePrenosu.Cena: Cena = hodnota; break;
@@ -894,6 +897,7 @@ public sealed class ImportService
                 Model = Sk.Prazdne(r.Model),
                 SerioveCislo = Sk.Prazdne(r.Seriove),
                 InventarneCislo = Sk.Prazdne(r.Inventarne),
+                Ean = Sk.Prazdne(r.Ean),
                 Stav = stav,
                 DatumNakupu = Datum(r.DatumNakupu)?.Date,
                 Cena = cena,

@@ -10,7 +10,7 @@ namespace Evita.Data;
 public static class Databaza
 {
     /// <summary>Aktuálna verzia dátovej štruktúry. Pri každej zmene štruktúry sa zvýši a pribudne krok v <see cref="Migracie"/>.</summary>
-    public const int VerziaSchemy = 4;
+    public const int VerziaSchemy = 5;
 
     /// <summary>
     /// Kroky, ktoré upravia staršiu databázu na novú verziu štruktúry. Každý príkaz musí byť bezpečný aj pri
@@ -45,6 +45,18 @@ public static class Databaza
             """CREATE INDEX IF NOT EXISTS "IX_Poznamky_Datum" ON "Poznamky" ("Datum");""",
             """CREATE INDEX IF NOT EXISTS "IX_Poznamky_PolozkaId" ON "Poznamky" ("PolozkaId");""",
             """CREATE INDEX IF NOT EXISTS "IX_Poznamky_UdalostId" ON "Poznamky" ("UdalostId");""",
+        }),
+        (5, "skenovanie a inventúra", new[]
+        {
+            // pridanie stĺpca sa pri opakovanom spustení preskočí (SQLite nemá ADD COLUMN IF NOT EXISTS)
+            """ALTER TABLE "Polozky" ADD COLUMN "Ean" TEXT NULL;""",
+            """CREATE INDEX IF NOT EXISTS "IX_Polozky_Ean" ON "Polozky" ("Ean");""",
+            """CREATE INDEX IF NOT EXISTS "IX_Polozky_InventarneCislo" ON "Polozky" ("InventarneCislo");""",
+            """CREATE TABLE IF NOT EXISTS "Inventury" ("Id" INTEGER NOT NULL CONSTRAINT "PK_Inventury" PRIMARY KEY AUTOINCREMENT, "Guid" TEXT NOT NULL, "Nazov" TEXT NOT NULL, "Zaciatok" TEXT NOT NULL, "Koniec" TEXT NULL, "Stav" INTEGER NOT NULL, "Poznamka" TEXT NULL, "AktualnaMiestnostId" INTEGER NULL);""",
+            """CREATE UNIQUE INDEX IF NOT EXISTS "IX_Inventury_Guid" ON "Inventury" ("Guid");""",
+            """CREATE TABLE IF NOT EXISTS "InventuraZaznamy" ("Id" INTEGER NOT NULL CONSTRAINT "PK_InventuraZaznamy" PRIMARY KEY AUTOINCREMENT, "InventuraId" INTEGER NOT NULL, "PolozkaId" INTEGER NULL, "Kod" TEXT NOT NULL, "MiestnostId" INTEGER NULL, "EvidovanaMiestnostId" INTEGER NULL, "Cas" TEXT NOT NULL, "Sposob" TEXT NOT NULL, "Pouzivatel" TEXT NOT NULL, CONSTRAINT "FK_InventuraZaznamy_Inventury_InventuraId" FOREIGN KEY ("InventuraId") REFERENCES "Inventury" ("Id") ON DELETE CASCADE, CONSTRAINT "FK_InventuraZaznamy_Polozky_PolozkaId" FOREIGN KEY ("PolozkaId") REFERENCES "Polozky" ("Id") ON DELETE SET NULL);""",
+            """CREATE INDEX IF NOT EXISTS "IX_InventuraZaznamy_InventuraId" ON "InventuraZaznamy" ("InventuraId");""",
+            """CREATE INDEX IF NOT EXISTS "IX_InventuraZaznamy_PolozkaId" ON "InventuraZaznamy" ("PolozkaId");""",
         }),
     };
 
@@ -241,6 +253,11 @@ public static class Databaza
         {
             foreach (var sql in krok.Prikazy)
             {
+                if (PridavaExistujuciStlpec(spojenie, transakcia, sql))
+                {
+                    continue;
+                }
+
                 using var prikaz = spojenie.CreateCommand();
                 prikaz.Transaction = transakcia;
                 prikaz.CommandText = sql;
@@ -258,6 +275,22 @@ public static class Databaza
         }
 
         transakcia.Commit();
+    }
+
+    /// <summary>Príkaz ALTER TABLE … ADD COLUMN pre stĺpec, ktorý už v tabuľke je (napr. po čiastočnej oprave databázy).</summary>
+    private static bool PridavaExistujuciStlpec(SqliteConnection spojenie, SqliteTransaction transakcia, string sql)
+    {
+        var zhoda = System.Text.RegularExpressions.Regex.Match(sql, "^ALTER TABLE \"(\\w+)\" ADD COLUMN \"(\\w+)\"");
+        if (!zhoda.Success)
+        {
+            return false;
+        }
+
+        using var prikaz = spojenie.CreateCommand();
+        prikaz.Transaction = transakcia;
+        prikaz.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{zhoda.Groups[1].Value}') WHERE name = $stlpec;";
+        prikaz.Parameters.AddWithValue("$stlpec", zhoda.Groups[2].Value);
+        return Convert.ToInt64(prikaz.ExecuteScalar()) > 0;
     }
 
     /// <summary>Všetky príkazy migrácií (na záchranu dát – vytvoria chýbajúce tabuľky).</summary>

@@ -1848,5 +1848,9 @@
  "Uloží aj kategórie s ich ikonami a farbami. Pri načítaní sa ikony a farby priradia kategóriám s rovnakým názvom a kategórie, ktoré chýbajú, sa doplnia.": "Сохраняет также категории с их значками и цветами. При загрузке значки и цвета назначаются категориям с тем же названием, а недостающие категории добавляются.",
  "výrobca a model z internetu": "производитель и модель из интернета",
  "kategórie s ikonami a farbami ({0}; chýbajúce sa doplnia)": "категории со значками и цветами ({0}; недостающие будут добавлены)",
- "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "Добавлена {0} новая категория.|Добавлены {0} новые категории.|Добавлено {0} новых категорий."
+ "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "Добавлена {0} новая категория.|Добавлены {0} новые категории.|Добавлено {0} новых категорий.",
+ "Ikona kategórie": "Значок категории",
+ "Vybrať stĺpce, ktoré sa vytlačia (nezaškrtnuté sa netlačia ani nezobrazia v náhľade)": "Выбрать столбцы для печати (неотмеченные не печатаются и не отображаются в предпросмотре)",
+ "Filter stĺpcov": "Фильтр столбцов",
+ "Tlačiť stĺpce": "Печатать столбцы"
 }

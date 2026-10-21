@@ -1848,5 +1848,9 @@
  "Uloží aj kategórie s ich ikonami a farbami. Pri načítaní sa ikony a farby priradia kategóriám s rovnakým názvom a kategórie, ktoré chýbajú, sa doplnia.": "A kategóriákat is menti az ikonjaikkal és színeikkel. Betöltéskor az ikonok és színek az azonos nevű kategóriákhoz kerülnek, a hiányzó kategóriák pedig létrejönnek.",
  "výrobca a model z internetu": "gyártó és modell az internetről",
  "kategórie s ikonami a farbami ({0}; chýbajúce sa doplnia)": "kategóriák ikonokkal és színekkel ({0}; a hiányzók létrejönnek)",
- "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "{0} új kategória hozzáadva.|{0} új kategória hozzáadva."
+ "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "{0} új kategória hozzáadva.|{0} új kategória hozzáadva.",
+ "Ikona kategórie": "Kategóriaikon",
+ "Vybrať stĺpce, ktoré sa vytlačia (nezaškrtnuté sa netlačia ani nezobrazia v náhľade)": "A nyomtatandó oszlopok kiválasztása (a ki nem jelöltek nem nyomtatódnak és az előnézetben sem jelennek meg)",
+ "Filter stĺpcov": "Oszlopszűrő",
+ "Tlačiť stĺpce": "Nyomtatott oszlopok"
 }

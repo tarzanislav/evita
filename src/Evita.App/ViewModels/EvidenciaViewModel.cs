@@ -3,6 +3,7 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Evita.Data;
 using Evita.Models;
 using Evita.Pomocne;
 using Evita.Services;
@@ -373,20 +374,82 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         }
     }
 
-    /// <summary>Náhľad zostavy „Vyfiltrované položky“ podľa aktuálneho filtra.</summary>
+    public const string KlucTlacNaSirku = "Tlac.Evidencia.NaSirku";
+    public const string KlucTlacStlpce = "Tlac.Evidencia.Stlpce";
+
+    /// <summary>
+    /// Náhľad zostavy „Vyfiltrované položky“ podľa aktuálneho filtra. V náhľade sa dá zvoliť orientácia (na výšku / na šírku)
+    /// a filtrom stĺpcov vypnúť stĺpce, ktoré sa netlačia (aj ikona kategórie). Voľba sa zapamätá na ďalšiu tlač.
+    /// </summary>
     public NahladWindow VytvorNahladTlace()
     {
         var popis = ZostavyService.Popis(DruhZostavy.Vyfiltrovane);
-        var moznosti = new MoznostiZostavy
+        var idcka = Pohlad?.Cast<PolozkaRiadok>().Select(r => r.Id).ToList() ?? new List<int>();
+        var popisFiltra = PopisFiltra();
+
+        var stlpce = new List<NahladWindow.StlpecNahladu>();
+        foreach (var s in StlpcePrenosu.Vsetky)
         {
-            Druh = DruhZostavy.Vyfiltrovane,
-            Stlpce = popis.PredvoleneStlpce,
-            NaSirku = true,
-            IdPoloziek = Pohlad?.Cast<PolozkaRiadok>().Select(r => r.Id).ToList() ?? new List<int>(),
-            PopisFiltra = PopisFiltra(),
-        };
+            if (s.Kluc == StlpcePrenosu.Cislo)
+            {
+                stlpce.Add(new NahladWindow.StlpecNahladu(s.Kluc, PdfExport.Hlavicka(s), true));
+                stlpce.Add(new NahladWindow.StlpecNahladu(NahladWindow.StlpecIkony, Preklad.T("Ikona kategórie"), true));
+                continue;
+            }
+
+            stlpce.Add(new NahladWindow.StlpecNahladu(s.Kluc, PdfExport.Hlavicka(s), popis.PredvoleneStlpce.Contains(s.Kluc)));
+        }
+
+        // posledná voľba (orientácia, stĺpce), inak na šírku s predvolenými stĺpcami
+        var naSirku = true;
+        var vybrane = stlpce.Where(s => s.Predvoleny).Select(s => s.Kluc).ToList();
+        try
+        {
+            using var db = Databaza.Otvor();
+            naSirku = Databaza.Citaj(db, KlucTlacNaSirku) != "0";
+            var ulozene = (Databaza.Citaj(db, KlucTlacStlpce) ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(k => stlpce.Any(s => s.Kluc == k)).ToList();
+            if (ulozene.Any(k => k != NahladWindow.StlpecIkony))
+            {
+                vybrane = ulozene;
+            }
+        }
+        catch (Exception)
+        {
+            // predvolené nastavenie
+        }
+
         var sluzba = new ZostavyService();
-        return new NahladWindow(() => sluzba.Vytvor(moznosti), true, popis.Nazov, ZostavyService.NazovSuboru(DruhZostavy.Vyfiltrovane));
+        var volby = new NahladWindow.VolbyNahladu
+        {
+            NaSirku = naSirku,
+            Stlpce = stlpce,
+            Vybrane = vybrane,
+            Tvorba = (sirka, kluce) => sluzba.Vytvor(new MoznostiZostavy
+            {
+                Druh = DruhZostavy.Vyfiltrovane,
+                Stlpce = kluce.Where(k => k != NahladWindow.StlpecIkony).ToList(),
+                IkonaKategorie = kluce.Contains(NahladWindow.StlpecIkony),
+                NaSirku = sirka,
+                IdPoloziek = idcka,
+                PopisFiltra = popisFiltra,
+            }),
+            Zapamataj = (sirka, kluce) =>
+            {
+                try
+                {
+                    using var db = Databaza.Otvor();
+                    Databaza.Zapis(db, KlucTlacNaSirku, sirka ? "1" : "0");
+                    Databaza.Zapis(db, KlucTlacStlpce, string.Join(',', kluce));
+                    db.SaveChanges();
+                }
+                catch (Exception)
+                {
+                    // voľba sa nezapamätá – tlač funguje aj tak
+                }
+            },
+        };
+        return new NahladWindow(volby, popis.Nazov, ZostavyService.NazovSuboru(DruhZostavy.Vyfiltrovane));
     }
 
     /// <summary>Čitateľný popis zapnutých filtrov (do hlavičky exportu).</summary>

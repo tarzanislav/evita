@@ -1848,5 +1848,9 @@
  "Uloží aj kategórie s ich ikonami a farbami. Pri načítaní sa ikony a farby priradia kategóriám s rovnakým názvom a kategórie, ktoré chýbajú, sa doplnia.": "同时保存类别及其图标和颜色。加载时，图标和颜色会分配给同名类别，缺少的类别将被添加。",
  "výrobca a model z internetu": "从网上获取制造商和型号",
  "kategórie s ikonami a farbami ({0}; chýbajúce sa doplnia)": "带图标和颜色的类别（{0}；缺少的将被添加）",
- "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "已添加 {0} 个新类别。"
+ "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "已添加 {0} 个新类别。",
+ "Ikona kategórie": "类别图标",
+ "Vybrať stĺpce, ktoré sa vytlačia (nezaškrtnuté sa netlačia ani nezobrazia v náhľade)": "选择要打印的列（未勾选的列不打印，也不在预览中显示）",
+ "Filter stĺpcov": "列筛选",
+ "Tlačiť stĺpce": "打印的列"
 }

@@ -1848,5 +1848,9 @@
  "Uloží aj kategórie s ich ikonami a farbami. Pri načítaní sa ikony a farby priradia kategóriám s rovnakým názvom a kategórie, ktoré chýbajú, sa doplnia.": "Also saves the categories with their icons and colours. When loading, icons and colours are assigned to categories with the same name and missing categories are added.",
  "výrobca a model z internetu": "manufacturer and model from the internet",
  "kategórie s ikonami a farbami ({0}; chýbajúce sa doplnia)": "categories with icons and colours ({0}; missing ones are added)",
- "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "Added {0} new category.|Added {0} new categories."
+ "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "Added {0} new category.|Added {0} new categories.",
+ "Ikona kategórie": "Category icon",
+ "Vybrať stĺpce, ktoré sa vytlačia (nezaškrtnuté sa netlačia ani nezobrazia v náhľade)": "Choose the columns to print (unchecked ones are neither printed nor shown in the preview)",
+ "Filter stĺpcov": "Column filter",
+ "Tlačiť stĺpce": "Print columns"
 }

@@ -1061,7 +1061,29 @@ internal static partial class Samotest
             Pumpuj();
             Over(nahladEvidencie.PocetStran >= 1, "tlač z Evidencie");
             Snimka(nahladEvidencie, "nahlad_evidencie");
+
+            // tlač z Evidencie: na výšku a filter stĺpcov (voľba sa zapamätá na ďalšiu tlač)
+            var stranNaSirku = nahladEvidencie.PocetStran;
+            nahladEvidencie.NastavOrientaciu(false);
+            Pumpuj();
+            Over(!nahladEvidencie.NaSirku && nahladEvidencie.PocetStran >= stranNaSirku, $"tlač z Evidencie na výšku ({nahladEvidencie.PocetStran} strán, na šírku {stranNaSirku})");
+            Snimka(nahladEvidencie, "nahlad_evidencie_na_vysku");
+            nahladEvidencie.NastavStlpce(new[] { StlpcePrenosu.Cislo, NahladWindow.StlpecIkony, StlpcePrenosu.Nazov, StlpcePrenosu.Miestnost });
+            Pumpuj();
+            Over(nahladEvidencie.VybraneStlpce.SequenceEqual(new[] { StlpcePrenosu.Cislo, NahladWindow.StlpecIkony, StlpcePrenosu.Nazov, StlpcePrenosu.Miestnost }),
+                "tlač z Evidencie: filter stĺpcov");
+            Snimka(nahladEvidencie, "nahlad_evidencie_stlpce");
+            nahladEvidencie.CestaBezDialogu = Path.Combine(exportPriecinok, "evidencia_na_vysku_stlpce.pdf");
+            Over(nahladEvidencie.UlozitPdf() is { } pdfNaVysku && File.Exists(pdfNaVysku), "tlač z Evidencie: PDF na výšku so zvolenými stĺpcami");
+            nahladEvidencie.NastavStlpce(new[] { NahladWindow.StlpecIkony });
+            Over(nahladEvidencie.VybraneStlpce.Count == 4, "tlač z Evidencie: bez stĺpcov sa netlačí (zostane posledná voľba)");
             nahladEvidencie.Close();
+            Pumpuj();
+            var znova = model.Evidencia.VytvorNahladTlace();
+            Over(!znova.NaSirku && znova.VybraneStlpce.Count == 4, "tlač z Evidencie: orientácia a stĺpce sa zapamätali");
+            znova.NastavOrientaciu(true);
+            znova.NastavStlpce(ZostavyService.Popis(DruhZostavy.Vyfiltrovane).PredvoleneStlpce.Append(NahladWindow.StlpecIkony));
+            znova.Close();
             Pumpuj();
             Krok("okno: náhľad tlače");
 

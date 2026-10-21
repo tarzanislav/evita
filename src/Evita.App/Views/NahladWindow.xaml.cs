@@ -14,11 +14,163 @@ public partial class NahladWindow : Window
     private const string KlucPriecinok = "Tlac.PriecinokPdf";
 
     private readonly Func<MigraDoc.DocumentObjectModel.Document> _tvorba;
-    private readonly bool _naSirku;
+    private readonly VolbyNahladu? _volby;
+    private bool _naSirku;
+    private List<string> _stlpce = new();
+    private bool _nacitavam;
     private readonly string _nazovSuboru;
     private double _sirkaStrany;
 
     public sealed record StranaNahladu(ImageSource Obrazok, double Sirka, double Vyska);
+
+    /// <summary>Stĺpec, ktorý sa dá vo filtri stĺpcov zapnúť alebo vypnúť.</summary>
+    public sealed record StlpecNahladu(string Kluc, string Nazov, bool Predvoleny);
+
+    /// <summary>
+    /// Zostava, ktorej orientáciu a stĺpce si používateľ volí priamo v náhľade (tlač z Evidencie). Tvorba dostane orientáciu
+    /// a zoznam vybraných stĺpcov; Zapamataj uloží voľbu na budúce.
+    /// </summary>
+    public sealed class VolbyNahladu
+    {
+        public required Func<bool, IReadOnlyList<string>, MigraDoc.DocumentObjectModel.Document> Tvorba { get; init; }
+        public required IReadOnlyList<StlpecNahladu> Stlpce { get; init; }
+        public required IReadOnlyList<string> Vybrane { get; init; }
+        public bool NaSirku { get; init; }
+        public Action<bool, IReadOnlyList<string>>? Zapamataj { get; init; }
+    }
+
+    /// <summary>Náhľad s voľbou orientácie (na výšku / na šírku) a filtrom stĺpcov.</summary>
+    public NahladWindow(VolbyNahladu volby, string titulok, string nazovSuboru)
+    {
+        _volby = volby;
+        _naSirku = volby.NaSirku;
+        _stlpce = volby.Stlpce.Select(s => s.Kluc).Where(volby.Vybrane.Contains).ToList();
+        _tvorba = () => volby.Tvorba(_naSirku, _stlpce);
+        _nazovSuboru = nazovSuboru;
+        InitializeComponent();
+        Title = Preklad.F($"Náhľad – {titulok}");
+        Volby.Visibility = Visibility.Visible;
+        _nacitavam = true;
+        (volby.NaSirku ? NaSirkuVolba : NaVysku).IsChecked = true;
+        _nacitavam = false;
+        NaplnStlpce(_stlpce);
+        Zvacsenie.SelectedIndex = 6;
+        NacitajStrany();
+    }
+
+    /// <summary>Aktuálna orientácia (platí pre náhľad, PDF aj tlač).</summary>
+    public bool NaSirku => _naSirku;
+
+    /// <summary>Stĺpce, ktoré sa práve tlačia.</summary>
+    public IReadOnlyList<string> VybraneStlpce => _stlpce;
+
+    /// <summary>Zmena orientácie – prekreslí náhľad (aj pre samotest).</summary>
+    public void NastavOrientaciu(bool naSirku)
+    {
+        if (_volby is null || naSirku == _naSirku)
+        {
+            return;
+        }
+
+        _naSirku = naSirku;
+        _nacitavam = true;
+        (naSirku ? NaSirkuVolba : NaVysku).IsChecked = true;
+        _nacitavam = false;
+        PoZmene();
+    }
+
+    /// <summary>Zmena tlačených stĺpcov – prekreslí náhľad (aj pre samotest). Aspoň jeden stĺpec musí zostať.</summary>
+    public void NastavStlpce(IEnumerable<string> kluce)
+    {
+        if (_volby is null)
+        {
+            return;
+        }
+
+        var nove = _volby.Stlpce.Select(s => s.Kluc).Where(kluce.Contains).ToList();
+        if (nove.Count == 0 || nove.Count(k => k != StlpecIkony) == 0)
+        {
+            Dialogy.Upozornenie(Preklad.T("Vyberte aspoň jeden stĺpec."));
+            NaplnStlpce(_stlpce);
+            return;
+        }
+
+        if (nove.SequenceEqual(_stlpce))
+        {
+            return;
+        }
+
+        _stlpce = nove;
+        NaplnStlpce(_stlpce);
+        PoZmene();
+    }
+
+    /// <summary>Pseudo-stĺpec „ikona kategórie“ vo filtri stĺpcov.</summary>
+    public const string StlpecIkony = "ikonaKategorie";
+
+    private void PoZmene()
+    {
+        _volby?.Zapamataj?.Invoke(_naSirku, _stlpce);
+        NacitajStrany();
+        NastavMierku();
+    }
+
+    private void NaplnStlpce(IReadOnlyCollection<string> vybrane)
+    {
+        if (_volby is null)
+        {
+            return;
+        }
+
+        ZoznamStlpcov.Children.Clear();
+        foreach (var s in _volby.Stlpce)
+        {
+            ZoznamStlpcov.Children.Add(new CheckBox { Content = s.Nazov, Tag = s.Kluc, IsChecked = vybrane.Contains(s.Kluc), Margin = new Thickness(0, 1, 0, 1), MinHeight = 0 });
+        }
+    }
+
+    private IEnumerable<string> ZaskrtnuteStlpce() =>
+        ZoznamStlpcov.Children.OfType<CheckBox>().Where(c => c.IsChecked == true).Select(c => (string)c.Tag);
+
+    private void Orientacia_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_nacitavam || _volby is null)
+        {
+            return;
+        }
+
+        var naSirku = NaSirkuVolba.IsChecked == true;
+        if (naSirku != _naSirku)
+        {
+            _naSirku = naSirku;
+            PoZmene();
+        }
+    }
+
+    private void PouzitStlpce_Click(object sender, RoutedEventArgs e)
+    {
+        FilterStlpcov.IsChecked = false;
+    }
+
+    /// <summary>Po zatvorení ponuky (Použiť alebo klik mimo) sa zaškrtnuté stĺpce použijú.</summary>
+    private void PonukaStlpcov_Closed(object? sender, EventArgs e) => NastavStlpce(ZaskrtnuteStlpce());
+
+    private void VsetkyStlpce_Click(object sender, RoutedEventArgs e)
+    {
+        foreach (var c in ZoznamStlpcov.Children.OfType<CheckBox>())
+        {
+            c.IsChecked = true;
+        }
+    }
+
+    private void PredvoleneStlpce_Click(object sender, RoutedEventArgs e)
+    {
+        var predvolene = _volby?.Stlpce.Where(s => s.Predvoleny).Select(s => s.Kluc).ToHashSet() ?? new HashSet<string>();
+        foreach (var c in ZoznamStlpcov.Children.OfType<CheckBox>())
+        {
+            c.IsChecked = predvolene.Contains((string)c.Tag);
+        }
+    }
 
     public NahladWindow(Func<MigraDoc.DocumentObjectModel.Document> tvorba, bool naSirku, string titulok, string nazovSuboru)
     {

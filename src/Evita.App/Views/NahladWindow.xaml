@@ -22,7 +22,7 @@
                         <ComboBoxItem Content="na šírku okna" Tag="sirka" />
                     </ComboBox>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal">
+                <WrapPanel Orientation="Horizontal">
                     <Button Style="{DynamicResource AccentButtonStyle}" Padding="14,6" Click="Vytlacit_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="14" Margin="0,0,8,0" />
@@ -36,8 +36,45 @@
                         </StackPanel>
                     </Button>
                     <Button Content="Zavrieť" Padding="14,6" Margin="8,0,0,0" IsCancel="True" Click="Zavriet_Click" />
+
+                    <!-- orientácia a stĺpce (tlač z Evidencie): zmena hneď prekreslí náhľad a platí aj pre tlač -->
+                    <StackPanel x:Name="Volby" Orientation="Horizontal" Margin="20,0,0,0" Visibility="Collapsed">
+                        <RadioButton x:Name="NaVysku" GroupName="orientaciaNahladu" Content="na výšku" VerticalAlignment="Center"
+                                     MinWidth="0" Checked="Orientacia_Checked" />
+                        <RadioButton x:Name="NaSirkuVolba" GroupName="orientaciaNahladu" Content="na šírku" VerticalAlignment="Center"
+                                     MinWidth="0" Margin="10,0,0,0" Checked="Orientacia_Checked" />
+                        <ToggleButton x:Name="FilterStlpcov" Padding="12,6" Margin="14,0,0,0"
+                                      IsHitTestVisible="{Binding IsOpen, ElementName=PonukaStlpcov, Converter={StaticResource InverzBool}}"
+                                      ToolTip="Vybrať stĺpce, ktoré sa vytlačia (nezaškrtnuté sa netlačia ani nezobrazia v náhľade)">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Ikona}" Text="&#xE71C;" FontSize="13" Margin="0,0,8,0" />
+                                <TextBlock Text="Filter stĺpcov" />
+                            </StackPanel>
+                        </ToggleButton>
+                        <Popup x:Name="PonukaStlpcov" PlacementTarget="{Binding ElementName=FilterStlpcov}" Placement="Bottom"
+                               StaysOpen="False" AllowsTransparency="True"
+                               IsOpen="{Binding IsChecked, ElementName=FilterStlpcov, Mode=TwoWay}" Closed="PonukaStlpcov_Closed">
+                            <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,4,8,8">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="14" ShadowDepth="2" Opacity="0.25" />
+                                </Border.Effect>
+                                <StackPanel MinWidth="230">
+                                    <TextBlock Text="Tlačiť stĺpce" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                    <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="ZoznamStlpcov" />
+                                    </ScrollViewer>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Button Content="Použiť" Style="{DynamicResource AccentButtonStyle}" Padding="12,4" Click="PouzitStlpce_Click" />
+                                        <Button Content="Všetky" Padding="12,4" Margin="6,0,0,0" Click="VsetkyStlpce_Click" />
+                                        <Button Content="Predvolené" Padding="12,4" Margin="6,0,0,0" Click="PredvoleneStlpce_Click" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </StackPanel>
                     <TextBlock x:Name="Info" VerticalAlignment="Center" Margin="20,0,0,0" Style="{StaticResource Popis}" FontSize="13" />
-                </StackPanel>
+                </WrapPanel>
             </DockPanel>
         </Border>
 

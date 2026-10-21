@@ -84,6 +84,10 @@ public static class NahladDokumentu
             return false;
         }
 
+        // orientácia zostavy platí pre každú tlačiareň: po výbere inej tlačiarne v okne tlače má tá svoje predvolené
+        // nastavenie, preto sa orientácia a A4 nastavia znova a zosúladia s možnosťami vybranej tlačiarne
+        NastavOrientaciu(dialog, naSirku);
+
         DocumentRenderer? vykreslenie = null;
         Dialogy.Cakaj(() => vykreslenie = Priprav(tvorba()));
         var strankovac = new Strankovac(vykreslenie!, naSirku);
@@ -94,6 +98,37 @@ public static class NahladDokumentu
 
         dialog.PrintDocument(strankovac, nazovUlohy);
         return true;
+    }
+
+    /// <summary>Orientácia (na výšku / na šírku) a formát A4 pre vybranú tlačiareň.</summary>
+    private static void NastavOrientaciu(PrintDialog dialog, bool naSirku)
+    {
+        var orientacia = naSirku ? PageOrientation.Landscape : PageOrientation.Portrait;
+        try
+        {
+            var tiket = dialog.PrintTicket.Clone();
+            tiket.PageOrientation = orientacia;
+            tiket.PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4);
+            if (dialog.PrintQueue is { } fronta)
+            {
+                var overeny = fronta.MergeAndValidatePrintTicket(fronta.UserPrintTicket ?? fronta.DefaultPrintTicket, tiket).ValidatedPrintTicket;
+                overeny.PageOrientation = orientacia;
+                tiket = overeny;
+            }
+
+            dialog.PrintTicket = tiket;
+        }
+        catch (Exception)
+        {
+            try
+            {
+                dialog.PrintTicket.PageOrientation = orientacia;
+            }
+            catch (Exception)
+            {
+                // tlačiareň nastavenie nepodporuje – použije svoje predvolené
+            }
+        }
     }
 
     /// <summary>Strany zostavy pre tlač Windows.</summary>

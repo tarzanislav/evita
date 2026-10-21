@@ -170,14 +170,15 @@ public static class NahladDokumentu
     /// Tlačový lístok pre vybranú tlačiareň: A4, orientácia listu, obojstranná tlač, kópie a sivá – nastaví sa pri každej
     /// tlačiarni znova (každá má svoje predvolené) a zosúladí sa s jej možnosťami.
     /// </summary>
-    public static PrintTicket Tiket(PrintQueue fronta, VolbyTlace volby, bool listNaSirku)
+    public static PrintTicket Tiket(PrintQueue fronta, VolbyTlace volby, bool listNaSirku, bool? obojstranne = null)
     {
+        var duplex = obojstranne ?? volby.TlacitObojstranne;
         var tiket = (fronta.UserPrintTicket ?? fronta.DefaultPrintTicket).Clone();
         tiket.PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4);
         tiket.PageOrientation = listNaSirku ? PageOrientation.Landscape : PageOrientation.Portrait;
         tiket.CopyCount = volby.Kopie;
         tiket.Collation = Collation.Collated;
-        tiket.Duplexing = !volby.TlacitObojstranne
+        tiket.Duplexing = !duplex
             ? Duplexing.OneSided
             : listNaSirku ? Duplexing.TwoSidedShortEdge : Duplexing.TwoSidedLongEdge;
         if (volby.OdtieneSivej)

@@ -57,6 +57,7 @@ public partial class TlacWindow : Window
         DierovacMm.Text = volby.DierovacMm.ToString("0.#", CultureInfo.CurrentCulture);
         _nacitavam = false;
         Prekresli();
+        AktualizujProfil();
     }
 
     /// <summary>Aktuálne voľby z okna.</summary>
@@ -156,6 +157,10 @@ public partial class TlacWindow : Window
         DierovacMm.IsEnabled = Dierovac.IsEnabled && Dierovac.IsChecked == true;
         Obojstranne.IsEnabled = volby.Rozmiestnenie != Rozmiestnenie.Brozura;
         _nahlad = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie, _naSirku, volby) { NahladDpi = 110 };
+        if (ProfilText is not null)
+        {
+            AktualizujProfil();
+        }
         _list = Math.Clamp(_list, 0, Math.Max(0, _nahlad.PocetListov - 1));
         UkazList();
 
@@ -203,6 +208,26 @@ public partial class TlacWindow : Window
         UkazList();
     }
 
+    private void NastavitObojstranne_Click(object sender, RoutedEventArgs e)
+    {
+        if (Volby.Tlaciaren is not { } tlaciaren)
+        {
+            Dialogy.Upozornenie(Preklad.T("Nie je nainštalovaná žiadna tlačiareň."));
+            return;
+        }
+
+        new ObojstrannaWindow(tlaciaren) { Owner = this }.ShowDialog();
+        AktualizujProfil();
+    }
+
+    private void AktualizujProfil()
+    {
+        var profil = ProfilObojstrannej.Pre(Volby.Tlaciaren);
+        ProfilText.Text = profil is null
+            ? Preklad.T("Obojstranná tlač na tejto tlačiarni ešte nie je nastavená.")
+            : Preklad.F($"Obojstranne: {profil.Popis}");
+    }
+
     private void Vytlacit_Click(object sender, RoutedEventArgs e)
     {
         var volby = Volby;
@@ -214,17 +239,29 @@ public partial class TlacWindow : Window
 
         try
         {
-            using var server = new LocalPrintServer();
-            using var fronta = server.GetPrintQueues(new[] { EnumeratedPrintQueueTypes.Local, EnumeratedPrintQueueTypes.Connections })
-                .FirstOrDefault(f => f.FullName == volby.Tlaciaren) ?? throw new EvitaException(Preklad.F($"Tlačiareň „{volby.Tlaciaren}“ sa nenašla."));
-            var strankovac = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie, _naSirku, volby);
-            var tiket = NahladDokumentu.Tiket(fronta, volby, strankovac.ListNaSirku);
-            Dialogy.Cakaj(() =>
+            // obojstranná tlač: pri prvom použití tlačiarne sprievodca so skúšobnými listami
+            var profil = volby.TlacitObojstranne ? ProfilObojstrannej.Pre(volby.Tlaciaren) : null;
+            if (volby.TlacitObojstranne && profil is null)
             {
-                fronta.CurrentJobSettings.Description = _nazovUlohy;
-                var zapis = PrintQueue.CreateXpsDocumentWriter(fronta);
-                zapis.Write(strankovac, tiket);
-            });
+                if (Dialogy.Potvrd(Preklad.F($"Obojstranná tlač na tlačiarni „{volby.Tlaciaren}“ ešte nie je nastavená. Každá tlačiareň otáča list inak a zadná strana by mohla vyjsť hore nohami.\n\nSpustiť sprievodcu? Vytlačí 2 skúšobné listy a opýta sa, ako vyšli.\n\n(Nie = tlačiť s predvoleným nastavením.)")))
+                {
+                    var sprievodca = new ObojstrannaWindow(volby.Tlaciaren) { Owner = this };
+                    sprievodca.ShowDialog();
+                    AktualizujProfil();
+                    if (sprievodca.Profil is null)
+                    {
+                        return;
+                    }
+                }
+
+                profil = ProfilObojstrannej.Pre(volby.Tlaciaren) ?? new ProfilObojstrannej();
+            }
+
+            if (!Vytlac(volby, profil, potvrdenie: Dialogy.Potvrd))
+            {
+                return;
+            }
+
             volby.Uloz();
             DialogResult = true;
         }
@@ -236,6 +273,71 @@ public partial class TlacWindow : Window
         {
             Dialogy.Chyba(Preklad.F($"Tlač na „{volby.Tlaciaren}“ sa nepodarila."), ex);
         }
+    }
+
+    /// <summary>
+    /// Strany na tlač podľa volieb a profilu obojstrannej tlače: pri obojstrannej tlači sa doplní prázdna strana na párny
+    /// počet (ďalšia kópia nezačne na zadnej strane), zadné strany sa podľa profilu otočia o 180°. Pri ručnom otáčaní sú to
+    /// dve úlohy – predné strany a po vložení listov zadné strany (podľa profilu v obrátenom poradí).
+    /// </summary>
+    public static List<(List<DrawingVisual> Strany, bool Duplex, int Kopie)> Ulohy(NahladDokumentu.StrankovacRozvrhu rozvrh, VolbyTlace volby, ProfilObojstrannej? profil)
+    {
+        var velkost = rozvrh.PageSize;
+        var pocet = rozvrh.PocetListov;
+        if (!volby.TlacitObojstranne)
+        {
+            return new() { (Enumerable.Range(0, pocet).Select(rozvrh.List).ToList(), false, volby.Kopie) };
+        }
+
+        profil ??= new ProfilObojstrannej();
+        var parny = (pocet + 1) / 2 * 2;
+        DrawingVisual Strana(int i) => i < pocet ? rozvrh.List(i) : ObojstrannaKresba.Prazdna(velkost);
+        DrawingVisual Zadna(int i) => profil.Otocit(rozvrh.ListNaSirku) ? ObojstrannaKresba.Otocena(Strana(i), velkost) : Strana(i);
+
+        if (profil.Rezim == RezimObojstrannej.Automaticky)
+        {
+            return new() { (Enumerable.Range(0, parny).Select(i => i % 2 == 0 ? Strana(i) : Zadna(i)).ToList(), true, volby.Kopie) };
+        }
+
+        var predne = new List<DrawingVisual>();
+        var zadne = new List<DrawingVisual>();
+        for (var kopia = 0; kopia < volby.Kopie; kopia++)
+        {
+            for (var i = 0; i < parny; i += 2)
+            {
+                predne.Add(Strana(i));
+                zadne.Add(Zadna(i + 1));
+            }
+        }
+
+        if (profil.ObratitPoradie)
+        {
+            zadne.Reverse();
+        }
+
+        return new() { (predne, false, 1), (zadne, false, 1) };
+    }
+
+    private bool Vytlac(VolbyTlace volby, ProfilObojstrannej? profil, Func<string, bool> potvrdenie)
+    {
+        using var server = new LocalPrintServer();
+        using var fronta = ObojstrannaKresba.NajdiTlaciaren(server, volby.Tlaciaren!);
+        var rozvrh = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie, _naSirku, volby);
+        var ulohy = Ulohy(rozvrh, volby, profil);
+        for (var u = 0; u < ulohy.Count; u++)
+        {
+            var (strany, duplex, kopie) = ulohy[u];
+            if (u == 1 && !potvrdenie(Preklad.F($"Predné strany ({strany.Count} listov) sa tlačia.\n\nKeď sú vytlačené, vezmite listy z tlačiarne, nemeňte ich poradie a vložte ich do zásobníka tak, ako pri skúšobných listoch (čistou stranou na tlač). Potom pokračujte – vytlačia sa zadné strany.")))
+            {
+                return false;
+            }
+
+            var tiket = NahladDokumentu.Tiket(fronta, volby with { Kopie = kopie }, rozvrh.ListNaSirku, duplex);
+            Dialogy.Cakaj(() => ObojstrannaKresba.Posli(fronta, tiket, new ZoznamStran(strany.Count, rozvrh.PageSize, i => strany[i]),
+                u == 0 ? _nazovUlohy : _nazovUlohy + " – " + Preklad.T("zadné strany")));
+        }
+
+        return true;
     }
 
     /// <summary>Strana listu ako obrázok (samotest – snímka náhľadu tlače).</summary>

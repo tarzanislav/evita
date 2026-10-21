@@ -66,6 +66,46 @@ internal static partial class Samotest
             UlozObrazok(okno.ObrazokListu(0), $"tlac_{nazov}");
         }
 
+        // obojstranná tlač: párny počet strán, otočenie zadných strán, ručné otáčanie v dvoch úlohách
+        var rozvrh = new NahladDokumentu.StrankovacRozvrhu(vykreslenie, false, new VolbyTlace { Obojstranne = true });
+        var auto = TlacWindow.Ulohy(rozvrh, new VolbyTlace { Obojstranne = true, Kopie = 2 }, new ProfilObojstrannej { OtocitNaVysku = true });
+        var rucne = TlacWindow.Ulohy(rozvrh, new VolbyTlace { Obojstranne = true, Kopie = 2 },
+            new ProfilObojstrannej { Rezim = RezimObojstrannej.Rucne, ObratitPoradie = true });
+        var jednostranne = TlacWindow.Ulohy(rozvrh, new VolbyTlace(), null);
+        var parny = (stran + 1) / 2 * 2;
+        Over(auto.Count == 1 && auto[0].Strany.Count == parny && auto[0].Duplex && auto[0].Kopie == 2
+             && rucne.Count == 2 && rucne.All(u => !u.Duplex && u.Kopie == 1 && u.Strany.Count == parny)
+             && jednostranne.Count == 1 && jednostranne[0].Strany.Count == stran && !jednostranne[0].Duplex,
+            $"obojstranná tlač: automaticky 1 úloha ({parny} strán), ručne 2 úlohy po {parny} stranách (2 kópie), jednostranne {stran}");
+        ProfilObojstrannej.Uloz("Testovacia tlačiareň", new ProfilObojstrannej { Rezim = RezimObojstrannej.Rucne, OtocitNaSirku = true, ObratitPoradie = true });
+        Over(ProfilObojstrannej.Pre("testovacia TLAČIAREŇ") is { Rezim: RezimObojstrannej.Rucne, OtocitNaSirku: true, OtocitNaVysku: false, ObratitPoradie: true }
+             && ProfilObojstrannej.Pre("Iná tlačiareň") is null, "obojstranná tlač: nastavenie sa pamätá pre každú tlačiareň zvlášť");
+        var velkostA4 = RozvrhTlace.VelkostListu(false);
+        UlozObrazok(new DrawingImage(ObojstrannaKresba.SkusobnaStrana(1, velkostA4, false).Drawing), "obojstranna_skusobny_list_1");
+        UlozObrazok(new DrawingImage(ObojstrannaKresba.SkusobnaStrana(2, velkostA4, true).Drawing), "obojstranna_skusobny_list_2");
+        UlozObrazok(new DrawingImage(ObojstrannaKresba.Otocena(ObojstrannaKresba.SkusobnaStrana(2, velkostA4, true), velkostA4).Drawing), "obojstranna_skusobny_list_2_otoceny");
+
+        // sprievodca: úvod, otázky po automatickej a po ručnej tlači (bez skutočnej tlače)
+        var sprievodca = new ObojstrannaWindow("Testovacia tlačiareň 2");
+        sprievodca.Show();
+        Pumpuj();
+        Snimka(sprievodca, "okno_obojstranna_uvod");
+        sprievodca.UkazOtazky(rucne: false);
+        Pumpuj();
+        Snimka(sprievodca, "okno_obojstranna_otazky");
+        sprievodca.Odpovedz(0, 1);
+        Over(sprievodca.Profil is { Rezim: RezimObojstrannej.Automaticky, OtocitNaVysku: false, OtocitNaSirku: true }
+             && ProfilObojstrannej.Pre("Testovacia tlačiareň 2") is { OtocitNaSirku: true },
+            "sprievodca: list na výšku rovno, na šírku hore nohami → otáčať len listy na šírku");
+        sprievodca.UkazOtazky(rucne: true);
+        Pumpuj();
+        Snimka(sprievodca, "okno_obojstranna_rucne");
+        sprievodca.Odpovedz(3);
+        Over(sprievodca.Profil is { Rezim: RezimObojstrannej.Rucne, OtocitNaVysku: true, OtocitNaSirku: true, ObratitPoradie: true },
+            "sprievodca: ručné otáčanie – číslo 4 hore nohami → obrátené poradie a otočenie");
+        sprievodca.Close();
+        Pumpuj();
+
         Snimka(okno, "okno_tlace");
         okno.UlozVolby();
         Over(VolbyTlace.Nacitaj() is { OdtieneSivej: true, Dierovac: true, DierovacMm: 20 }, "okno tlače: voľby sa zapamätajú");

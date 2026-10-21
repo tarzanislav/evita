@@ -32,7 +32,12 @@
                     <TextBlock Text="Kópie" VerticalAlignment="Center" Margin="0,0,10,0" />
                     <TextBox x:Name="Kopie" Width="64" Text="1" TextChanged="Volba_Changed" HorizontalAlignment="Left" />
                 </DockPanel>
-                <CheckBox x:Name="Obojstranne" Content="Obojstranne" Margin="0,8,0,0" Click="Volba_Changed" />
+                <DockPanel Margin="0,8,0,0">
+                    <Button DockPanel.Dock="Right" Content="Nastaviť…" Padding="10,3" Click="NastavitObojstranne_Click"
+                            ToolTip="Sprievodca vytlačí skúšobné listy a podľa odpovedí nastaví, ako táto tlačiareň otáča listy (aby zadná strana nebola hore nohami)." />
+                    <CheckBox x:Name="Obojstranne" Content="Obojstranne" Click="Volba_Changed" />
+                </DockPanel>
+                <TextBlock x:Name="ProfilText" Style="{StaticResource Popis}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0" />
 
                 <TextBlock Text="Strany na list" Style="{StaticResource Stitok}" />
                 <RadioButton x:Name="Jedna" GroupName="rozmiestnenie" Content="1 strana" Click="Volba_Changed" />

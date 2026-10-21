@@ -13,6 +13,13 @@
             <Setter Property="Margin" Value="0,0,6,6" />
             <Setter Property="Padding" Value="12,6" />
         </Style>
+        <!-- pastelové tlačidlá – tmavý text, aby boli čitateľné aj v tmavom režime -->
+        <Style x:Key="FarebneTlacidlo" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Foreground" Value="#1F1F1F" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
         <Style x:Key="FilterStitok" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Margin" Value="0,0,0,2" />
@@ -33,7 +40,7 @@
                      ToolTip="Hľadá v čísle, názve, kategórii, miestnosti, osobe, výrobcovi, modeli, sériovom a inventárnom čísle, EAN a poznámke. Diakritika nehrá rolu. Funguje aj naskenovaný štítok EviTA. (Ctrl+F)" />
         </Grid>
 
-        <!-- tlačidlá -->
+        <!-- 1. riadok: nová položka, výrobca z internetu a farebné tlačidlá (filtre, tlač, export, štítky) -->
         <WrapPanel DockPanel.Dock="Top">
             <Button Style="{DynamicResource AccentButtonStyle}" Margin="0,0,6,6" Padding="12,6"
                     Command="{Binding NovaCommand}" ToolTip="Ctrl+N">
@@ -48,6 +55,41 @@
                           ToolTip="Pri novej položke doplniť výrobcu a model podľa názvu aj z internetu (UPCitemdb, odosiela sa len názov). Bez internetu sa doplnia len známe značky a modely z evidencie. Po vyčerpaní denného limitu (asi 100 dopytov) sa prázdne polia doplnia v ďalšie dni." />
                 <TextBlock Text="{Binding CakajuceText}" Style="{StaticResource Popis}" VerticalAlignment="Center" Margin="8,0,0,0" />
             </StackPanel>
+            <Button Style="{StaticResource FarebneTlacidlo}" Background="#C8E6C9" BorderBrush="#9CCC9F"
+                    Command="{Binding VycistitFiltreCommand}" ToolTip="Zruší všetky filtre a vyhľadávanie – zobrazia sa všetky položky v prevádzke">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE894;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Zrušiť filtre" />
+                </StackPanel>
+            </Button>
+            <Button Style="{StaticResource FarebneTlacidlo}" Background="#BBDEFB" BorderBrush="#90BEE6"
+                    Command="{Binding TlacitCommand}"
+                    ToolTip="Náhľad a tlač zobrazených (vyfiltrovaných) položiek, aj uloženie do PDF (Ctrl+P)">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Tlačiť…" />
+                </StackPanel>
+            </Button>
+            <Button Style="{StaticResource FarebneTlacidlo}" Background="#FFE0B2" BorderBrush="#E8BE84"
+                    Command="{Binding ExportovatCommand}"
+                    ToolTip="Exportovať zobrazené (vyfiltrované) alebo označené položky do Excelu, CSV, JSON, XML, HTML alebo PDF">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xEDE1;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Export…" />
+                </StackPanel>
+            </Button>
+            <Button Style="{StaticResource FarebneTlacidlo}" Background="#E1BEE7" BorderBrush="#C39BCB"
+                    Command="{Binding StitkyCommand}"
+                    ToolTip="Štítky s QR alebo čiarovým kódom pre označené položky (ak nie sú označené, pre všetky zobrazené)">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xED14;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Štítky…" />
+                </StackPanel>
+            </Button>
+        </WrapPanel>
+
+        <!-- 2. riadok: práca s označenými položkami -->
+        <WrapPanel DockPanel.Dock="Top" Margin="0,2,0,0">
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding UpravitCommand}" ToolTip="Enter alebo F2"
                     Content="Upraviť" />
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding KopiaCommand}"
@@ -62,27 +104,6 @@
                     Content="Vymazať" />
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding ObnovZoznamCommand}"
                     Content="Obnoviť zoznam" ToolTip="F5" />
-            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding ExportovatCommand}"
-                    ToolTip="Exportovať zobrazené (vyfiltrované) alebo označené položky do Excelu, CSV, JSON, XML, HTML alebo PDF">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource Ikona}" Text="&#xEDE1;" FontSize="13" Margin="0,0,8,0" />
-                    <TextBlock Text="Export…" />
-                </StackPanel>
-            </Button>
-            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding StitkyCommand}"
-                    ToolTip="Štítky s QR alebo čiarovým kódom pre označené položky (ak nie sú označené, pre všetky zobrazené)">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource Ikona}" Text="&#xED14;" FontSize="13" Margin="0,0,8,0" />
-                    <TextBlock Text="Štítky…" />
-                </StackPanel>
-            </Button>
-            <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding TlacitCommand}"
-                    ToolTip="Náhľad a tlač zobrazených (vyfiltrovaných) položiek, aj uloženie do PDF (Ctrl+P)">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="13" Margin="0,0,8,0" />
-                    <TextBlock Text="Tlačiť…" />
-                </StackPanel>
-            </Button>
         </WrapPanel>
 
         <!-- filtre -->
@@ -117,8 +138,6 @@
                         <TextBlock Text="Pridané do" Style="{StaticResource FilterStitok}" />
                         <DatePicker SelectedDate="{Binding PridaneDo}" />
                     </StackPanel>
-                    <Button Content="Zrušiť filtre" Command="{Binding VycistitFiltreCommand}"
-                            VerticalAlignment="Bottom" Margin="0,0,0,4" Padding="12,6" />
                 </WrapPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,6,0,0"
                             Visibility="{Binding RychlyFilter, Converter={StaticResource NieJePrazdne}}">

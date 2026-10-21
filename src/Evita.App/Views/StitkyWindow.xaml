@@ -45,6 +45,22 @@
                         <TextBlock Text="Štítky" Style="{StaticResource Podnadpis}" FontSize="20" />
                         <TextBlock Text="{Binding PopisVyberu}" Style="{StaticResource Popis}" FontSize="13" />
 
+                        <TextBlock Text="Uložené nastavenia" Style="{StaticResource Stitok}" Margin="0,14,0,4" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Padding="8,4" Margin="6,0,0,0" Command="{Binding VymazatNastavenieCommand}"
+                                    ToolTip="Vymazať vybrané nastavenie">
+                                <TextBlock Style="{StaticResource Ikona}" Text="&#xE74D;" FontSize="13" />
+                            </Button>
+                            <Button DockPanel.Dock="Right" Padding="10,4" Margin="6,0,0,0" Command="{Binding UlozitNastavenieCommand}"
+                                    ToolTip="Uloží formát, kód, text na štítku, poradie a posun tlače pod vlastným názvom">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE74E;" FontSize="13" Margin="0,0,6,0" />
+                                    <TextBlock Text="Uložiť…" />
+                                </StackPanel>
+                            </Button>
+                            <ComboBox ItemsSource="{Binding Ulozene}" DisplayMemberPath="Nazov" SelectedItem="{Binding VybraneUlozene}" />
+                        </DockPanel>
+
                         <TextBlock Text="Formát štítkov" Style="{StaticResource Stitok}" Margin="0,14,0,4" />
                         <ComboBox ItemsSource="{Binding Sablony}" DisplayMemberPath="Nazov" SelectedItem="{Binding Sablona}" />
                         <TextBlock Text="{Binding RozmerText}" Style="{StaticResource Popis}" Margin="0,4,0,0" />
@@ -121,6 +137,13 @@
                             <CheckBox Content="Miestnosť" IsChecked="{Binding Miestnost}" Style="{StaticResource Volba}" />
                         </WrapPanel>
                         <CheckBox Content="Rámček okolo štítku (na kontrolu alebo strihanie)" IsChecked="{Binding Ramcek}" Margin="0,6,0,0" />
+
+                        <TextBlock Text="Poradie štítkov" Style="{StaticResource Stitok}" Margin="0,14,0,4" />
+                        <ComboBox ItemsSource="{Binding Poradia}" DisplayMemberPath="Nazov" SelectedValuePath="Poradie" SelectedValue="{Binding Poradie}" />
+                        <CheckBox Margin="0,6,0,0" IsChecked="{Binding NovaStranaPreSkupinu}"
+                                  Visibility="{Binding MaSkupiny, Converter={StaticResource BoolNaViditelnost}}">
+                            <TextBlock TextWrapping="Wrap" Text="Každá miestnosť (kategória) na novom hárku – hárok sa dá odniesť rovno do miestnosti" />
+                        </CheckBox>
 
                         <Grid Margin="0,6,0,0">
                             <Grid.ColumnDefinitions>

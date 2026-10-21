@@ -1,0 +1,191 @@
+<UserControl x:Class="Evita.Views.StatistikaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <!-- riadok bloku: celý sa dá kliknúť, položky sa ukážu v podokne -->
+        <Style x:Key="RiadokStatistiky" TargetType="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Pozadie" Background="Transparent" CornerRadius="4" Padding="6,3">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Pozadie" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- nadpis a voľby -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <CheckBox Content="Aj vyradené" IsChecked="{Binding AVyradene}" VerticalAlignment="Center" Margin="0,0,16,0"
+                          ToolTip="Započítať aj vyradené položky (inak len technika v evidencii)" />
+                <TextBlock Text="Obnova od" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <ComboBox ItemsSource="{Binding HraniceVolby}" SelectedItem="{Binding Hranica}" Width="80" VerticalAlignment="Center"
+                          ToolTip="Od koľkých rokov (z dátumu nákupu) je položka kandidát na obnovu" />
+                <TextBlock Text="rokov" VerticalAlignment="Center" Margin="8,0,16,0" />
+                <Button Padding="12,6" Margin="0,0,8,0" Command="{Binding PrepocitatCommand}" ToolTip="Prepočítať">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE72C;" FontSize="13" />
+                </Button>
+                <Button Padding="12,6" Command="{Binding TlacitCommand}" Background="#BBDEFB" BorderBrush="#90BEE6" Foreground="#1F1F1F"
+                        ToolTip="Celá štatistika ako zostava – náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Text="Tlačiť / PDF…" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+            <TextBlock Text="Štatistika" Style="{StaticResource Nadpis}" Margin="0" VerticalAlignment="Center" />
+        </DockPanel>
+
+        <!-- súhrn -->
+        <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Dlazdice}" Margin="0,0,0,8">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource Karta}" Width="214" Margin="0,0,10,10" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Nazov}" Style="{StaticResource Popis}" FontSize="12" />
+                            <TextBlock x:Name="Hodnota" Text="{Binding Hodnota}" FontSize="22" FontWeight="SemiBold" Margin="0,2,0,2" />
+                            <TextBlock Text="{Binding Popis}" Style="{StaticResource Popis}" FontSize="11" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Upozornit}" Value="True">
+                            <Setter TargetName="Hodnota" Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- podokno s položkami vybraného riadku -->
+        <Border DockPanel.Dock="Right" Width="560" Margin="12,0,0,0" Style="{StaticResource Karta}" Padding="14,12"
+                Visibility="{Binding JeVybrany, Converter={StaticResource BoolNaViditelnost}}">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top">
+                    <Button DockPanel.Dock="Right" Padding="8,4" Command="{Binding ZavrietPodoknoCommand}" ToolTip="Zavrieť podokno">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE711;" FontSize="12" />
+                    </Button>
+                    <TextBlock Text="{Binding DetailNadpis}" Style="{StaticResource Podnadpis}" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="{Binding DetailSuhrn}" FontWeight="SemiBold" Margin="0,6,0,8" TextWrapping="Wrap" />
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <Button Padding="12,5" Margin="0,0,8,0" Command="{Binding ZobrazitVEvidenciiCommand}"
+                            ToolTip="Zobrazí tieto položky v Evidencii – napr. na doplnenie údajov alebo hromadnú zmenu">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE8FD;" FontSize="13" Margin="0,0,8,0" />
+                            <TextBlock Text="Zobraziť v Evidencii" />
+                        </StackPanel>
+                    </Button>
+                    <Button Padding="12,5" Command="{Binding TlacitPodoknoCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="13" Margin="0,0,8,0" />
+                            <TextBlock Text="Tlačiť zoznam…" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+                <DataGrid ItemsSource="{Binding DetailPolozky}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" CanUserAddRows="False" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Č." Binding="{Binding Cislo}" Width="48" />
+                        <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="2*" />
+                        <DataGridTextColumn Header="Miestnosť" Binding="{Binding Miestnost}" Width="*" />
+                        <DataGridTextColumn Header="Nákup" Binding="{Binding Nakup}" Width="82" />
+                        <DataGridTextColumn Header="Vek" Binding="{Binding Vek}" Width="56" />
+                        <DataGridTextColumn Header="Cena" Binding="{Binding Cena}" Width="96">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextAlignment" Value="Right" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Poznámka" Binding="{Binding Poznamka}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+
+        <!-- bloky -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Bloky}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource Karta}" Width="470" Margin="0,0,12,12" Padding="14,12">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Style="{StaticResource Ikona}" Text="{Binding Ikona}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Nadpis}" Style="{StaticResource Podnadpis}" Margin="0" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding Popis}" Style="{StaticResource Popis}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,8" />
+                                <TextBlock Text="Žiadne údaje." Style="{StaticResource Popis}"
+                                           Visibility="{Binding JePrazdny, Converter={StaticResource BoolNaViditelnost}}" />
+                                <ItemsControl ItemsSource="{Binding Riadky}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource RiadokStatistiky}"
+                                                    Command="{Binding DataContext.VybratCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="120" />
+                                                        <ColumnDefinition Width="56" />
+                                                        <ColumnDefinition Width="104" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <ContentPresenter Content="{Binding Ikona}" ContentTemplate="{StaticResource IkonaKategorie}" Margin="0,0,8,0"
+                                                                      Visibility="{Binding MaIkonu, Converter={StaticResource BoolNaViditelnost}}" />
+                                                    <TextBlock x:Name="Nazov" Grid.Column="1" Text="{Binding Nazov}" VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <Rectangle x:Name="Pruh" Grid.Column="2" Height="8" RadiusX="2" RadiusY="2" HorizontalAlignment="Left"
+                                                               VerticalAlignment="Center" Width="{Binding SirkaPruhu}" Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                                                               Opacity="0.75" />
+                                                    <TextBlock Grid.Column="3" Text="{Binding PocetText}" TextAlignment="Right" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="4" Text="{Binding SumaText}" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding Doplnok}" Style="{StaticResource Popis}"
+                                                               FontSize="11" TextTrimming="CharacterEllipsis"
+                                                               Visibility="{Binding Doplnok, Converter={StaticResource NieJePrazdne}}" />
+                                                </Grid>
+                                            </Button>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding Upozornit}" Value="True">
+                                                    <Setter TargetName="Nazov" Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                    <Setter TargetName="Pruh" Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="{Binding Suhrn}" Style="{StaticResource Popis}" Margin="6,6,0,0" FontWeight="SemiBold"
+                                           Visibility="{Binding Suhrn, Converter={StaticResource NieJePrazdne}}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

@@ -806,7 +806,7 @@ internal static partial class Samotest
             okno.Show();
             Pumpuj();
             var model = (MainViewModel)okno.DataContext;
-            foreach (var sekcia in new[] { "dashboard", "kalendar", "ulohy", "poznamky", "evidencia", "skenovanie", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia", "dashboard" })
+            foreach (var sekcia in new[] { "dashboard", "kalendar", "ulohy", "poznamky", "evidencia", "skenovanie", "statistika", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia", "dashboard" })
             {
                 okno.OznacSekciu(sekcia);
                 Pumpuj();
@@ -832,7 +832,7 @@ internal static partial class Samotest
                     Over(model.Kategorie.FarbaText == IkonyKategorii.Farby[8], "kategórie: farba z palety sa ukáže aj ako kód");
                 }
 
-                if (sekcia is "import" or "evidencia" or "tlac" or "kalendar" or "dashboard" or "ulohy" or "poznamky" or "nastavenia" or "kalendarium" or "kategorie")
+                if (sekcia is "import" or "evidencia" or "statistika" or "tlac" or "kalendar" or "dashboard" or "ulohy" or "poznamky" or "nastavenia" or "kalendarium" or "kategorie")
                 {
                     Snimka(okno, "okno_" + sekcia);
                 }
@@ -841,6 +841,7 @@ internal static partial class Samotest
                 Krok($"obrazovka: {sekcia}");
             }
 
+            SamotestStatistiky(okno, model);
             Over(model.Dashboard.MeninyDnes.Length > 0 && model.Dashboard.MeninyDnes != "Kalendárium nie je dostupné", "dashboard: meniny");
             Over(model.Dashboard.Ulohy.Count == 6 && model.Dashboard.PripnutePoznamky.Count == 2, "dashboard: úlohy a pripnuté poznámky");
             model.Dashboard.NovaUloha = "Rýchla úloha z dashboardu";
@@ -1360,7 +1361,7 @@ internal static partial class Samotest
                 oknoJazyka.Show();
                 Pumpuj();
                 var modelJazyka = (MainViewModel)oknoJazyka.DataContext;
-                foreach (var sekcia in new[] { "dashboard", "evidencia", "skenovanie", "kalendar", "ulohy", "poznamky", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia" })
+                foreach (var sekcia in new[] { "dashboard", "evidencia", "skenovanie", "kalendar", "ulohy", "poznamky", "statistika", "tlac", "import", "kategorie", "miestnosti", "osoby", "sviatky", "kalendarium", "servis", "nastavenia" })
                 {
                     oknoJazyka.OznacSekciu(sekcia);
                     Pumpuj();

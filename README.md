@@ -120,6 +120,16 @@ v *Nastavenia → E-mail (posielanie PDF)…*:
   neukladá. Tlačidlo *Odoslať skúšobný e-mail* nastavenie overí. Gmail vyžaduje heslo aplikácie, Microsoft 365
   prihlásenie heslom (SMTP AUTH) povoleným správcom.
 
+## Štatistika
+
+Obrazovka *Štatistika* (nad *Tlač a zostavy*): súhrn (počet položiek, hodnota = súčet nákupných cien, priemerný vek,
+počet položiek na obnovu, záruky) a bloky **Kategórie** (kusy a hodnota), **Obnova – vek techniky** (podľa dátumu
+nákupu, hranica obnovy nastaviteľná, predvolene 5 rokov), **Obnova podľa kategórií**, **Plán obnovy na 5 rokov**
+(v ktorom roku položky dosiahnu hranicu – odhad rozpočtu), **Miestnosti** (kusy, hodnota, staré, v oprave, prevládajúca
+kategória), **Stav**, **Záruky a revízie**, **Nákupy po rokoch**, **Pridelené osobám** a **Úplnosť údajov**. Kliknutím
+na riadok sa v podokne zobrazia položky s cenami a sumami; dajú sa otvoriť v Evidencii alebo vytlačiť. Celá štatistika
+sa vytlačí alebo uloží ako PDF (aj PDF/A-3b s dátami v Exceli).
+
 ## Skenovanie, štítky a inventúra
 
 - **Čítačka čiarových a QR kódov** (USB alebo Bluetooth, správa sa ako klávesnica) funguje v celom programe: naskenovaný
@@ -133,6 +143,9 @@ v *Nastavenia → E-mail (posielanie PDF)…*:
   aj na tlačiarne štítkov (62 × 29, 50 × 30, 50 × 25, 38 × 25 mm). Obsah kódu: štítok EviTA, inventárne alebo sériové
   číslo; text: organizácia, názov, čísla, miestnosť. Začiatok na čiastočne použitom hárku, kópie, posun tlače, náhľad,
   tlač a PDF. Štítky sa tlačia z Evidencie (označené alebo zobrazené položky), z karty položky aj podľa miestnosti.
+  Poradie štítkov podľa čísla, **miestností** alebo kategórií, voliteľne každá miestnosť na novom hárku (hárok sa
+  odnesie rovno do miestnosti). Nastavenie štítkov sa dá **uložiť pod vlastným názvom** a neskôr vybrať jedným kliknutím.
+  **Vytlačiť…** otvorí okno s **náhľadom každej strany**, výberom tlačiarne (pre štítky sa pamätá zvlášť) a rozsahom strán.
 - **Inventúra:** po miestnostiach – vyberiete miestnosť a skenujete. EviTA ukazuje, čo chýba, čo je v inej miestnosti
   (jedným klikom sa presunie v evidencii), neznáme kódy a vyradené položky; položku bez štítku označíte ručne.
   Inventúrny protokol (súhrn po miestnostiach, chýbajúce, nájdené inde, podpisy) vytlačíte alebo uložíte do PDF.

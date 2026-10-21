@@ -31,6 +31,9 @@
         <DataTemplate DataType="{x:Type vm:TlacViewModel}">
             <v:TlacView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StatistikaViewModel}">
+            <v:StatistikaView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:KalendarViewModel}">
             <v:KalendarView />
         </DataTemplate>
@@ -97,6 +100,12 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE70B;" Margin="0,0,12,0" />
                             <TextBlock Text="Poznámky" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="statistika">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE9D2;" Margin="0,0,12,0" />
+                            <TextBlock Text="Štatistika" />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem Tag="tlac">

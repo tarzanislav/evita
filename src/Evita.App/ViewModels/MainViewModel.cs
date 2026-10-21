@@ -25,6 +25,7 @@ public partial class MainViewModel : ObservableObject
         Sviatky = new SviatkyViewModel();
         ImportExport = new ImportExportViewModel(this);
         Tlac = new TlacViewModel(this);
+        Statistika = new StatistikaViewModel(this);
         Kalendar = new KalendarViewModel(this);
         Ulohy = new UlohyViewModel();
         Poznamky = new PoznamkyViewModel();
@@ -42,6 +43,7 @@ public partial class MainViewModel : ObservableObject
     public SviatkyViewModel Sviatky { get; }
     public ImportExportViewModel ImportExport { get; }
     public TlacViewModel Tlac { get; }
+    public StatistikaViewModel Statistika { get; }
     public KalendarViewModel Kalendar { get; }
     public UlohyViewModel Ulohy { get; }
     public PoznamkyViewModel Poznamky { get; }
@@ -116,6 +118,7 @@ public partial class MainViewModel : ObservableObject
             "sviatky" => Sviatky,
             "import" => ImportExport,
             "tlac" => Tlac,
+            "statistika" => Statistika,
             "kalendar" => Kalendar,
             "ulohy" => Ulohy,
             "poznamky" => Poznamky,

@@ -319,6 +319,46 @@ internal static partial class Samotest
         Snimka(stitkyOkno, "okno_stitky_vlastne");
         stitkyModel.CestaBezDialogu = Path.Combine(Databaza.Priecinok, "Export", "stitky_z_okna.pdf");
         Over(stitkyModel.UlozPdf() is { } pdf && File.Exists(pdf), "okno štítkov: uloženie PDF");
+
+        // poradie podľa miestností, každá miestnosť na novom hárku, uložené nastavenie, tlač s náhľadom
+        stitkyModel.Sablona = StitkyService.Sablony.First(s => s.Kluc == "a4-3x8");
+        stitkyModel.Kod = DruhKodu.Qr;
+        stitkyModel.Miestnost = true;
+        stitkyModel.Poradie = PoradieStitkov.Miestnost;
+        stitkyModel.NovaStranaPreSkupinu = false;
+        stitkyModel.ObnovNahlad();
+        Pumpuj();
+        var porovnanieMiestnosti = StringComparer.Create(Sk.Kultura, System.Globalization.CompareOptions.IgnoreCase);
+        var miestnostiStitkov = stitkyModel.Rozlozenie().Stitky.Select(s => s.Udaje.Miestnost).ToList();
+        Over(miestnostiStitkov.Zip(miestnostiStitkov.Skip(1)).All(p => p.First is null ? p.Second is null : p.Second is null || porovnanieMiestnosti.Compare(p.First, p.Second) <= 0)
+             && miestnostiStitkov.Distinct().Count() > 1, $"štítky: poradie podľa miestností ({miestnostiStitkov.Distinct().Count()} miestností)");
+        stitkyModel.NovaStranaPreSkupinu = true;
+        stitkyModel.ObnovNahlad();
+        Pumpuj();
+        var poMiestnostiach = stitkyModel.Rozlozenie();
+        Over(poMiestnostiach.Stitky.GroupBy(s => s.Strana).All(g => g.Select(x => x.Udaje.Miestnost).Distinct().Count() == 1)
+             && poMiestnostiach.PocetStran >= miestnostiStitkov.Distinct().Count(),
+            $"štítky: každá miestnosť na novom hárku ({poMiestnostiach.PocetStran} hárkov)");
+        Snimka(stitkyOkno, "okno_stitky_miestnosti");
+        stitkyModel.UlozNastavenie("Samotest po miestnostiach");
+        stitkyModel.Poradie = PoradieStitkov.Cislo;
+        stitkyModel.NovaStranaPreSkupinu = false;
+        stitkyModel.VybraneUlozene = stitkyModel.Ulozene.First(u => u.Nazov == "Samotest po miestnostiach");
+        Pumpuj();
+        Over(stitkyModel.Poradie == PoradieStitkov.Miestnost && stitkyModel.NovaStranaPreSkupinu && StitkyService.NacitajUlozene().Count == 1,
+            "štítky: uložené nastavenie sa zapamätá a použije");
+        var tlacStitkov = new TlacStitkovWindow(poMiestnostiach);
+        tlacStitkov.Show();
+        Pumpuj();
+        tlacStitkov.NastavRozsah(2, 3);
+        Pumpuj();
+        Over(tlacStitkov.RozsahStran == (2, 3) && tlacStitkov.ObrazokStrany is not null, "tlač štítkov: náhľad strán a rozsah od – do");
+        Snimka(tlacStitkov, "okno_tlac_stitkov");
+        tlacStitkov.Close();
+        StitkyService.UlozUlozene(Array.Empty<UlozeneStitky>());
+        stitkyModel.Poradie = PoradieStitkov.Cislo;
+        stitkyModel.NovaStranaPreSkupinu = false;
+        stitkyModel.Miestnost = false;
         stitkyModel.VytlacitCommand.Execute(null);
         stitkyOkno.Close();
         Pumpuj();

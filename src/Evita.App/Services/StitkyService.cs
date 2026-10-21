@@ -35,6 +35,22 @@ public enum ObsahKodu
     Seriove = 2,
 }
 
+/// <summary>Poradie štítkov na hárkoch.</summary>
+public enum PoradieStitkov
+{
+    /// <summary>Podľa prírastkového čísla.</summary>
+    Cislo = 0,
+
+    /// <summary>Podľa miestností (v miestnosti podľa čísla) – štítky sa ľahšie roznášajú.</summary>
+    Miestnost = 1,
+
+    /// <summary>Podľa kategórií.</summary>
+    Kategoria = 2,
+}
+
+/// <summary>Pomenované nastavenie štítkov (formát, kód, text, poradie …) – vyberie sa jedným kliknutím.</summary>
+public sealed record UlozeneStitky(string Nazov, MoznostiStitkov Moznosti);
+
 /// <summary>Nastavenia tlače štítkov (ukladajú sa a pri ďalšej tlači sa použijú znova).</summary>
 public sealed class MoznostiStitkov
 {
@@ -53,6 +69,12 @@ public sealed class MoznostiStitkov
     public double PosunX { get; set; }
     public double PosunY { get; set; }
 
+    /// <summary>Poradie štítkov (podľa čísla, miestností alebo kategórií).</summary>
+    public PoradieStitkov Poradie { get; set; }
+
+    /// <summary>Pri poradí podľa miestností/kategórií začne každá skupina na novom hárku.</summary>
+    public bool NovaStranaPreSkupinu { get; set; }
+
     // vlastný formát
     public bool VlastnyHarok { get; set; } = true;
     public double VlastnaSirka { get; set; } = 70;
@@ -68,7 +90,8 @@ public sealed class MoznostiStitkov
 }
 
 /// <summary>Údaje jednej položky na štítok.</summary>
-public sealed record UdajeStitku(int Id, int PrirastkoveCislo, string Nazov, string? Inventarne, string? Seriove, string? Miestnost);
+public sealed record UdajeStitku(int Id, int PrirastkoveCislo, string Nazov, string? Inventarne, string? Seriove, string? Miestnost,
+    string? Kategoria = null);
 
 /// <summary>Pripravené štítky: formát a umiestnenie každého štítku na stranách.</summary>
 public sealed class RozlozenieStitkov
@@ -136,6 +159,31 @@ public sealed class StitkyService
         }
     }
 
+    public const string KlucUlozene = "Stitky.Ulozene";
+
+    /// <summary>Pomenované nastavenia štítkov.</summary>
+    public static List<UlozeneStitky> NacitajUlozene()
+    {
+        try
+        {
+            using var db = Databaza.Otvor();
+            return Databaza.Citaj(db, KlucUlozene) is { Length: > 0 } json
+                ? JsonSerializer.Deserialize<List<UlozeneStitky>>(json) ?? new()
+                : new();
+        }
+        catch (Exception)
+        {
+            return new();
+        }
+    }
+
+    public static void UlozUlozene(IEnumerable<UlozeneStitky> zoznam)
+    {
+        using var db = Databaza.Otvor();
+        Databaza.Zapis(db, KlucUlozene, JsonSerializer.Serialize(zoznam.OrderBy(u => u.Nazov, StringComparer.CurrentCultureIgnoreCase).ToList()));
+        db.SaveChanges();
+    }
+
     public void UlozMoznosti(MoznostiStitkov moznosti)
     {
         var ulozit = moznosti.Kopia();
@@ -154,7 +202,7 @@ public sealed class StitkyService
             .Where(p => idcka.Contains(p.Id))
             .OrderBy(p => p.PrirastkoveCislo)
             .Select(p => new UdajeStitku(p.Id, p.PrirastkoveCislo, p.Nazov, p.InventarneCislo, p.SerioveCislo,
-                p.Miestnost != null ? p.Miestnost.Nazov : null))
+                p.Miestnost != null ? p.Miestnost.Nazov : null, p.Kategoria != null ? p.Kategoria.Nazov : null))
             .ToList();
     }
 
@@ -166,8 +214,27 @@ public sealed class StitkyService
         var kopie = Math.Clamp(m.Kopie, 1, 20);
         var pozicia = sablona.Harok ? Math.Clamp(m.ZacatOd, 1, naStranu) - 1 : 0;
         var stitky = new List<(int, double, double, UdajeStitku)>();
-        foreach (var u in udaje)
+        string? Skupina(UdajeStitku u) => m.Poradie switch
         {
+            PoradieStitkov.Miestnost => u.Miestnost,
+            PoradieStitkov.Kategoria => u.Kategoria,
+            _ => null,
+        };
+        var porovnanie = StringComparer.Create(Sk.Kultura, System.Globalization.CompareOptions.IgnoreCase);
+        var zoradene = m.Poradie == PoradieStitkov.Cislo
+            ? udaje.OrderBy(u => u.PrirastkoveCislo).ToList()
+            : udaje.OrderBy(u => Skupina(u) is null).ThenBy(u => Skupina(u) ?? "", porovnanie).ThenBy(u => u.PrirastkoveCislo).ToList();
+        string? predosla = null;
+        for (var i = 0; i < zoradene.Count; i++)
+        {
+            var u = zoradene[i];
+            if (i > 0 && sablona.Harok && m.NovaStranaPreSkupinu && m.Poradie != PoradieStitkov.Cislo
+                && !string.Equals(Skupina(u), predosla, StringComparison.Ordinal) && pozicia % naStranu != 0)
+            {
+                pozicia = (pozicia / naStranu + 1) * naStranu;
+            }
+
+            predosla = Skupina(u);
             for (var k = 0; k < kopie; k++)
             {
                 var strana = pozicia / naStranu;

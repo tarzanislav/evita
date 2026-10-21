@@ -18,6 +18,8 @@ public sealed record VolbaKodu(DruhKodu Kod, string Nazov);
 
 public sealed record VolbaObsahu(ObsahKodu Obsah, string Nazov);
 
+public sealed record VolbaPoradia(PoradieStitkov Poradie, string Nazov);
+
 /// <summary>Okno tlače štítkov: formát, obsah, náhľad, tlač a PDF.</summary>
 public partial class StitkyViewModel : ObservableObject
 {
@@ -56,6 +58,14 @@ public partial class StitkyViewModel : ObservableObject
             new(ObsahKodu.Seriove, Preklad.T("sériové číslo")),
         };
 
+        Poradia = new List<VolbaPoradia>
+        {
+            new(PoradieStitkov.Cislo, Preklad.T("podľa prírastkového čísla")),
+            new(PoradieStitkov.Miestnost, Preklad.T("podľa miestností")),
+            new(PoradieStitkov.Kategoria, Preklad.T("podľa kategórií")),
+        };
+        _ulozene = new System.Collections.ObjectModel.ObservableCollection<UlozeneStitky>(StitkyService.NacitajUlozene());
+
         var m = _sluzba.NacitajMoznosti();
         _sablona = Sablony.FirstOrDefault(s => s.Kluc == m.Sablona) ?? Sablony[0];
         _kod = m.Kod;
@@ -78,6 +88,8 @@ public partial class StitkyViewModel : ObservableObject
         _vlastnyOkrajVlavo = Text(m.VlastnyOkrajVlavo);
         _vlastnaMedzeraVodorovne = Text(m.VlastnaMedzeraVodorovne);
         _vlastnaMedzeraZvisle = Text(m.VlastnaMedzeraZvisle);
+        _poradie = m.Poradie;
+        _novaStranaPreSkupinu = m.NovaStranaPreSkupinu;
         _nacitavam = false;
         ObnovNahlad();
     }
@@ -87,6 +99,101 @@ public partial class StitkyViewModel : ObservableObject
     public List<SablonaStitkov> Sablony { get; }
     public List<VolbaKodu> Kody { get; }
     public List<VolbaObsahu> Obsahy { get; }
+    public List<VolbaPoradia> Poradia { get; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MaSkupiny))]
+    private PoradieStitkov _poradie;
+
+    [ObservableProperty] private bool _novaStranaPreSkupinu;
+
+    /// <summary>Poradie podľa miestností alebo kategórií – dá sa začať každú skupinu na novom hárku.</summary>
+    public bool MaSkupiny => Poradie != PoradieStitkov.Cislo;
+
+    /// <summary>Pomenované nastavenia štítkov.</summary>
+    [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<UlozeneStitky> _ulozene;
+
+    [ObservableProperty] private UlozeneStitky? _vybraneUlozene;
+
+    partial void OnVybraneUlozeneChanged(UlozeneStitky? value)
+    {
+        if (value is not null)
+        {
+            Pouzi(value.Moznosti);
+        }
+    }
+
+    /// <summary>Nastaví okno podľa uložených možností (napr. pomenovaného nastavenia).</summary>
+    public void Pouzi(MoznostiStitkov m)
+    {
+        _nacitavam = true;
+        Sablona = Sablony.FirstOrDefault(s => s.Kluc == m.Sablona) ?? Sablony[0];
+        Kod = m.Kod;
+        ObsahKodu = m.ObsahKodu;
+        OrganizaciaNaStitku = m.Organizacia;
+        Nazov = m.Nazov;
+        Cislo = m.Cislo;
+        Inventarne = m.Inventarne;
+        Seriove = m.Seriove;
+        Miestnost = m.Miestnost;
+        Ramcek = m.Ramcek;
+        Kopie = Math.Max(1, m.Kopie).ToString(CultureInfo.InvariantCulture);
+        PosunX = Text(m.PosunX);
+        PosunY = Text(m.PosunY);
+        VlastnyHarok = m.VlastnyHarok;
+        VlastnaSirka = Text(m.VlastnaSirka);
+        VlastnaVyska = Text(m.VlastnaVyska);
+        VlastneStlpce = m.VlastneStlpce.ToString(CultureInfo.InvariantCulture);
+        VlastneRiadky = m.VlastneRiadky.ToString(CultureInfo.InvariantCulture);
+        VlastnyOkrajHore = Text(m.VlastnyOkrajHore);
+        VlastnyOkrajVlavo = Text(m.VlastnyOkrajVlavo);
+        VlastnaMedzeraVodorovne = Text(m.VlastnaMedzeraVodorovne);
+        VlastnaMedzeraZvisle = Text(m.VlastnaMedzeraZvisle);
+        Poradie = m.Poradie;
+        NovaStranaPreSkupinu = m.NovaStranaPreSkupinu;
+        _nacitavam = false;
+        ObnovNahlad();
+    }
+
+    /// <summary>Uloží aktuálne nastavenie pod názvom (rovnaký názov sa prepíše).</summary>
+    [RelayCommand]
+    private void UlozitNastavenie()
+    {
+        var nazov = Dialogy.Vstup(Preklad.T("Uložiť nastavenie štítkov"), Preklad.T("Názov nastavenia (napr. „Hárok 3 × 8 po miestnostiach“):"),
+            VybraneUlozene?.Nazov ?? "");
+        if (string.IsNullOrWhiteSpace(nazov))
+        {
+            return;
+        }
+
+        UlozNastavenie(nazov.Trim());
+    }
+
+    /// <summary>Uloží nastavenie pod daným názvom (aj samotest).</summary>
+    public void UlozNastavenie(string nazov)
+    {
+        var moznosti = Moznosti();
+        moznosti.ZacatOd = 1;
+        var zoznam = Ulozene.Where(u => !u.Nazov.Equals(nazov, StringComparison.CurrentCultureIgnoreCase)).Append(new UlozeneStitky(nazov, moznosti)).ToList();
+        StitkyService.UlozUlozene(zoznam);
+        Ulozene = new System.Collections.ObjectModel.ObservableCollection<UlozeneStitky>(StitkyService.NacitajUlozene());
+        _vybraneUlozene = Ulozene.FirstOrDefault(u => u.Nazov == nazov);
+        OnPropertyChanged(nameof(VybraneUlozene));
+    }
+
+    [RelayCommand]
+    private void VymazatNastavenie()
+    {
+        if (VybraneUlozene is not { } vybrane || !Dialogy.Potvrd(Preklad.F($"Vymazať nastavenie štítkov „{vybrane.Nazov}“?")))
+        {
+            return;
+        }
+
+        StitkyService.UlozUlozene(Ulozene.Where(u => u != vybrane));
+        Ulozene = new System.Collections.ObjectModel.ObservableCollection<UlozeneStitky>(StitkyService.NacitajUlozene());
+        _vybraneUlozene = null;
+        OnPropertyChanged(nameof(VybraneUlozene));
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(JeVlastna), nameof(JeHarok))]
@@ -139,7 +246,8 @@ public partial class StitkyViewModel : ObservableObject
     {
         base.OnPropertyChanged(e);
         if (!_nacitavam && e.PropertyName is not (nameof(Strany) or nameof(InfoText) or nameof(RozmerText) or nameof(Upozornenie)
-                or nameof(MierkaNahladu) or nameof(JeVlastna) or nameof(JeHarok) or nameof(MaKod)))
+                or nameof(MierkaNahladu) or nameof(JeVlastna) or nameof(JeHarok) or nameof(MaKod) or nameof(MaSkupiny)
+                or nameof(Ulozene) or nameof(VybraneUlozene)))
         {
             _oneskorenie.Stop();
             _oneskorenie.Start();
@@ -182,6 +290,8 @@ public partial class StitkyViewModel : ObservableObject
         VlastnyOkrajVlavo = CisloZTextu(VlastnyOkrajVlavo, 0),
         VlastnaMedzeraVodorovne = CisloZTextu(VlastnaMedzeraVodorovne, 0),
         VlastnaMedzeraZvisle = CisloZTextu(VlastnaMedzeraZvisle, 0),
+        Poradie = Poradie,
+        NovaStranaPreSkupinu = NovaStranaPreSkupinu,
     };
 
     public RozlozenieStitkov Rozlozenie() => StitkyService.Priprav(Moznosti(), _udaje, _organizacia);
@@ -270,41 +380,7 @@ public partial class StitkyViewModel : ObservableObject
             return;
         }
 
-        var dialog = new PrintDialog();
-        try
-        {
-            var s = r.Sablona;
-            if (s.Harok)
-            {
-                dialog.PrintTicket.PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4);
-                dialog.PrintTicket.PageOrientation = PageOrientation.Portrait;
-            }
-            else
-            {
-                var sirka = s.Sirka / 25.4 * 96;
-                var vyska = s.Vyska / 25.4 * 96;
-                dialog.PrintTicket.PageMediaSize = new PageMediaSize(Math.Min(sirka, vyska), Math.Max(sirka, vyska));
-                dialog.PrintTicket.PageOrientation = sirka > vyska ? PageOrientation.Landscape : PageOrientation.Portrait;
-            }
-        }
-        catch (Exception)
-        {
-            // tlačiareň nastavenie nepodporuje – použije svoje
-        }
-
-        if (dialog.ShowDialog() != true)
-        {
-            return;
-        }
-
-        try
-        {
-            dialog.PrintDocument(new StitkyService.Strankovac(r), Preklad.T("Štítky EviTA"));
-        }
-        catch (Exception ex)
-        {
-            Dialogy.Chyba(Preklad.T("Tlač sa nepodarila."), ex);
-        }
+        new TlacStitkovWindow(r) { Owner = Dialogy.Vlastnik }.ShowDialog();
     }
 
     [RelayCommand]

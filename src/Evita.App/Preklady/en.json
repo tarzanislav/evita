@@ -1795,5 +1795,8 @@
  "(Fotka: {0}.)": "(Photo: {0}.)",
  "prehliadač fotku neotvorí, posiela sa originál": "the browser cannot open the photo, sending the original",
  "Stránka je otvorená vo vnútornom prehliadači aplikácie (napr. Skener), ktorý z fotoaparátu posiela len malý náhľad – kód sa z neho prečítať nedá.": "The page is open in an app's built-in browser (e.g. Scanner), which sends only a small preview from the camera – the code cannot be read from it.",
- "Otvoriť v prehliadači Chrome": "Open in Chrome"
+ "Otvoriť v prehliadači Chrome": "Open in Chrome",
+ "Hľadám výrobcu a model na internete…": "Looking up manufacturer and model online…",
+ "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "Filled in two years after the purchase date – can be changed",
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "Filled in one year after the purchase date, on the nearest working day – can be changed"
 }

@@ -260,6 +260,157 @@ public partial class PolozkaEditViewModel : ObservableObject
         }
     }
 
+    // ------------------------------------------------------------------ automatické doplnenie dátumov
+
+    /// <summary>Hodnoty, ktoré program doplnil sám – kým ich používateľ neprepíše, môžu sa pri zmene dátumu nákupu prepočítať.</summary>
+    private DateTime? _automatickaZaruka;
+    private DateTime? _automatickaRevizia;
+
+    /// <summary>Záruka podľa dátumu nákupu (presne o dva roky).</summary>
+    public static DateTime ZarukaPodlaNakupu(DateTime nakup) => nakup.Date.AddYears(2);
+
+    /// <summary>Ďalšia revízia podľa dátumu nákupu: o rok, posunutá na najbližší pracovný deň (bez víkendu a sviatku).</summary>
+    public static DateTime ReviziaPodlaNakupu(DateTime nakup) => PracovneDni.NajblizsiPracovny(nakup.Date.AddYears(1));
+
+    /// <summary>
+    /// Po zadaní dátumu nákupu sa doplní záruka (+2 roky) a ďalšia revízia (+1 rok, pracovný deň). Doplní sa len prázdne
+    /// pole alebo hodnota, ktorú predtým doplnil program – ručne zadaný dátum sa nikdy neprepíše a dá sa kedykoľvek opraviť.
+    /// </summary>
+    partial void OnDatumNakupuChanged(DateTime? value)
+    {
+        if (value is not DateTime nakup)
+        {
+            return;
+        }
+
+        if (ZarukaDo is null || ZarukaDo == _automatickaZaruka)
+        {
+            _automatickaZaruka = ZarukaPodlaNakupu(nakup);
+            ZarukaDo = _automatickaZaruka;
+        }
+
+        if (DalsiaRevizia is null || DalsiaRevizia == _automatickaRevizia)
+        {
+            _automatickaRevizia = ReviziaPodlaNakupu(nakup);
+            DalsiaRevizia = _automatickaRevizia;
+        }
+    }
+
+    // ------------------------------------------------------------------ automatické doplnenie výrobcu a modelu
+
+    /// <summary>Čakanie po poslednom písmene názvu, kým sa začne hľadať (aby sa nehľadalo pri každom stlačení klávesu).</summary>
+    public static TimeSpan OneskorenieHladaniaVyrobcu { get; set; } = TimeSpan.FromMilliseconds(700);
+
+    private CancellationTokenSource? _hladanieVyrobcu;
+    private Task<List<ZnamyVyrobok>>? _znameVyrobky;
+    private string? _automatickyVyrobca;
+    private string? _automatickyModel;
+
+    /// <summary>Práve sa hľadá výrobca a model na internete (len informácia v okne, práca nie je zablokovaná).</summary>
+    [ObservableProperty] private bool _hladamVyrobcu;
+
+    /// <summary>Úloha posledného hľadania výrobcu (pre samotest).</summary>
+    public Task? PosledneHladanieVyrobcu { get; private set; }
+
+    partial void OnNazovChanged(string value)
+    {
+        if (!JeNova)
+        {
+            return;
+        }
+
+        _hladanieVyrobcu?.Cancel();
+        _hladanieVyrobcu = new CancellationTokenSource();
+        PosledneHladanieVyrobcu = DoplnVyrobcuAsync(value, _hladanieVyrobcu.Token);
+    }
+
+    private bool MozeDoplnitVyrobcu => string.IsNullOrWhiteSpace(Vyrobca) || Vyrobca == _automatickyVyrobca;
+    private bool MozeDoplnitModel => string.IsNullOrWhiteSpace(Model) || Model == _automatickyModel;
+
+    /// <summary>
+    /// Výrobca a model podľa názvu: hneď bez internetu (evidencia, známe značky), a ak chýba model, krátko z internetu.
+    /// Beží na pozadí – okno sa dá stále používať; ručne zadaný výrobca alebo model sa neprepíše.
+    /// </summary>
+    private async Task DoplnVyrobcuAsync(string nazov, CancellationToken zrusenie)
+    {
+        try
+        {
+            await Task.Delay(OneskorenieHladaniaVyrobcu, zrusenie);
+            nazov = nazov.Trim();
+            if (nazov.Length < 3 || (!MozeDoplnitVyrobcu && !MozeDoplnitModel))
+            {
+                return;
+            }
+
+            _znameVyrobky ??= Task.Run(VyrobcaModelService.NacitajZEvidencie);
+            var zname = await _znameVyrobky;
+            if (zrusenie.IsCancellationRequested)
+            {
+                return;
+            }
+
+            var navrh = VyrobcaModelService.ZNazvu(nazov, zname);
+            Dopln(navrh);
+            if (navrh?.Model is not null)
+            {
+                return;
+            }
+
+            HladamVyrobcu = true;
+            var kategorie = Kategorie.Select(k => k.Nazov).ToList();
+            var zInternetu = await VyrobcaModelService.ZInternetuAsync(nazov, kategorie, zrusenie);
+            if (!zrusenie.IsCancellationRequested && zInternetu is not null
+                && (navrh is null || zInternetu.Vyrobca.Equals(navrh.Vyrobca, StringComparison.OrdinalIgnoreCase)))
+            {
+                Dopln(zInternetu with { Vyrobca = navrh?.Vyrobca ?? zInternetu.Vyrobca });
+            }
+        }
+        catch (Exception)
+        {
+            // zrušené (používateľ píše ďalej) alebo bez evidencie/internetu – nič sa nevyplní
+        }
+        finally
+        {
+            if (!zrusenie.IsCancellationRequested)
+            {
+                HladamVyrobcu = false;
+            }
+        }
+    }
+
+    private void Dopln(NavrhVyrobcu? navrh)
+    {
+        // predošlý automatický návrh k novému názvu nesedí – zmaže sa (ručne zadané hodnoty zostanú)
+        if (navrh?.Model is null && _automatickyModel is not null && Model == _automatickyModel)
+        {
+            Model = "";
+            _automatickyModel = null;
+        }
+
+        if (navrh is null)
+        {
+            if (_automatickyVyrobca is not null && Vyrobca == _automatickyVyrobca)
+            {
+                Vyrobca = "";
+                _automatickyVyrobca = null;
+            }
+
+            return;
+        }
+
+        if (MozeDoplnitVyrobcu)
+        {
+            _automatickyVyrobca = navrh.Vyrobca;
+            Vyrobca = navrh.Vyrobca;
+        }
+
+        if (navrh.Model is not null && MozeDoplnitModel)
+        {
+            _automatickyModel = navrh.Model;
+            Model = navrh.Model;
+        }
+    }
+
     [RelayCommand]
     private void Ulozit()
     {

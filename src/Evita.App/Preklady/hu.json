@@ -1795,5 +1795,8 @@
  "(Fotka: {0}.)": "(Fénykép: {0}.)",
  "prehliadač fotku neotvorí, posiela sa originál": "a böngésző nem tudja megnyitni a fényképet, az eredeti kerül elküldésre",
  "Stránka je otvorená vo vnútornom prehliadači aplikácie (napr. Skener), ktorý z fotoaparátu posiela len malý náhľad – kód sa z neho prečítať nedá.": "Az oldal egy alkalmazás beépített böngészőjében van megnyitva (pl. Szkenner), amely csak kis előnézetet küld a kamerából – ebből a kód nem olvasható.",
- "Otvoriť v prehliadači Chrome": "Megnyitás Chrome böngészőben"
+ "Otvoriť v prehliadači Chrome": "Megnyitás Chrome böngészőben",
+ "Hľadám výrobcu a model na internete…": "Gyártó és modell keresése az interneten…",
+ "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "A vásárlás dátumának megadása után két évvel későbbi dátum kerül ide – módosítható",
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "A vásárlás dátumának megadása után egy évvel későbbi, legközelebbi munkanap kerül ide – módosítható"
 }

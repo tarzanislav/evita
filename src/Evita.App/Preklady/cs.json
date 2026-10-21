@@ -1795,5 +1795,8 @@
  "(Fotka: {0}.)": "(Fotka: {0}.)",
  "prehliadač fotku neotvorí, posiela sa originál": "prohlížeč fotku neotevře, posílá se originál",
  "Stránka je otvorená vo vnútornom prehliadači aplikácie (napr. Skener), ktorý z fotoaparátu posiela len malý náhľad – kód sa z neho prečítať nedá.": "Stránka je otevřená ve vnitřním prohlížeči aplikace (např. Skener), který z fotoaparátu posílá jen malý náhled – kód z něj nelze přečíst.",
- "Otvoriť v prehliadači Chrome": "Otevřít v prohlížeči Chrome"
+ "Otvoriť v prehliadači Chrome": "Otevřít v prohlížeči Chrome",
+ "Hľadám výrobcu a model na internete…": "Hledám výrobce a model na internetu…",
+ "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "Po zadání data nákupu se doplní o dva roky později – lze změnit",
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "Po zadání data nákupu se doplní o rok později, na nejbližší pracovní den – lze změnit"
 }

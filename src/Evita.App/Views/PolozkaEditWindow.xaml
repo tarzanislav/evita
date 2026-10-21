@@ -107,6 +107,8 @@
 
                             <TextBlock Text="Model" Style="{StaticResource Stitok}" />
                             <TextBox Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Hľadám výrobcu a model na internete…" Style="{StaticResource Popis}" Margin="0,4,0,0"
+                                       Visibility="{Binding HladamVyrobcu, Converter={StaticResource BoolNaViditelnost}}" />
 
                             <TextBlock Text="Sériové číslo" Style="{StaticResource Stitok}" />
                             <TextBox Text="{Binding SerioveCislo, UpdateSourceTrigger=PropertyChanged}" />
@@ -152,11 +154,13 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Záruka do" Style="{StaticResource Stitok}" />
-                                    <DatePicker SelectedDate="{Binding ZarukaDo}" />
+                                    <DatePicker SelectedDate="{Binding ZarukaDo}"
+                                                ToolTip="Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Ďalšia revízia" Style="{StaticResource Stitok}" />
-                                    <DatePicker SelectedDate="{Binding DalsiaRevizia}" />
+                                    <DatePicker SelectedDate="{Binding DalsiaRevizia}"
+                                                ToolTip="Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť" />
                                 </StackPanel>
                             </Grid>
 

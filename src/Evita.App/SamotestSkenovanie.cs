@@ -119,6 +119,9 @@ internal static partial class Samotest
         Over(zEvidencie is not null && zEvidencie.KategoriaId == riadky[6].KategoriaId, "údaje o výrobku podľa EAN z vlastnej evidencie");
         Krok("vyhľadanie podľa kódu v poriadku");
 
+        // karta novej položky: záruka a revízia podľa dátumu nákupu, výrobca a model podľa názvu
+        KartaDoplnanie();
+
         // --------------------------------------------------------------- štítky
         var stitky = new StitkyService();
         var udaje = stitky.NacitajUdaje(riadky.Take(30).Select(r => r.Id));

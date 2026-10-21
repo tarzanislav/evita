@@ -1795,5 +1795,8 @@
  "(Fotka: {0}.)": "(Фото: {0}.)",
  "prehliadač fotku neotvorí, posiela sa originál": "браузер не может открыть фото, отправляется оригинал",
  "Stránka je otvorená vo vnútornom prehliadači aplikácie (napr. Skener), ktorý z fotoaparátu posiela len malý náhľad – kód sa z neho prečítať nedá.": "Страница открыта во встроенном браузере приложения (например, «Сканер»), который передаёт с камеры лишь маленькое превью – код с него прочитать нельзя.",
- "Otvoriť v prehliadači Chrome": "Открыть в Chrome"
+ "Otvoriť v prehliadači Chrome": "Открыть в Chrome",
+ "Hľadám výrobcu a model na internete…": "Ищу производителя и модель в интернете…",
+ "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "После ввода даты покупки заполняется на два года позже – можно изменить",
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "После ввода даты покупки заполняется на год позже, на ближайший рабочий день – можно изменить"
 }

@@ -1795,5 +1795,8 @@
  "(Fotka: {0}.)": "（照片：{0}。）",
  "prehliadač fotku neotvorí, posiela sa originál": "浏览器无法打开照片，将发送原图",
  "Stránka je otvorená vo vnútornom prehliadači aplikácie (napr. Skener), ktorý z fotoaparátu posiela len malý náhľad – kód sa z neho prečítať nedá.": "页面在应用的内置浏览器（例如扫描应用）中打开，它只会从相机发送小预览图——无法从中读取代码。",
- "Otvoriť v prehliadači Chrome": "在 Chrome 中打开"
+ "Otvoriť v prehliadači Chrome": "在 Chrome 中打开",
+ "Hľadám výrobcu a model na internete…": "正在网上查找制造商和型号…",
+ "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "输入购买日期后自动填入两年后的日期——可修改",
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "输入购买日期后自动填入一年后最近的工作日——可修改"
 }

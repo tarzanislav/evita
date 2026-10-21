@@ -78,7 +78,7 @@ public static class NahladDokumentu
     }
 
     /// <summary>Strana zostavy ako kresba na umiestnenie na list.</summary>
-    public static LogickaStrana LogickaStrana(DocumentRenderer vykreslenie, int strana, bool naSirku)
+    public static LogickaStrana Logicka(DocumentRenderer vykreslenie, int strana, bool naSirku)
     {
         var vizual = Strana(vykreslenie, strana, naSirku, out var velkost);
         var kresba = vizual.Drawing;
@@ -130,7 +130,7 @@ public static class NahladDokumentu
         {
             if (!_strany.TryGetValue(cislo, out var strana))
             {
-                strana = LogickaStrana(_vykreslenie, cislo, _naSirku);
+                strana = Logicka(_vykreslenie, cislo, _naSirku);
                 if (_volby.OdtieneSivej)
                 {
                     strana = RozvrhTlace.NaSivu(strana, NahladDpi ?? 250);

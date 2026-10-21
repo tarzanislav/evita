@@ -92,7 +92,8 @@ public sealed record VolbyTlace
 }
 
 /// <summary>Strana zostavy pripravená na umiestnenie na list.</summary>
-public sealed record LogickaStrana(Drawing Kresba, Size Velkost);
+/// <param name="Obsah">oblasť strany, kde je text a obrázky (bez prázdnych okrajov) – na zväčšenie bez orezania obsahu</param>
+public sealed record LogickaStrana(Drawing Kresba, Size Velkost, Rect Obsah);
 
 /// <summary>
 /// Rozmiestnenie strán zostavy na listy A4: 1, 2, 4 alebo 8 strán na list, opakovanie strán, brožúra, zväčšenie, rámik,
@@ -183,12 +184,18 @@ public static class RozvrhTlace
                 var bunka = new Rect(plocha.X + i % stlpce * sirkaBunky, plocha.Y + i / stlpce * vyskaBunky, sirkaBunky, vyskaBunky);
                 if (bunky[i] is int cislo)
                 {
+                    // zväčšenie oreže len prázdne okraje strany – obsah (text, tabuľky) sa nikdy neoreže
                     var s = strana(cislo);
-                    var mierka = Math.Min(bunka.Width / s.Velkost.Width, bunka.Height / s.Velkost.Height) * volby.Zvacsenie;
-                    var sirka = s.Velkost.Width * mierka;
-                    var vyska = s.Velkost.Height * mierka;
+                    var cela = Math.Min(bunka.Width / s.Velkost.Width, bunka.Height / s.Velkost.Height);
+                    var obsah = s.Obsah.IsEmpty || s.Obsah.Width < 1 ? new Rect(s.Velkost) : s.Obsah;
+                    var naObsah = Math.Min(bunka.Width / obsah.Width, bunka.Height / obsah.Height);
+                    var mierka = Math.Max(cela, Math.Min(cela * volby.Zvacsenie, naObsah));
+                    // stred: pri zväčšení stred obsahu, inak stred strany (plynulý prechod)
+                    var podiel = naObsah > cela ? Math.Clamp((mierka - cela) / (naObsah - cela), 0, 1) : 0;
+                    var stredX = s.Velkost.Width / 2 + (obsah.X + obsah.Width / 2 - s.Velkost.Width / 2) * podiel;
+                    var stredY = s.Velkost.Height / 2 + (obsah.Y + obsah.Height / 2 - s.Velkost.Height / 2) * podiel;
                     dc.PushClip(new RectangleGeometry(bunka));
-                    dc.PushTransform(new TranslateTransform(bunka.X + (bunka.Width - sirka) / 2, bunka.Y + (bunka.Height - vyska) / 2));
+                    dc.PushTransform(new TranslateTransform(bunka.X + bunka.Width / 2 - stredX * mierka, bunka.Y + bunka.Height / 2 - stredY * mierka));
                     dc.PushTransform(new ScaleTransform(mierka, mierka));
                     dc.DrawDrawing(s.Kresba);
                     dc.Pop();
@@ -235,6 +242,6 @@ public static class RozvrhTlace
         siva.Freeze();
         var kresba = new ImageDrawing(siva, new Rect(strana.Velkost));
         kresba.Freeze();
-        return new LogickaStrana(kresba, strana.Velkost);
+        return new LogickaStrana(kresba, strana.Velkost, strana.Obsah);
     }
 }

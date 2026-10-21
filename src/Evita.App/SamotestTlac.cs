@@ -41,6 +41,9 @@ internal static partial class Samotest
         });
         var vykreslenie = NahladDokumentu.Priprav(dokument);
         var stran = NahladDokumentu.PocetStran(vykreslenie);
+        var prva = NahladDokumentu.Logicka(vykreslenie, 1, false);
+        Over(!prva.Obsah.IsEmpty && prva.Obsah.Width < prva.Velkost.Width * 0.97 && prva.Obsah.Width > prva.Velkost.Width * 0.5,
+            $"tlač: obsah strany bez prázdnych okrajov ({prva.Obsah.Width / 96 * 25.4:0} × {prva.Obsah.Height / 96 * 25.4:0} mm zo 210 × 297 mm) – zväčšenie neoreže text");
         var okno = new TlacWindow(vykreslenie, false, "samotest");
         okno.Show();
         Pumpuj();

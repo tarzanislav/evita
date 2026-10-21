@@ -82,12 +82,26 @@ public static class NahladDokumentu
     {
         var vizual = Strana(vykreslenie, strana, naSirku, out var velkost);
         var kresba = vizual.Drawing;
+
+        // obsah strany = všetko okrem bieleho podkladu (prvá kresba), s rezervou 2 mm
+        var obsah = Rect.Empty;
+        foreach (var cast in kresba.Children.Skip(1))
+        {
+            obsah.Union(cast.Bounds);
+        }
+
+        if (!obsah.IsEmpty)
+        {
+            obsah.Inflate(2 * 96 / 25.4, 2 * 96 / 25.4);
+            obsah.Intersect(new Rect(velkost));
+        }
+
         if (kresba.CanFreeze)
         {
             kresba.Freeze();
         }
 
-        return new LogickaStrana(kresba, velkost);
+        return new LogickaStrana(kresba, velkost, obsah);
     }
 
     /// <summary>Listy na tlač podľa volieb (rozmiestnenie strán, sivá …) pre tlačiareň Windows.</summary>

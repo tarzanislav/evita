@@ -79,7 +79,7 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     /// <summary>Šírka stĺpca citátu vedľa dnešného dňa (skrytý panel nezaberá miesto).</summary>
     public System.Windows.GridLength SirkaCitatu => UkazCitat ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
 
-    public System.Windows.GridLength SirkaVyroci => UkazVyrocia ? new System.Windows.GridLength(1.5, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+    public System.Windows.GridLength SirkaVyroci => UkazVyrocia ? new System.Windows.GridLength(1.3, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
 
     /// <summary>Sviatky do odrážkového zoznamu: dnešné sviatky a pamätné dni, najbližší deň pracovného pokoja.</summary>
     public List<string> SviatkyZoznam =>

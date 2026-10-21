@@ -123,6 +123,7 @@ public partial class TlacWindow : Window
         Ramcek.IsChecked = volby.Ramcek;
         Siva.IsChecked = volby.OdtieneSivej;
         Zosvetlit.IsChecked = volby.Zosvetlit;
+        BezPozadia.IsChecked = volby.BezPozadia;
         Dierovac.IsChecked = volby.Dierovac;
         DierovacMm.Text = volby.DierovacMm.ToString("0.#", CultureInfo.CurrentCulture);
         _nacitavam = false;
@@ -182,6 +183,19 @@ public partial class TlacWindow : Window
         return NahladWindow.UlozPdf(_tvorba, _nazovSuboru ?? "EviTA.pdf", CestaBezDialogu, this, volby);
     }
 
+    private DocumentRenderer? _vykreslenieBezPozadia;
+
+    /// <summary>Zostava na tlač: pri voľbe Bez pozadia sa pripraví znova bez farebných podkladov (ak je k dispozícii jej tvorba).</summary>
+    private DocumentRenderer Vykreslenie(VolbyTlace volby)
+    {
+        if (!volby.BezPozadia || _tvorba is null)
+        {
+            return _vykreslenie!;
+        }
+
+        return _vykreslenieBezPozadia ??= NahladDokumentu.Priprav(PozadieDokumentu.Odstran(_tvorba()));
+    }
+
     /// <summary>Aktuálne voľby z okna.</summary>
     public VolbyTlace Volby => new VolbyTlace
     {
@@ -198,6 +212,7 @@ public partial class TlacWindow : Window
         Ramcek = Ramcek.IsChecked == true,
         OdtieneSivej = Siva.IsChecked == true,
         Zosvetlit = Zosvetlit.IsChecked == true,
+        BezPozadia = BezPozadia.IsChecked == true,
         Dierovac = Dierovac.IsChecked == true,
         DierovacMm = double.TryParse(DierovacMm.Text.Trim().Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var mm) ? mm : 10,
     }.Opravene();
@@ -223,6 +238,7 @@ public partial class TlacWindow : Window
         Ramcek.IsChecked = volby.Ramcek;
         Siva.IsChecked = volby.OdtieneSivej;
         Zosvetlit.IsChecked = volby.Zosvetlit;
+        BezPozadia.IsChecked = volby.BezPozadia;
         Dierovac.IsChecked = volby.Dierovac;
         DierovacMm.Text = volby.DierovacMm.ToString("0.#", CultureInfo.CurrentCulture);
         _nacitavam = false;
@@ -277,6 +293,7 @@ public partial class TlacWindow : Window
     {
         var volby = Volby;
         Opakovat.IsEnabled = volby.Rozmiestnenie is not (Rozmiestnenie.Jedna or Rozmiestnenie.Brozura);
+        BezPozadia.IsEnabled = _tvorba is not null || _vykreslenie is null;
         Dierovac.IsEnabled = volby.Rozmiestnenie != Rozmiestnenie.Brozura;
         DierovacMm.IsEnabled = Dierovac.IsEnabled && Dierovac.IsChecked == true;
         Obojstranne.IsEnabled = volby.Rozmiestnenie != Rozmiestnenie.Brozura;
@@ -292,7 +309,7 @@ public partial class TlacWindow : Window
             return;
         }
 
-        _nahlad = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie, _naSirku, volby) { NahladDpi = 110 };
+        _nahlad = new NahladDokumentu.StrankovacRozvrhu(Vykreslenie(volby), _naSirku, volby) { NahladDpi = 110 };
         _list = Math.Clamp(_list, 0, Math.Max(0, _nahlad.PocetListov - 1));
         UkazList();
 
@@ -474,7 +491,7 @@ public partial class TlacWindow : Window
     {
         using var server = new LocalPrintServer();
         using var fronta = ObojstrannaKresba.NajdiTlaciaren(server, volby.Tlaciaren!);
-        var rozvrh = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie!, _naSirku, volby);
+        var rozvrh = new NahladDokumentu.StrankovacRozvrhu(Vykreslenie(volby), _naSirku, volby);
         var ulohy = Ulohy(rozvrh, volby, profil);
         for (var u = 0; u < ulohy.Count; u++)
         {

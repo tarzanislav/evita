@@ -1959,5 +1959,8 @@
  "zašifrované": "titkosított",
  "s heslom": "jelszóval",
  "{0} strana PDF|{0} strany PDF|{0} strán PDF": "{0} PDF-oldal|{0} PDF-oldal",
- "PDF sa má chrániť heslom, ale heslo nie je zadané. Zadajte ho v nastaveniach PDF.": "A PDF-et jelszóval kell védeni, de nincs megadva jelszó. Adja meg a PDF-beállításokban."
+ "PDF sa má chrániť heslom, ale heslo nie je zadané. Zadajte ho v nastaveniach PDF.": "A PDF-et jelszóval kell védeni, de nincs megadva jelszó. Adja meg a PDF-beállításokban.",
+ "Farby sa zmenia na odtiene sivej podľa svetlosti – čierny text zostane čierny, farebné časti a obrázky budú sivé, biele pozadie zostane biele.": "A színek világosságuk szerint szürkeárnyalatokká alakulnak – a fekete szöveg fekete marad, a színes részek és a képek szürkék lesznek, a fehér háttér fehér marad.",
+ "Bez pozadia (len biely papier)": "Háttér nélkül (csak fehér papír)",
+ "Farebné podklady (hlavička tabuľky, striedanie riadkov, zvýraznené dni) sa netlačia. Text, čiary, obrázky a logo zostanú.": "A színes hátterek (táblázatfejléc, váltakozó sorok, kiemelt napok) nem nyomtatódnak. A szöveg, a vonalak, a képek és a logó megmaradnak."
 }

@@ -58,6 +58,7 @@ internal static partial class Samotest
                 ("8_stran", new VolbyTlace { Rozmiestnenie = Rozmiestnenie.Osem }, (stran + 7) / 8),
                 ("brozura", new VolbyTlace { Rozmiestnenie = Rozmiestnenie.Brozura, Ramcek = true }, (stran + 3) / 4 * 2),
                 ("zosvetlit_dierovac", new VolbyTlace { Zosvetlit = true, Dierovac = true, DierovacMm = 20 }, stran),
+                ("bez_pozadia", new VolbyTlace { BezPozadia = true }, stran),
             };
             foreach (var (nazov, volby, listov) in pripady)
             {

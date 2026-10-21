@@ -1959,5 +1959,8 @@
  "zašifrované": "已加密",
  "s heslom": "带密码",
  "{0} strana PDF|{0} strany PDF|{0} strán PDF": "PDF {0} 页",
- "PDF sa má chrániť heslom, ale heslo nie je zadané. Zadajte ho v nastaveniach PDF.": "PDF 应使用密码保护，但未输入密码。请在 PDF 设置中输入。"
+ "PDF sa má chrániť heslom, ale heslo nie je zadané. Zadajte ho v nastaveniach PDF.": "PDF 应使用密码保护，但未输入密码。请在 PDF 设置中输入。",
+ "Farby sa zmenia na odtiene sivej podľa svetlosti – čierny text zostane čierny, farebné časti a obrázky budú sivé, biele pozadie zostane biele.": "颜色按亮度转换为灰度——黑色文字保持黑色，彩色部分和图片变为灰色，白色背景保持白色。",
+ "Bez pozadia (len biely papier)": "无背景（仅白纸）",
+ "Farebné podklady (hlavička tabuľky, striedanie riadkov, zvýraznené dni) sa netlačia. Text, čiary, obrázky a logo zostanú.": "不打印彩色底纹（表头、隔行底色、突出显示的日期）。文字、线条、图片和徽标保留。"
 }

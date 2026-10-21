@@ -40,6 +40,9 @@ public sealed record VolbyTlace
     /// <summary>Zosvetliť tlač (šetrí toner) – všetko o 45 % svetlejšie.</summary>
     public bool Zosvetlit { get; init; }
 
+    /// <summary>Bez pozadia – farebné podklady (hlavička tabuľky, striedanie riadkov …) sa netlačia, zostane biely papier.</summary>
+    public bool BezPozadia { get; init; }
+
     /// <summary>Priehľadnosť bieleho závoja pri zosvetlení (0 – 1).</summary>
     public const double SilaZosvetlenia = 0.45;
 

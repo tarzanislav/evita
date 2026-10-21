@@ -33,18 +33,44 @@ internal static partial class Samotest
              && RozvrhTlace.Mriezka(Rozmiestnenie.Styri, true) == (2, 2, true), "tlač: orientácia listu podľa počtu strán na list");
 
         // okno tlače so zostavou – náhľady listov sa uložia ako obrázky (výstupy samotestu)
-        var dokument = new ZostavyService().Vytvor(new MoznostiZostavy
+        MigraDoc.DocumentObjectModel.Document Tvorba() => new ZostavyService().Vytvor(new MoznostiZostavy
         {
             Druh = DruhZostavy.SuhrnnyZoznam,
             Stlpce = new[] { StlpcePrenosu.Cislo, StlpcePrenosu.Nazov, StlpcePrenosu.Kategoria, StlpcePrenosu.Miestnost, StlpcePrenosu.Stav },
             Zoskupenie = Zoskupenie.Miestnost,
         });
+        var dokument = Tvorba();
+
+        // bez pozadia: podklad hlavičky tabuľky (svetlomodrý) zmizne, text zostane
+        int Podklad(MigraDoc.DocumentObjectModel.Document d)
+        {
+            var strana = NahladDokumentu.Strana(NahladDokumentu.Priprav(d), 1, false, out var velkost);
+            var obraz = new RenderTargetBitmap((int)velkost.Width, (int)velkost.Height, 96, 96, PixelFormats.Pbgra32);
+            obraz.Render(strana);
+            var body = new byte[(int)velkost.Width * (int)velkost.Height * 4];
+            obraz.CopyPixels(body, (int)velkost.Width * 4, 0);
+            var pocet = 0;
+            for (var i = 0; i < body.Length; i += 4)
+            {
+                if (Math.Abs(body[i] - 241) < 4 && Math.Abs(body[i + 1] - 230) < 4 && Math.Abs(body[i + 2] - 220) < 4)
+                {
+                    pocet++;
+                }
+            }
+
+            return pocet;
+        }
+
+        var sPozadim = Podklad(Tvorba());
+        var bezPozadia = Podklad(PozadieDokumentu.Odstran(Tvorba()));
+        Over(sPozadim > 1000 && bezPozadia < sPozadim / 20, $"tlač bez pozadia: podklad hlavičky tabuľky {sPozadim} → {bezPozadia} bodov");
+
         var vykreslenie = NahladDokumentu.Priprav(dokument);
         var stran = NahladDokumentu.PocetStran(vykreslenie);
         var prva = NahladDokumentu.Logicka(vykreslenie, 1, false);
         Over(!prva.Obsah.IsEmpty && prva.Obsah.Width < prva.Velkost.Width * 0.97 && prva.Obsah.Width > prva.Velkost.Width * 0.5,
             $"tlač: obsah strany bez prázdnych okrajov ({prva.Obsah.Width / 96 * 25.4:0} × {prva.Obsah.Height / 96 * 25.4:0} mm zo 210 × 297 mm) – zväčšenie neoreže text");
-        var okno = new TlacWindow(vykreslenie, false, "samotest");
+        var okno = new TlacWindow(vykreslenie, false, "samotest", RezimOknaTlace.Tlac, Tvorba, null);
         okno.Show();
         Pumpuj();
         var pripady = new (string Nazov, VolbyTlace Volby, int Listov)[]
@@ -55,6 +81,7 @@ internal static partial class Samotest
             ("4_strany_opakovat", new VolbyTlace { Rozmiestnenie = Rozmiestnenie.Styri, OpakovatStranky = true, Ramcek = true }, stran),
             ("8_stran", new VolbyTlace { Rozmiestnenie = Rozmiestnenie.Osem, Ramcek = true }, (stran + 7) / 8),
             ("brozura", new VolbyTlace { Rozmiestnenie = Rozmiestnenie.Brozura, Ramcek = true }, (stran + 3) / 4 * 2),
+            ("bez_pozadia_siva", new VolbyTlace { BezPozadia = true, OdtieneSivej = true }, stran),
             ("siva_dierovac", new VolbyTlace { OdtieneSivej = true, Dierovac = true, DierovacMm = 20, Obojstranne = true }, stran),
         };
         foreach (var (nazov, volby, listov) in pripady)

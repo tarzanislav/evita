@@ -1959,5 +1959,8 @@
  "zašifrované": "zaszyfrowany",
  "s heslom": "z hasłem",
  "{0} strana PDF|{0} strany PDF|{0} strán PDF": "{0} strona PDF|{0} strony PDF|{0} stron PDF",
- "PDF sa má chrániť heslom, ale heslo nie je zadané. Zadajte ho v nastaveniach PDF.": "PDF ma być chroniony hasłem, ale hasło nie zostało wpisane. Wpisz je w ustawieniach PDF."
+ "PDF sa má chrániť heslom, ale heslo nie je zadané. Zadajte ho v nastaveniach PDF.": "PDF ma być chroniony hasłem, ale hasło nie zostało wpisane. Wpisz je w ustawieniach PDF.",
+ "Farby sa zmenia na odtiene sivej podľa svetlosti – čierny text zostane čierny, farebné časti a obrázky budú sivé, biele pozadie zostane biele.": "Kolory zmieniają się w odcienie szarości według jasności – czarny tekst pozostaje czarny, kolorowe części i obrazy stają się szare, białe tło pozostaje białe.",
+ "Bez pozadia (len biely papier)": "Bez tła (tylko biały papier)",
+ "Farebné podklady (hlavička tabuľky, striedanie riadkov, zvýraznené dni) sa netlačia. Text, čiary, obrázky a logo zostanú.": "Kolorowe tła (nagłówek tabeli, naprzemienne wiersze, wyróżnione dni) nie są drukowane. Tekst, linie, obrazy i logo pozostają."
 }

@@ -73,7 +73,7 @@ public static class NahladDokumentu
 
         DocumentRenderer? vykreslenie = null;
         Dialogy.Cakaj(() => vykreslenie = Priprav(tvorba()));
-        var okno = new Views.TlacWindow(vykreslenie!, naSirku, nazovUlohy) { Owner = Dialogy.Vlastnik };
+        var okno = new Views.TlacWindow(vykreslenie!, naSirku, nazovUlohy, Views.RezimOknaTlace.Tlac, tvorba, null) { Owner = Dialogy.Vlastnik };
         return okno.ShowDialog() == true;
     }
 

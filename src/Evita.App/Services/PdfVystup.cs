@@ -88,6 +88,11 @@ public static class PdfVystup
             throw new EvitaException(Preklad.T("PDF sa má chrániť heslom, ale heslo nie je zadané. Zadajte ho v nastaveniach PDF."));
         }
 
+        if (volby.Rozvrh.BezPozadia)
+        {
+            PozadieDokumentu.Odstran(dokument);
+        }
+
         PdfDocument pdf;
         if (volby.ZlozitStrany)
         {

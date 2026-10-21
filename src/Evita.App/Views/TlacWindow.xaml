@@ -86,8 +86,11 @@
 
                 <TextBlock Text="Úprava" Style="{StaticResource Stitok}" />
                 <CheckBox x:Name="Ramcek" Content="Orámovanie strán (tenký rám)" Click="Volba_Changed" />
-                <CheckBox x:Name="Siva" Content="Odtiene sivej" Margin="0,6,0,0" Click="Volba_Changed" />
+                <CheckBox x:Name="Siva" Content="Odtiene sivej" Margin="0,6,0,0" Click="Volba_Changed"
+                          ToolTip="Farby sa zmenia na odtiene sivej podľa svetlosti – čierny text zostane čierny, farebné časti a obrázky budú sivé, biele pozadie zostane biele." />
                 <CheckBox x:Name="Zosvetlit" Content="Zosvetliť (šetrí toner)" Margin="0,6,0,0" Click="Volba_Changed" />
+                <CheckBox x:Name="BezPozadia" Content="Bez pozadia (len biely papier)" Margin="0,6,0,0" Click="Volba_Changed"
+                          ToolTip="Farebné podklady (hlavička tabuľky, striedanie riadkov, zvýraznené dni) sa netlačia. Text, čiary, obrázky a logo zostanú." />
                 <CheckBox x:Name="Dierovac" Content="Dierovač – okraj zľava" Margin="0,6,0,0" Click="Volba_Changed"
                           ToolTip="Vľavo sa vynechá miesto na dierovanie, aby sa list dal založiť do zakladača (pri obojstrannej tlači na zadnej strane sprava)." />
                 <DockPanel Margin="26,4,0,0">

@@ -325,7 +325,7 @@ public partial class NastaveniaViewModel : ObservableObject, IObnovitelny
             }
 
             var vysledok = KonfiguraciaService.Importuj(konfiguracia);
-            KonfiguraciaText = Preklad.F($"Konfigurácia je načítaná ({vysledok.Nastavenia} nastavení, {vysledok.TypyUdalosti} typov udalostí).");
+            KonfiguraciaText = Preklad.F($"Konfigurácia je načítaná ({vysledok.Nastavenia} nastavení, {vysledok.TypyUdalosti} typov udalostí, {vysledok.Kategorie} kategórií s ikonami).");
             Obnov();
             _hlavne.PoZmeneKonfiguracie();
 

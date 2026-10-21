@@ -20,10 +20,22 @@ public sealed class KonfiguraciaEviTA
     [JsonPropertyOrder(-6)] public string? Pocitac { get; set; }
     [JsonPropertyOrder(1)] public SortedDictionary<string, string?> Nastavenia { get; set; } = new(StringComparer.Ordinal);
     [JsonPropertyOrder(2)] public List<TypUdalostiPrenos>? TypyUdalosti { get; set; }
+
+    /// <summary>Kategórie s ikonou a farbou (od EviTA 0.7 s ikonami kategórií; staršie súbory ich nemajú).</summary>
+    [JsonPropertyOrder(3)] public List<KategoriaKonfiguracie>? Kategorie { get; set; }
+}
+
+/// <summary>Kategória v konfigurácii: názov, ikona (null = podľa názvu) a farba (null = predvolená farba ikony).</summary>
+public sealed class KategoriaKonfiguracie
+{
+    public string Nazov { get; set; } = "";
+    public string? Ikona { get; set; }
+    public string? Farba { get; set; }
+    public bool Aktivna { get; set; } = true;
 }
 
 /// <summary>Výsledok načítania konfigurácie.</summary>
-public sealed record VysledokKonfiguracie(int Nastavenia, int TypyUdalosti, bool ZmenaJazyka, List<string> Poznamky);
+public sealed record VysledokKonfiguracie(int Nastavenia, int TypyUdalosti, bool ZmenaJazyka, List<string> Poznamky, int Kategorie = 0, int NoveKategorie = 0);
 
 /// <summary>Export a import nastavení programu – jazyk, dashboard, počasie, kurzy, kalendár, zálohy, tlač … (bez dát evidencie).</summary>
 public static class KonfiguraciaService
@@ -45,6 +57,7 @@ public static class KonfiguraciaService
         ("Skenovanie.", Preklad.N("skenovanie (zvuk, otvorenie karty, port pre mobil)")),
         ("Stitky.", Preklad.N("formát a obsah štítkov")),
         ("Ean.", Preklad.N("účet Icecat pre údaje podľa EAN")),
+        ("Vyrobca.ZInternetu", Preklad.N("výrobca a model z internetu")),
     };
 
     /// <summary>Kľúče, ktoré sa neprenášajú: heslo je zašifrované len pre tento počítač, ostatné sú interné.</summary>
@@ -76,6 +89,8 @@ public static class KonfiguraciaService
             Pocitac = Environment.MachineName,
             TypyUdalosti = db.TypyUdalosti.OrderBy(t => t.Poradie).ThenBy(t => t.Id).ToList()
                 .Select(t => new TypUdalostiPrenos { Nazov = t.Nazov, Farba = t.Farba, Aktivny = t.Aktivny }).ToList(),
+            Kategorie = db.Kategorie.ToList().OrderBy(k => k.Nazov, Sk.Porovnanie)
+                .Select(k => new KategoriaKonfiguracie { Nazov = k.Nazov, Ikona = k.Ikona, Farba = k.Farba, Aktivna = k.Aktivna }).ToList(),
         };
 
         foreach (var n in db.Nastavenia.ToList().Where(n => PatriDoKonfiguracie(n.Kluc)))
@@ -128,6 +143,11 @@ public static class KonfiguraciaService
             obsah.Add(Preklad.F($"typy udalostí kalendára ({k.TypyUdalosti.Count})"));
         }
 
+        if (k.Kategorie is { Count: > 0 })
+        {
+            obsah.Add(Preklad.F($"kategórie s ikonami a farbami ({k.Kategorie.Count}; chýbajúce sa doplnia)"));
+        }
+
         return obsah;
     }
 
@@ -140,6 +160,8 @@ public static class KonfiguraciaService
         var povodneZalohy = zalohy.NacitajNastavenia();
         var pocet = 0;
         var typy = 0;
+        var kategorie = 0;
+        var noveKategorie = 0;
 
         using (var db = Databaza.Otvor())
         {
@@ -169,6 +191,34 @@ public static class KonfiguraciaService
                     typ.Aktivny = t.Aktivny;
                     typ.Poradie = poradie++;
                     typy++;
+                }
+            }
+
+            // kategórie: ikona a farba podľa názvu; kategória, ktorá na tomto počítači chýba, sa doplní
+            // (existujúce sa nevymazávajú ani nepremenúvajú – položky evidencie sa nemenia)
+            if (k.Kategorie is { Count: > 0 })
+            {
+                var existujuce = db.Kategorie.ToList();
+                foreach (var kat in k.Kategorie.Where(x => !string.IsNullOrWhiteSpace(x.Nazov)))
+                {
+                    var nazov = kat.Nazov.Trim();
+                    var kategoria = existujuce.FirstOrDefault(x => Sk.Porovnanie.Equals(x.Nazov.Trim(), nazov));
+                    if (kategoria is null)
+                    {
+                        kategoria = new Kategoria { Nazov = nazov, Aktivna = kat.Aktivna };
+                        db.Kategorie.Add(kategoria);
+                        existujuce.Add(kategoria);
+                        noveKategorie++;
+                    }
+
+                    kategoria.Ikona = kat.Ikona is null ? null : IkonyKategorii.Podla(kat.Ikona).Kluc;
+                    kategoria.Farba = IkonyKategorii.PlatnaFarba(kat.Farba);
+                    kategorie++;
+                }
+
+                if (noveKategorie > 0)
+                {
+                    poznamky.Add(Preklad.Pocet(noveKategorie, "Doplnená {0} nová kategória.", "Doplnené {0} nové kategórie.", "Doplnených {0} nových kategórií."));
                 }
             }
 
@@ -212,6 +262,6 @@ public static class KonfiguraciaService
         }
 
         var novyJazyk = Preklad.JazykZDatabazy();
-        return new VysledokKonfiguracie(pocet, typy, novyJazyk != povodnyJazyk, poznamky);
+        return new VysledokKonfiguracie(pocet, typy, novyJazyk != povodnyJazyk, poznamky, kategorie, noveKategorie);
     }
 }

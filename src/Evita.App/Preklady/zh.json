@@ -358,7 +358,6 @@
  "Komu je položka pridelená, v tvare Meno Priezvisko. Neznáma osoba sa vytvorí.": "资产分配给谁，格式为“名 姓”。未知人员将被创建。",
  "Konfigurácia EviTA (*.json)|*.json": "EviTA 配置 (*.json)|*.json",
  "Konfigurácia EviTA (*.json)|*.json|Všetky súbory (*.*)|*.*": "EviTA 配置 (*.json)|*.json|所有文件 (*.*)|*.*",
- "Konfigurácia je načítaná ({0} nastavení, {1} typov udalostí).": "配置已加载（{0} 项设置，{1} 种事件类型）。",
  "Konfigurácia je načítaná.": "配置已加载。",
  "Konfigurácia je uložená ({0} nastavení): {1}": "配置已保存（{0} 项设置）：{1}",
  "Konfigurácia pochádza z novšej verzie programu EviTA. Nainštalujte najnovšiu verziu programu.": "该配置来自更新版本的 EviTA。请安装最新版本的程序。",
@@ -1844,5 +1843,10 @@
  "Náradie": "工具",
  "Iné": "其他",
  "Iná farba (kód #RRGGBB):": "其他颜色（代码 #RRGGBB）：",
- "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "例如 #1E90FF——任意颜色，例如贵单位的标准色"
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "例如 #1E90FF——任意颜色，例如贵单位的标准色",
+ "Konfigurácia je načítaná ({0} nastavení, {1} typov udalostí, {2} kategórií s ikonami).": "配置已加载（{0} 项设置，{1} 种事件类型，{2} 个带图标的类别）。",
+ "Uloží aj kategórie s ich ikonami a farbami. Pri načítaní sa ikony a farby priradia kategóriám s rovnakým názvom a kategórie, ktoré chýbajú, sa doplnia.": "同时保存类别及其图标和颜色。加载时，图标和颜色会分配给同名类别，缺少的类别将被添加。",
+ "výrobca a model z internetu": "从网上获取制造商和型号",
+ "kategórie s ikonami a farbami ({0}; chýbajúce sa doplnia)": "带图标和颜色的类别（{0}；缺少的将被添加）",
+ "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "已添加 {0} 个新类别。"
 }

@@ -358,7 +358,6 @@
  "Komu je položka pridelená, v tvare Meno Priezvisko. Neznáma osoba sa vytvorí.": "Kihez van rendelve a tétel, Utónév Vezetéknév formában. Az ismeretlen személy létrejön.",
  "Konfigurácia EviTA (*.json)|*.json": "EviTA-konfiguráció (*.json)|*.json",
  "Konfigurácia EviTA (*.json)|*.json|Všetky súbory (*.*)|*.*": "EviTA-konfiguráció (*.json)|*.json|Minden fájl (*.*)|*.*",
- "Konfigurácia je načítaná ({0} nastavení, {1} typov udalostí).": "A konfiguráció betöltve ({0} beállítás, {1} eseménytípus).",
  "Konfigurácia je načítaná.": "A konfiguráció betöltve.",
  "Konfigurácia je uložená ({0} nastavení): {1}": "A konfiguráció mentve ({0} beállítás): {1}",
  "Konfigurácia pochádza z novšej verzie programu EviTA. Nainštalujte najnovšiu verziu programu.": "A konfiguráció az EviTA program újabb verziójából származik. Telepítse a program legújabb verzióját.",
@@ -1844,5 +1843,10 @@
  "Náradie": "Szerszámok",
  "Iné": "Egyéb",
  "Iná farba (kód #RRGGBB):": "Más szín (kód #RRGGBB):",
- "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Pl. #1E90FF – bármilyen szín, például a szervezet színei szerint"
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Pl. #1E90FF – bármilyen szín, például a szervezet színei szerint",
+ "Konfigurácia je načítaná ({0} nastavení, {1} typov udalostí, {2} kategórií s ikonami).": "A konfiguráció betöltve ({0} beállítás, {1} eseménytípus, {2} kategória ikonnal).",
+ "Uloží aj kategórie s ich ikonami a farbami. Pri načítaní sa ikony a farby priradia kategóriám s rovnakým názvom a kategórie, ktoré chýbajú, sa doplnia.": "A kategóriákat is menti az ikonjaikkal és színeikkel. Betöltéskor az ikonok és színek az azonos nevű kategóriákhoz kerülnek, a hiányzó kategóriák pedig létrejönnek.",
+ "výrobca a model z internetu": "gyártó és modell az internetről",
+ "kategórie s ikonami a farbami ({0}; chýbajúce sa doplnia)": "kategóriák ikonokkal és színekkel ({0}; a hiányzók létrejönnek)",
+ "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "{0} új kategória hozzáadva.|{0} új kategória hozzáadva."
 }

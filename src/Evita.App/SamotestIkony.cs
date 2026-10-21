@@ -55,6 +55,30 @@ internal static partial class Samotest
             "návrat na automatickú ikonu a predvolenú farbu (neplatná farba sa neuloží)");
         Over(new PolozkaService().NacitajRiadky().All(r => r.IkonaKategorie is not null), "evidencia: každá položka má ikonu kategórie");
 
+        // konfigurácia programu: ikony a farby kategórií sa exportujú a pri importe obnovia (chýbajúca kategória sa doplní)
+        var testovacia = ciselniky.Uloz(TypCiselnika.Kategorie, 0, "Testovacia kategória ikon", null, null);
+        ciselniky.NastavIkonu(testovacia, "hry", "#ABCDEF");
+        ciselniky.NastavIkonu(prva.Id, "server", "#111827");
+        VyrobcaModelService.ZInternetuZapnute = true;
+        var subor = Path.Combine(exportPriecinok, "konfiguracia_s_ikonami.json");
+        KonfiguraciaService.Exportuj(subor);
+        var json = File.ReadAllText(subor);
+        Over(json.Contains("\"Kategorie\"") && json.Contains("\"Ikona\": \"server\"") && json.Contains("#ABCDEF") && json.Contains("Vyrobca.ZInternetu"),
+            "konfigurácia: export obsahuje kategórie s ikonami a farbami aj voľbu výrobcu z internetu");
+        ciselniky.Vymaz(TypCiselnika.Kategorie, testovacia);
+        ciselniky.NastavIkonu(prva.Id, null, null);
+        var konfiguracia = KonfiguraciaService.Precitaj(subor);
+        Over(KonfiguraciaService.Obsah(konfiguracia).Any(o => o.Contains("ikon")), "konfigurácia: potvrdenie importu uvádza kategórie s ikonami");
+        var vysledok = KonfiguraciaService.Importuj(konfiguracia);
+        var poImporte = ciselniky.Nacitaj(TypCiselnika.Kategorie);
+        var obnovena = poImporte.First(k => k.Id == prva.Id);
+        var doplnena = poImporte.FirstOrDefault(k => k.Nazov == "Testovacia kategória ikon");
+        Over(obnovena.IkonaKluc == "server" && obnovena.IkonaFarba == "#111827" && doplnena is { IkonaKluc: "hry", IkonaFarba: "#ABCDEF" }
+             && vysledok.NoveKategorie == 1 && vysledok.Kategorie == poImporte.Count,
+            $"konfigurácia: import obnovil ikony a farby ({vysledok.Kategorie} kategórií) a doplnil chýbajúcu kategóriu ({vysledok.NoveKategorie})");
+        ciselniky.Vymaz(TypCiselnika.Kategorie, doplnena!.Id);
+        ciselniky.NastavIkonu(prva.Id, null, null);
+
         // tlačová zostava s ikonou a bez nej
         var zostavy = new ZostavyService();
         var sIkonou = Path.Combine(exportPriecinok, "zostava_ikony_kategorii.pdf");

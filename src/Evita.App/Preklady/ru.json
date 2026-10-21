@@ -358,7 +358,6 @@
  "Komu je položka pridelená, v tvare Meno Priezvisko. Neznáma osoba sa vytvorí.": "За кем закреплена позиция, в виде Имя Фамилия. Неизвестный сотрудник будет создан.",
  "Konfigurácia EviTA (*.json)|*.json": "Конфигурация EviTA (*.json)|*.json",
  "Konfigurácia EviTA (*.json)|*.json|Všetky súbory (*.*)|*.*": "Конфигурация EviTA (*.json)|*.json|Все файлы (*.*)|*.*",
- "Konfigurácia je načítaná ({0} nastavení, {1} typov udalostí).": "Конфигурация загружена (настроек: {0}, типов событий: {1}).",
  "Konfigurácia je načítaná.": "Конфигурация загружена.",
  "Konfigurácia je uložená ({0} nastavení): {1}": "Конфигурация сохранена (настроек: {0}): {1}",
  "Konfigurácia pochádza z novšej verzie programu EviTA. Nainštalujte najnovšiu verziu programu.": "Конфигурация создана в более новой версии программы EviTA. Установите последнюю версию программы.",
@@ -1844,5 +1843,10 @@
  "Náradie": "Инструменты",
  "Iné": "Прочее",
  "Iná farba (kód #RRGGBB):": "Другой цвет (код #RRGGBB):",
- "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Например, #1E90FF – любой цвет, например в цветах вашей организации"
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Например, #1E90FF – любой цвет, например в цветах вашей организации",
+ "Konfigurácia je načítaná ({0} nastavení, {1} typov udalostí, {2} kategórií s ikonami).": "Конфигурация загружена ({0} настроек, {1} типов событий, {2} категорий со значками).",
+ "Uloží aj kategórie s ich ikonami a farbami. Pri načítaní sa ikony a farby priradia kategóriám s rovnakým názvom a kategórie, ktoré chýbajú, sa doplnia.": "Сохраняет также категории с их значками и цветами. При загрузке значки и цвета назначаются категориям с тем же названием, а недостающие категории добавляются.",
+ "výrobca a model z internetu": "производитель и модель из интернета",
+ "kategórie s ikonami a farbami ({0}; chýbajúce sa doplnia)": "категории со значками и цветами ({0}; недостающие будут добавлены)",
+ "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "Добавлена {0} новая категория.|Добавлены {0} новые категории.|Добавлено {0} новых категорий."
 }

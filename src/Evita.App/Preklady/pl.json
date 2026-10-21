@@ -358,7 +358,6 @@
  "Komu je položka pridelená, v tvare Meno Priezvisko. Neznáma osoba sa vytvorí.": "Komu przypisano pozycję, w postaci Imię Nazwisko. Nieznana osoba zostanie utworzona.",
  "Konfigurácia EviTA (*.json)|*.json": "Konfiguracja EviTA (*.json)|*.json",
  "Konfigurácia EviTA (*.json)|*.json|Všetky súbory (*.*)|*.*": "Konfiguracja EviTA (*.json)|*.json|Wszystkie pliki (*.*)|*.*",
- "Konfigurácia je načítaná ({0} nastavení, {1} typov udalostí).": "Konfiguracja została wczytana ({0} ustawień, {1} typów wydarzeń).",
  "Konfigurácia je načítaná.": "Konfiguracja została wczytana.",
  "Konfigurácia je uložená ({0} nastavení): {1}": "Konfiguracja została zapisana ({0} ustawień): {1}",
  "Konfigurácia pochádza z novšej verzie programu EviTA. Nainštalujte najnovšiu verziu programu.": "Konfiguracja pochodzi z nowszej wersji programu EviTA. Zainstaluj najnowszą wersję programu.",
@@ -1844,5 +1843,10 @@
  "Náradie": "Narzędzia",
  "Iné": "Inne",
  "Iná farba (kód #RRGGBB):": "Inny kolor (kod #RRGGBB):",
- "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Np. #1E90FF – dowolny kolor, na przykład zgodny z kolorami Twojej organizacji"
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Np. #1E90FF – dowolny kolor, na przykład zgodny z kolorami Twojej organizacji",
+ "Konfigurácia je načítaná ({0} nastavení, {1} typov udalostí, {2} kategórií s ikonami).": "Konfiguracja została wczytana ({0} ustawień, {1} typów zdarzeń, {2} kategorii z ikonami).",
+ "Uloží aj kategórie s ich ikonami a farbami. Pri načítaní sa ikony a farby priradia kategóriám s rovnakým názvom a kategórie, ktoré chýbajú, sa doplnia.": "Zapisuje także kategorie wraz z ikonami i kolorami. Przy wczytywaniu ikony i kolory zostaną przypisane kategoriom o tej samej nazwie, a brakujące kategorie zostaną dodane.",
+ "výrobca a model z internetu": "producent i model z internetu",
+ "kategórie s ikonami a farbami ({0}; chýbajúce sa doplnia)": "kategorie z ikonami i kolorami ({0}; brakujące zostaną dodane)",
+ "Doplnená {0} nová kategória.|Doplnené {0} nové kategórie.|Doplnených {0} nových kategórií.": "Dodano {0} nową kategorię.|Dodano {0} nowe kategorie.|Dodano {0} nowych kategorii."
 }

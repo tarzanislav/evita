@@ -343,6 +343,7 @@ internal static partial class Samotest
         stitkyModel.UlozNastavenie("Samotest po miestnostiach");
         stitkyModel.Poradie = PoradieStitkov.Cislo;
         stitkyModel.NovaStranaPreSkupinu = false;
+        stitkyModel.VybraneUlozene = null;
         stitkyModel.VybraneUlozene = stitkyModel.Ulozene.First(u => u.Nazov == "Samotest po miestnostiach");
         Pumpuj();
         Over(stitkyModel.Poradie == PoradieStitkov.Miestnost && stitkyModel.NovaStranaPreSkupinu && StitkyService.NacitajUlozene().Count == 1,

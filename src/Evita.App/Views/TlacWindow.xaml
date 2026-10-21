@@ -9,7 +9,7 @@
         <Border DockPanel.Dock="Bottom" Padding="16,10" BorderThickness="0,1,0,0"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource LayerFillColorDefaultBrush}">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <StackPanel x:Name="Tlacidla" DockPanel.Dock="Right" Orientation="Horizontal">
                     <Button x:Name="Vytlacit" Style="{DynamicResource AccentButtonStyle}" Padding="18,6" IsDefault="True" Click="Vytlacit_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock x:Name="IkonaHlavneho" Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="14" Margin="0,0,8,0" />
@@ -23,7 +23,7 @@
         </Border>
 
         <!-- voľby -->
-        <ScrollViewer DockPanel.Dock="Left" Width="290" VerticalScrollBarVisibility="Auto"
+        <ScrollViewer x:Name="PanelVolieb" DockPanel.Dock="Left" Width="290" VerticalScrollBarVisibility="Auto"
                       Background="{DynamicResource LayerFillColorDefaultBrush}">
             <StackPanel Margin="16,12,16,16">
                 <StackPanel x:Name="SekciaTlaciarne">
@@ -49,9 +49,15 @@
                     <PasswordBox x:Name="HesloPole" Margin="26,4,0,0" ToolTip="Heslo sa neukladá – platí do zatvorenia programu." />
                     <TextBlock Text="Zakázať v PDF" Style="{StaticResource Stitok}" />
                     <CheckBox x:Name="ZakazTlace" Content="tlač" Click="Volba_Changed" />
-                    <CheckBox x:Name="ZakazKopirovania" Content="kopírovanie textu a obrázkov" Margin="0,4,0,0" Click="Volba_Changed" />
-                    <CheckBox x:Name="ZakazUprav" Content="úpravy (zmena, vkladanie a mazanie strán)" Margin="0,4,0,0" Click="Volba_Changed" />
-                    <CheckBox x:Name="ZakazPoznamok" Content="poznámky a vypĺňanie formulárov" Margin="0,4,0,0" Click="Volba_Changed" />
+                    <CheckBox x:Name="ZakazKopirovania" Margin="0,4,0,0" Click="Volba_Changed">
+                        <TextBlock Text="kopírovanie textu a obrázkov" TextWrapping="Wrap" />
+                    </CheckBox>
+                    <CheckBox x:Name="ZakazUprav" Margin="0,4,0,0" Click="Volba_Changed">
+                        <TextBlock Text="úpravy (zmena, vkladanie a mazanie strán)" TextWrapping="Wrap" />
+                    </CheckBox>
+                    <CheckBox x:Name="ZakazPoznamok" Margin="0,4,0,0" Click="Volba_Changed">
+                        <TextBlock Text="poznámky a vypĺňanie formulárov" TextWrapping="Wrap" />
+                    </CheckBox>
                     <TextBlock Text="Heslo na zrušenie zákazov (nepovinné)" Style="{StaticResource Popis}" FontSize="12" Margin="0,8,0,2" TextWrapping="Wrap" />
                     <PasswordBox x:Name="HesloVlastnikaPole" ToolTip="Bez neho sa zákazy nedajú zrušiť. Heslo sa neukladá." />
                     <CheckBox Content="Vložiť všetky písma" IsChecked="True" IsEnabled="False" Margin="0,10,0,0"

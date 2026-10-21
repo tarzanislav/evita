@@ -165,6 +165,12 @@ public static class PdfVystup
             {
                 sirka = gfx.PageSize.Width;
                 vyska = gfx.PageSize.Height;
+                if (volby.OdtieneSivej)
+                {
+                    // biely podklad: prekrytie „Saturation“ potom nechá svetlosť podkladu (inak by prázdne miesta zošedli)
+                    gfx.DrawRectangle(XBrushes.White, new XRect(0, 0, sirka, vyska));
+                }
+
                 var dierovac = volby.Dierovac ? volby.DierovacMm * BodovNaMm : 0;
                 var zadna = index % 2 == 1 && volby.TlacitObojstranne;
                 var plocha = new XRect(zadna ? 0 : dierovac, 0, sirka - dierovac, vyska);

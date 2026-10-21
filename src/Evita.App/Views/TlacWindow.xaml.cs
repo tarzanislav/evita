@@ -71,10 +71,17 @@ public partial class TlacWindow : Window
 
         if (vykreslenie is null)
         {
+            // len nastavenia (bez náhľadu): užšie okno, voľby na celú šírku, súhrn nad tlačidlami
             SekciaNahladu.Visibility = Visibility.Collapsed;
-            Width = 340;
-            SizeToContent = SizeToContent.Height;
-            MinWidth = 300;
+            PanelVolieb.Width = double.NaN;
+            DockPanel.SetDock(PanelVolieb, Dock.Top);
+            DockPanel.SetDock(Tlacidla, Dock.Bottom);
+            Tlacidla.HorizontalAlignment = HorizontalAlignment.Right;
+            Suhrn.Margin = new Thickness(0, 0, 0, 10);
+            MinWidth = 360;
+            MinHeight = 420;
+            Width = 440;
+            Height = 760;
         }
 
         _oneskorenie.Tick += (_, _) =>

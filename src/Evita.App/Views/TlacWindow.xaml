@@ -54,7 +54,7 @@
                     <ComboBox x:Name="FormatSuboru" SelectionChanged="Volba_Changed">
                         <ComboBoxItem Tag="Pdf" Content="PDF" />
                         <ComboBoxItem Tag="PdfA2b" Content="PDF/A-2b – archívne" />
-                        <ComboBoxItem Tag="PdfA3b" Content="PDF/A-3b – archívne s dátami v Exceli" />
+                        <ComboBoxItem Tag="PdfA3b" Content="PDF/A-3b – archívne s dátami" />
                         <ComboBoxItem Tag="PdfX4" Content="PDF/X-4 – pre tlačiareň" />
                         <ComboBoxItem Tag="Png" Content="Obrázky PNG (300 dpi)" />
                         <ComboBoxItem Tag="Tiff" Content="Obrázok TIFF (300 dpi, všetky strany)" />

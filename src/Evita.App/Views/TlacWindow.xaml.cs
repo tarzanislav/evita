@@ -352,8 +352,7 @@ public partial class TlacWindow : Window
         if (_rezim != RezimOknaTlace.Tlac)
         {
             var format = VolbyPdfOkna;
-            Zabezpecenie.IsEnabled = format.MozeZabezpecit;
-            Zabezpecenie.Opacity = format.MozeZabezpecit ? 1 : 0.5;
+            Zabezpecenie.Visibility = format.MozeZabezpecit ? Visibility.Visible : Visibility.Collapsed;
             InfoPisma.Visibility = format.JePdf ? Visibility.Visible : Visibility.Collapsed;
             PopisFormatu.Text = PopisFormatuText(format.Format);
             if (_rezim == RezimOknaTlace.Pdf)

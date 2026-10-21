@@ -2015,7 +2015,6 @@
  "Formát súboru": "Format pliku",
  "PDF": "PDF",
  "PDF/A-2b – archívne": "PDF/A-2b – archiwalny",
- "PDF/A-3b – archívne s dátami v Exceli": "PDF/A-3b – archiwalny z danymi w Excelu",
  "PDF/X-4 – pre tlačiareň": "PDF/X-4 – dla drukarni",
  "Obrázky PNG (300 dpi)": "Obrazy PNG (300 dpi)",
  "Obrázok TIFF (300 dpi, všetky strany)": "Obraz TIFF (300 dpi, wszystkie strony)",
@@ -2046,5 +2045,6 @@
  "Microsoft 365 povoľuje prihlásenie heslom (SMTP AUTH) len vtedy, keď ho správca zapne pre schránku.": "Microsoft 365 pozwala logować się hasłem (SMTP AUTH) tylko wtedy, gdy administrator włączy to dla skrzynki.",
  "Skontrolujte prihlasovacie meno a heslo.": "Sprawdź nazwę użytkownika i hasło.",
  "Server odmietol prihlásenie.\n\n{0}\n\n{1}": "Serwer odrzucił logowanie.\n\n{0}\n\n{1}",
- "Zostava": "Zestawienie"
+ "Zostava": "Zestawienie",
+ "PDF/A-3b – archívne s dátami": "PDF/A-3b – archiwalny z danymi"
 }

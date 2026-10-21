@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Nastavenie e-mailu"
-        Width="600" SizeToContent="Height"
+        Width="640" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
     <StackPanel Margin="24,18,24,20">
         <TextBlock Text="Posielanie PDF e-mailom" Style="{StaticResource Podnadpis}" FontSize="18" />
@@ -70,8 +70,9 @@
                 <TextBlock x:Name="HesloInfo" Style="{StaticResource Popis}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0" />
             </StackPanel>
 
-            <CheckBox x:Name="KopiaSebe" Grid.Row="7" Grid.ColumnSpan="2" Margin="0,2,0,0"
-                      Content="Posielať skrytú kópiu aj na adresu odosielateľa (aby ste e-mail mali vo svojej pošte)" />
+            <CheckBox x:Name="KopiaSebe" Grid.Row="7" Grid.ColumnSpan="2" Margin="0,2,0,0">
+                <TextBlock TextWrapping="Wrap" Text="Posielať skrytú kópiu aj na adresu odosielateľa (aby ste e-mail mali vo svojej pošte)" />
+            </CheckBox>
         </Grid>
 
         <TextBlock x:Name="Rada" Style="{StaticResource Popis}" FontSize="12" Margin="28,8,0,0" TextWrapping="Wrap" />

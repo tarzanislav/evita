@@ -952,7 +952,7 @@ internal static partial class Samotest
             Preklad.UlozJazyk("sk");
             Pumpuj();
             Snimka(okno, "okno_nastavenia");
-            Over(model.Dashboard.NajblizsiVolnyDen.Length > 0, "dashboard: najbližší deň pracovného pokoja");
+            Over(model.Dashboard.NajblizsiVolnyDen.Length > 0 && model.Dashboard.SviatkyZoznam.Contains(model.Dashboard.NajblizsiVolnyDen), "dashboard: najbližší deň pracovného pokoja v zozname sviatkov");
             Over(model.Dashboard.Graf.Count > 0 && model.Dashboard.Graf.Sum(g => g.Pocet) == sluzba.NacitajRiadky().Count(r => !r.Vyradena),
                 "dashboard: graf kategórií sedí s počtom položiek");
             model.Dashboard.UkazGraf = false;

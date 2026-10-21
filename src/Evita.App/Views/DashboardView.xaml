@@ -24,60 +24,53 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
-            <!-- Dnešný deň -->
-            <Border Style="{StaticResource Karta}" Margin="0,0,12,12"
-                    Visibility="{Binding UkazDnes, Converter={StaticResource BoolNaViditelnost}}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.2*" />
-                        <ColumnDefinition Width="24" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="24" />
-                        <ColumnDefinition Width="1.3*" />
-                    </Grid.ColumnDefinitions>
+            <!-- Dnešný deň (úzky stĺpec), citát dňa a výročia vedľa neho -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="{Binding SirkaCitatu}" />
+                    <ColumnDefinition Width="{Binding SirkaVyroci}" />
+                </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0">
+                <Border Style="{StaticResource Karta}" Margin="0,0,12,12" Width="300"
+                        Visibility="{Binding UkazDnes, Converter={StaticResource BoolNaViditelnost}}">
+                    <StackPanel>
                         <TextBlock Text="{Binding DatumText}" FontSize="22" FontWeight="SemiBold" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding TyzdenText}" Style="{StaticResource Popis}" Margin="0,2,0,0" />
-                        <TextBlock Text="{Binding CasText}" FontSize="36" FontWeight="Light" Margin="0,4,0,0" />
-                    </StackPanel>
+                        <TextBlock Text="{Binding CasText}" FontSize="36" FontWeight="Light" Margin="0,2,0,0" />
 
-                    <StackPanel Grid.Column="2">
-                        <TextBlock Text="Meniny" Style="{StaticResource Popis}" />
+                        <TextBlock Text="Meniny" Style="{StaticResource Popis}" Margin="0,12,0,0" />
                         <TextBlock Text="{Binding MeninyDnes}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
-                        <TextBlock Style="{StaticResource Popis}" Margin="0,4,0,0">
+                        <TextBlock Style="{StaticResource Popis}" Margin="0,2,0,0" TextWrapping="Wrap">
                             <Run Text="Zajtra:" /> <Run Text="{Binding MeninyZajtra, Mode=OneWay}" />
                         </TextBlock>
                         <TextBlock Text="{Binding MeninyOsob}" TextWrapping="Wrap" Margin="0,6,0,0" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                    Visibility="{Binding MeninyOsob, Converter={StaticResource NieJePrazdne}}" />
-                    </StackPanel>
 
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="Sviatky" Style="{StaticResource Popis}" />
+                        <TextBlock Text="Sviatky" Style="{StaticResource Popis}" Margin="0,12,0,2" />
                         <Border CornerRadius="4" Padding="8,2" Margin="0,2,0,4" HorizontalAlignment="Left"
                                 Background="{DynamicResource AccentFillColorDefaultBrush}"
                                 Visibility="{Binding JeDnesVolno, Converter={StaticResource BoolNaViditelnost}}">
-                            <TextBlock Text="Dnes je deň pracovného pokoja" FontWeight="SemiBold"
+                            <TextBlock Text="Dnes je deň pracovného pokoja" FontWeight="SemiBold" TextWrapping="Wrap"
                                        Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
                         </Border>
-                        <TextBlock Text="{Binding SviatokDnes}" TextWrapping="Wrap" FontWeight="SemiBold"
-                                   Visibility="{Binding SviatokDnes, Converter={StaticResource NieJePrazdne}}" />
-                        <TextBlock Text="{Binding NajblizsiVolnyDen}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <ItemsControl ItemsSource="{Binding SviatkyZoznam}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,1,0,1">
+                                        <TextBlock DockPanel.Dock="Left" Text="•" Margin="2,0,8,0" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <Button Content="Sviatky v roku…" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="10,3"
                                 Command="{Binding OtvorSviatkyCommand}" />
                     </StackPanel>
-                </Grid>
-            </Border>
+                </Border>
 
-            <!-- Citát dňa a výročia -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Style="{StaticResource Karta}" Margin="0,0,12,12"
+                <Border Grid.Column="1" Style="{StaticResource Karta}" Margin="0,0,12,12"
                         Visibility="{Binding UkazCitat, Converter={StaticResource BoolNaViditelnost}}">
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="Citát dňa" Style="{StaticResource Podnadpis}" Margin="0" />
@@ -98,11 +91,11 @@
                             <TextBlock Text="{Binding CitatAutor}" Style="{StaticResource Popis}" FontSize="13" Margin="10,0,0,0"
                                        HorizontalAlignment="Right" VerticalAlignment="Bottom" TextAlignment="Right" TextWrapping="Wrap" />
                         </DockPanel>
-                        <TextBlock Text="{Binding CitatText}" FontSize="16" FontStyle="Italic" TextWrapping="Wrap" Margin="0,10,0,0" />
+                        <TextBlock Text="{Binding CitatText}" FontSize="20" FontWeight="Bold" LineHeight="28" TextWrapping="Wrap" Margin="0,10,0,0" />
                     </DockPanel>
                 </Border>
 
-                <Border Grid.Column="1" Style="{StaticResource Karta}" Margin="0,0,12,12"
+                <Border Grid.Column="2" Style="{StaticResource Karta}" Margin="0,0,12,12"
                         Visibility="{Binding UkazVyrocia, Converter={StaticResource BoolNaViditelnost}}">
                     <DockPanel>
                         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -131,12 +124,6 @@
                                         <TextBlock Grid.Column="2" Text="{Binding Text}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                                    MaxHeight="40" ToolTip="{Binding Text}" />
                                     </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </DockPanel>
-                </Border>
-            </Grid>
 
             <!-- Úlohy, počasie, kurzový lístok -->
             <UniformGrid Rows="1">

@@ -39,9 +39,13 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private string _meninyDnes = "";
     [ObservableProperty] private string _meninyZajtra = "";
     [ObservableProperty] private string _meninyOsob = "";
-    [ObservableProperty] private string _sviatokDnes = "";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SviatkyZoznam))]
+    private string _sviatokDnes = "";
     [ObservableProperty] private bool _jeDnesVolno;
-    [ObservableProperty] private string _najblizsiVolnyDen = "";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SviatkyZoznam))]
+    private string _najblizsiVolnyDen = "";
 
     // graf
     [ObservableProperty] private List<StlpecGrafu> _graf = new();
@@ -64,8 +68,23 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private bool _ukazPocasie = true;
     [ObservableProperty] private bool _ukazKurzy = true;
     [ObservableProperty] private bool _ukazPoznamky = true;
-    [ObservableProperty] private bool _ukazCitat = true;
-    [ObservableProperty] private bool _ukazVyrocia = true;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SirkaCitatu))]
+    private bool _ukazCitat = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SirkaVyroci))]
+    private bool _ukazVyrocia = true;
+
+    /// <summary>Šírka stĺpca citátu vedľa dnešného dňa (skrytý panel nezaberá miesto).</summary>
+    public System.Windows.GridLength SirkaCitatu => UkazCitat ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+
+    public System.Windows.GridLength SirkaVyroci => UkazVyrocia ? new System.Windows.GridLength(1.5, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+
+    /// <summary>Sviatky do odrážkového zoznamu: dnešné sviatky a pamätné dni, najbližší deň pracovného pokoja.</summary>
+    public List<string> SviatkyZoznam =>
+        SviatokDnes.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Append(NajblizsiVolnyDen).Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
 
     partial void OnUkazCitatChanged(bool value) => UlozPanely();
     partial void OnUkazVyrociaChanged(bool value) => UlozPanely();

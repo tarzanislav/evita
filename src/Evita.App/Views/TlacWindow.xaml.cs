@@ -14,9 +14,24 @@ namespace Evita.Views;
 /// Okno tlače EviTA: tlačiareň, kópie, obojstranne, 1/2/4/8 strán na list, opakovanie strán, brožúra, zväčšenie,
 /// orámovanie, odtiene sivej a dierovač – s náhľadom listu. Voľby sa zapamätajú.
 /// </summary>
+/// <summary>Na čo sa okno používa.</summary>
+public enum RezimOknaTlace
+{
+    Tlac,
+
+    /// <summary>Uloženie zostavy do PDF (voľby ako pdfFactory: šifrovanie, heslo, zákazy …) s náhľadom.</summary>
+    Pdf,
+
+    /// <summary>Len nastavenia PDF (bez zostavy – napr. pre export v časti Import a export).</summary>
+    NastaveniaPdf,
+}
+
 public partial class TlacWindow : Window
 {
-    private readonly DocumentRenderer _vykreslenie;
+    private readonly DocumentRenderer? _vykreslenie;
+    private readonly RezimOknaTlace _rezim;
+    private readonly Func<MigraDoc.DocumentObjectModel.Document>? _tvorba;
+    private readonly string? _nazovSuboru;
     private readonly bool _naSirku;
     private readonly string _nazovUlohy;
     private readonly DispatcherTimer _oneskorenie = new() { Interval = TimeSpan.FromMilliseconds(200) };
@@ -25,20 +40,67 @@ public partial class TlacWindow : Window
     private bool _nacitavam = true;
 
     public TlacWindow(DocumentRenderer vykreslenie, bool naSirku, string nazovUlohy)
+        : this(vykreslenie, naSirku, nazovUlohy, RezimOknaTlace.Tlac, null, null)
+    {
+    }
+
+    /// <summary>Okno v zvolenom režime (tlač, uloženie do PDF, len nastavenia PDF).</summary>
+    public TlacWindow(DocumentRenderer? vykreslenie, bool naSirku, string nazovUlohy, RezimOknaTlace rezim,
+        Func<MigraDoc.DocumentObjectModel.Document>? tvorba, string? nazovSuboru)
     {
         _vykreslenie = vykreslenie;
         _naSirku = naSirku;
         _nazovUlohy = nazovUlohy;
+        _rezim = rezim;
+        _tvorba = tvorba;
+        _nazovSuboru = nazovSuboru;
         InitializeComponent();
-        Title = Preklad.F($"Vytlačiť – {nazovUlohy}");
+        Title = rezim switch
+        {
+            RezimOknaTlace.Pdf => Preklad.F($"Uložiť ako PDF – {nazovUlohy}"),
+            RezimOknaTlace.NastaveniaPdf => Preklad.T("Nastavenia PDF"),
+            _ => Preklad.F($"Vytlačiť – {nazovUlohy}"),
+        };
+        if (rezim != RezimOknaTlace.Tlac)
+        {
+            SekciaTlaciarne.Visibility = Visibility.Collapsed;
+            SekciaPdf.Visibility = Visibility.Visible;
+            IkonaHlavneho.Text = "\uEA90";
+            TextHlavneho.Text = rezim == RezimOknaTlace.Pdf ? Preklad.T("Uložiť PDF…") : Preklad.T("Uložiť nastavenia");
+        }
+
+        if (vykreslenie is null)
+        {
+            SekciaNahladu.Visibility = Visibility.Collapsed;
+            Width = 340;
+            SizeToContent = SizeToContent.Height;
+            MinWidth = 300;
+        }
+
         _oneskorenie.Tick += (_, _) =>
         {
             _oneskorenie.Stop();
             Prekresli();
         };
 
-        var volby = VolbyTlace.Nacitaj();
-        NaplnTlaciarne(volby.Tlaciaren);
+        var pdf = rezim == RezimOknaTlace.Tlac ? null : VolbyPdf.Nacitaj();
+        var volby = pdf?.Rozvrh ?? VolbyTlace.Nacitaj();
+        if (pdf is not null)
+        {
+            Sifrovat.IsChecked = pdf.Sifrovat;
+            PouzitHeslo.IsChecked = pdf.PouzitHeslo;
+            HesloPole.Password = VolbyPdf.Heslo ?? "";
+            HesloVlastnikaPole.Password = VolbyPdf.HesloVlastnika ?? "";
+            ZakazTlace.IsChecked = pdf.ZakazTlace;
+            ZakazKopirovania.IsChecked = pdf.ZakazKopirovania;
+            ZakazUprav.IsChecked = pdf.ZakazUprav;
+            ZakazPoznamok.IsChecked = pdf.ZakazPoznamok;
+        }
+        else
+        {
+            NaplnTlaciarne(volby.Tlaciaren);
+        }
+
         Kopie.Text = volby.Kopie.ToString(CultureInfo.InvariantCulture);
         Obojstranne.IsChecked = volby.Obojstranne;
         (volby.Rozmiestnenie switch
@@ -53,11 +115,64 @@ public partial class TlacWindow : Window
         Zvacsenie.Value = Math.Round(volby.Zvacsenie * 100);
         Ramcek.IsChecked = volby.Ramcek;
         Siva.IsChecked = volby.OdtieneSivej;
+        Zosvetlit.IsChecked = volby.Zosvetlit;
         Dierovac.IsChecked = volby.Dierovac;
         DierovacMm.Text = volby.DierovacMm.ToString("0.#", CultureInfo.CurrentCulture);
         _nacitavam = false;
         Prekresli();
         AktualizujProfil();
+    }
+
+    /// <summary>Voľby PDF z okna (rozmiestnenie strán + zabezpečenie).</summary>
+    public VolbyPdf VolbyPdfOkna => new()
+    {
+        Rozvrh = Volby with { Tlaciaren = null, Kopie = 1 },
+        Sifrovat = Sifrovat.IsChecked == true,
+        PouzitHeslo = PouzitHeslo.IsChecked == true,
+        ZakazTlace = ZakazTlace.IsChecked == true,
+        ZakazKopirovania = ZakazKopirovania.IsChecked == true,
+        ZakazUprav = ZakazUprav.IsChecked == true,
+        ZakazPoznamok = ZakazPoznamok.IsChecked == true,
+    };
+
+    /// <summary>Pre automatický test: cesta k PDF bez okna Uložiť ako.</summary>
+    public string? CestaBezDialogu { get; set; }
+
+    /// <summary>Samotest: nastavenie zabezpečenia PDF a hesla.</summary>
+    public void NastavPdf(VolbyPdf volby, string? heslo)
+    {
+        _nacitavam = true;
+        Sifrovat.IsChecked = volby.Sifrovat;
+        PouzitHeslo.IsChecked = volby.PouzitHeslo;
+        HesloPole.Password = heslo ?? "";
+        ZakazTlace.IsChecked = volby.ZakazTlace;
+        ZakazKopirovania.IsChecked = volby.ZakazKopirovania;
+        ZakazUprav.IsChecked = volby.ZakazUprav;
+        ZakazPoznamok.IsChecked = volby.ZakazPoznamok;
+        _nacitavam = false;
+        NastavVolby(volby.Rozvrh);
+    }
+
+    /// <summary>Uloží voľby PDF (heslá len do pamäte) a pri zostave uloží PDF. Vráti cestu k PDF alebo null.</summary>
+    public string? UlozitPdf()
+    {
+        var volby = VolbyPdfOkna;
+        if (volby.PouzitHeslo && HesloPole.Password.Length == 0)
+        {
+            Dialogy.Upozornenie(Preklad.T("Zadajte heslo na otvorenie PDF."));
+            HesloPole.Focus();
+            return null;
+        }
+
+        VolbyPdf.Heslo = volby.PouzitHeslo ? HesloPole.Password : null;
+        VolbyPdf.HesloVlastnika = HesloVlastnikaPole.Password.Length > 0 ? HesloVlastnikaPole.Password : null;
+        volby.Uloz();
+        if (_rezim == RezimOknaTlace.NastaveniaPdf || _tvorba is null)
+        {
+            return "";
+        }
+
+        return NahladWindow.UlozPdf(_tvorba, _nazovSuboru ?? "EviTA.pdf", CestaBezDialogu, this, volby);
     }
 
     /// <summary>Aktuálne voľby z okna.</summary>
@@ -75,6 +190,7 @@ public partial class TlacWindow : Window
         Zvacsenie = Zvacsenie.Value / 100.0,
         Ramcek = Ramcek.IsChecked == true,
         OdtieneSivej = Siva.IsChecked == true,
+        Zosvetlit = Zosvetlit.IsChecked == true,
         Dierovac = Dierovac.IsChecked == true,
         DierovacMm = double.TryParse(DierovacMm.Text.Trim().Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var mm) ? mm : 10,
     }.Opravene();
@@ -99,6 +215,7 @@ public partial class TlacWindow : Window
         Zvacsenie.Value = Math.Round(volby.Zvacsenie * 100);
         Ramcek.IsChecked = volby.Ramcek;
         Siva.IsChecked = volby.OdtieneSivej;
+        Zosvetlit.IsChecked = volby.Zosvetlit;
         Dierovac.IsChecked = volby.Dierovac;
         DierovacMm.Text = volby.DierovacMm.ToString("0.#", CultureInfo.CurrentCulture);
         _nacitavam = false;
@@ -156,15 +273,33 @@ public partial class TlacWindow : Window
         Dierovac.IsEnabled = volby.Rozmiestnenie != Rozmiestnenie.Brozura;
         DierovacMm.IsEnabled = Dierovac.IsEnabled && Dierovac.IsChecked == true;
         Obojstranne.IsEnabled = volby.Rozmiestnenie != Rozmiestnenie.Brozura;
-        _nahlad = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie, _naSirku, volby) { NahladDpi = 110 };
-        if (ProfilText is not null)
+        HesloPole.IsEnabled = PouzitHeslo.IsChecked == true;
+        if (_rezim == RezimOknaTlace.Tlac && ProfilText is not null)
         {
             AktualizujProfil();
         }
+
+        if (_vykreslenie is null)
+        {
+            Suhrn.Text = Preklad.T("Nastavenia platia pre každé PDF z EviTA (zostavy, export, náhľady).");
+            return;
+        }
+
+        _nahlad = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie, _naSirku, volby) { NahladDpi = 110 };
         _list = Math.Clamp(_list, 0, Math.Max(0, _nahlad.PocetListov - 1));
         UkazList();
 
         var stran = NahladDokumentu.PocetStran(_vykreslenie);
+        if (_rezim != RezimOknaTlace.Tlac)
+        {
+            var pdf = VolbyPdfOkna;
+            Suhrn.Text = Preklad.Pocet(stran, "{0} strana zostavy", "{0} strany zostavy", "{0} strán zostavy") + " → "
+                         + Preklad.Pocet(_nahlad.PocetListov, "{0} strana PDF", "{0} strany PDF", "{0} strán PDF")
+                         + (pdf.Zasifrovat ? " · " + Preklad.T("zašifrované") : "")
+                         + (pdf.PouzitHeslo ? " · " + Preklad.T("s heslom") : "");
+            return;
+        }
+
         var listov = volby.TlacitObojstranne ? (_nahlad.PocetListov + 1) / 2 : _nahlad.PocetListov;
         Suhrn.Text = Preklad.Pocet(stran, "{0} strana zostavy", "{0} strany zostavy", "{0} strán zostavy") + " → "
                      + Preklad.Pocet(listov, "{0} list papiera", "{0} listy papiera", "{0} listov papiera")
@@ -230,6 +365,16 @@ public partial class TlacWindow : Window
 
     private void Vytlacit_Click(object sender, RoutedEventArgs e)
     {
+        if (_rezim != RezimOknaTlace.Tlac)
+        {
+            if (UlozitPdf() is not null)
+            {
+                DialogResult = true;
+            }
+
+            return;
+        }
+
         var volby = Volby;
         if (volby.Tlaciaren is null)
         {
@@ -322,7 +467,7 @@ public partial class TlacWindow : Window
     {
         using var server = new LocalPrintServer();
         using var fronta = ObojstrannaKresba.NajdiTlaciaren(server, volby.Tlaciaren!);
-        var rozvrh = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie, _naSirku, volby);
+        var rozvrh = new NahladDokumentu.StrankovacRozvrhu(_vykreslenie!, _naSirku, volby);
         var ulohy = Ulohy(rozvrh, volby, profil);
         for (var u = 0; u < ulohy.Count; u++)
         {

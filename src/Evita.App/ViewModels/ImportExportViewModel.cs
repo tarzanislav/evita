@@ -57,6 +57,11 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
         }
     }
 
+    /// <summary>Nastavenia PDF pre export do PDF (šifrovanie, heslo, zákazy, sivá, strany na list …).</summary>
+    [RelayCommand]
+    private void NastaveniaPdf() =>
+        new TlacWindow(null, false, "PDF", RezimOknaTlace.NastaveniaPdf, null, null) { Owner = Dialogy.Vlastnik }.ShowDialog();
+
     [RelayCommand]
     private void Exportovat()
     {

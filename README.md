@@ -97,6 +97,12 @@ Nastavenú zostavu uložíte tlačidlom **Uložiť zostavu…** pod vlastným n�
 či *tento rok* – vtedy sa pri každom použití prepočíta. Uložené zostavy sú vľavo pod zoznamom zostáv; prenášajú sa
 aj s exportom konfigurácie programu.
 
+**Uložiť ako PDF** otvorí okno volieb s náhľadom (rovnaké voľby nájdete aj pod tlačidlom *Nastavenia PDF…* v častiach
+*Tlač a zostavy* a *Import a export* – platia pre každé PDF z EviTA): 2, 4 alebo 8 strán na list, brožúra, rámik,
+zväčšenie, odtiene sivej, zosvetlenie, okraj na dierovač, šifrovanie AES, heslo na otvorenie (neukladá sa – platí do
+zatvorenia programu) a zákazy tlače, kopírovania, úprav a poznámok. Písma sa do PDF vkladajú vždy a text zostáva
+skutočným textom – dá sa označiť, kopírovať a vyhľadávať (OCR netreba), ak kopírovanie nie je zakázané.
+
 ## Skenovanie, štítky a inventúra
 
 - **Čítačka čiarových a QR kódov** (USB alebo Bluetooth, správa sa ako klávesnica) funguje v celom programe: naskenovaný

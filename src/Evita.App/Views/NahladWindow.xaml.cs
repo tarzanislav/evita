@@ -251,13 +251,32 @@ public partial class NahladWindow : Window
         }
     }
 
-    private void UlozitPdf_Click(object sender, RoutedEventArgs e) => UlozitPdf();
+    /// <summary>Uložiť ako PDF: okno volieb PDF (šifrovanie, heslo, zákazy, strany na list, sivá …) s náhľadom.</summary>
+    private void UlozitPdf_Click(object sender, RoutedEventArgs e) => UlozitPdfSVolbami(this, _tvorba, _naSirku, Title, _nazovSuboru);
+
+    /// <summary>Otvorí okno volieb PDF pre zostavu a uloží ju. Vráti true, ak sa PDF uložilo.</summary>
+    public static bool UlozitPdfSVolbami(Window? vlastnik, Func<MigraDoc.DocumentObjectModel.Document> tvorba, bool naSirku, string titulok, string nazovSuboru)
+    {
+        try
+        {
+            MigraDoc.Rendering.DocumentRenderer? vykreslenie = null;
+            Dialogy.Cakaj(() => vykreslenie = NahladDokumentu.Priprav(tvorba()));
+            var okno = new TlacWindow(vykreslenie, naSirku, titulok, RezimOknaTlace.Pdf, tvorba, nazovSuboru) { Owner = vlastnik ?? Dialogy.Vlastnik };
+            return okno.ShowDialog() == true;
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+            return false;
+        }
+    }
 
     /// <summary>Uloží zostavu do PDF. Vráti cestu alebo null, ak používateľ zrušil.</summary>
     public string? UlozitPdf() => UlozPdf(_tvorba, _nazovSuboru, CestaBezDialogu, this);
 
     /// <summary>Uloží zostavu do PDF (s oknom Uložiť ako) a otvorí ho. Vráti cestu alebo null.</summary>
-    public static string? UlozPdf(Func<MigraDoc.DocumentObjectModel.Document> tvorba, string nazovSuboru, string? cestaBezDialogu, Window? vlastnik = null)
+    public static string? UlozPdf(Func<MigraDoc.DocumentObjectModel.Document> tvorba, string nazovSuboru, string? cestaBezDialogu, Window? vlastnik = null,
+        VolbyPdf? volbyPdf = null)
     {
         var cesta = cestaBezDialogu;
         if (cesta is null)
@@ -299,7 +318,7 @@ public partial class NahladWindow : Window
 
         try
         {
-            Dialogy.Cakaj(() => PdfZostava.UlozPdf(tvorba(), cesta));
+            Dialogy.Cakaj(() => PdfVystup.Uloz(tvorba(), cesta, volbyPdf));
             using (var db = Data.Databaza.Otvor())
             {
                 Data.Databaza.Zapis(db, KlucPriecinok, Path.GetDirectoryName(cesta));

@@ -448,10 +448,6 @@ public sealed class PdfZostava
 
     // ------------------------------------------------------------------ výstup
 
-    public static void UlozPdf(Document dokument, string cesta)
-    {
-        var vykreslenie = new PdfDocumentRenderer { Document = dokument };
-        vykreslenie.RenderDocument();
-        vykreslenie.PdfDocument.Save(cesta);
-    }
+    /// <summary>Uloží dokument do PDF s nastaveniami PDF (šifrovanie, sivá, strany na list … – Tlač a zostavy, Import a export).</summary>
+    public static void UlozPdf(Document dokument, string cesta) => PdfVystup.Uloz(dokument, cesta);
 }

@@ -19,8 +19,12 @@
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xEDE1;" FontSize="20" Margin="0,0,10,0" />
                             <TextBlock Text="Export" Style="{StaticResource Podnadpis}" Margin="0" />
                         </StackPanel>
-                        <Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Padding="16,7" Margin="0,14,0,0"
-                                Style="{DynamicResource AccentButtonStyle}" Command="{Binding ExportovatCommand}" Content="Exportovať evidenciu…" />
+                        <WrapPanel DockPanel.Dock="Bottom" Margin="0,14,0,0">
+                            <Button Padding="16,7" Margin="0,0,8,0"
+                                    Style="{DynamicResource AccentButtonStyle}" Command="{Binding ExportovatCommand}" Content="Exportovať evidenciu…" />
+                            <Button Padding="12,7" Command="{Binding NastaveniaPdfCommand}" Content="Nastavenia PDF…"
+                                    ToolTip="Šifrovanie, heslo, zákazy, odtiene sivej, zosvetlenie, 2 – 8 strán na list a brožúra pre export do PDF" />
+                        </WrapPanel>
                         <TextBlock TextWrapping="Wrap"
                                    Text="Celú evidenciu do Excelu, CSV, JSON, XML, HTML alebo PDF, s voľbou stĺpcov. Vyfiltrované alebo označené položky exportujete z obrazovky Evidencia tlačidlom Export." />
                     </DockPanel>

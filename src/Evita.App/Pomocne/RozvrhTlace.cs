@@ -37,6 +37,12 @@ public sealed record VolbyTlace
 
     public bool OdtieneSivej { get; init; }
 
+    /// <summary>Zosvetliť tlač (šetrí toner) – všetko o 45 % svetlejšie.</summary>
+    public bool Zosvetlit { get; init; }
+
+    /// <summary>Priehľadnosť bieleho závoja pri zosvetlení (0 – 1).</summary>
+    public const double SilaZosvetlenia = 0.45;
+
     /// <summary>Vynechať okraj na dierovanie (pri obojstrannej tlači na zadnej strane sprava).</summary>
     public bool Dierovac { get; init; }
 
@@ -208,6 +214,11 @@ public static class RozvrhTlace
                     var okraj = 3 * MmNaDip;
                     dc.DrawRectangle(null, ramcek, new Rect(bunka.X + okraj, bunka.Y + okraj, Math.Max(1, bunka.Width - 2 * okraj), Math.Max(1, bunka.Height - 2 * okraj)));
                 }
+            }
+
+            if (volby.Zosvetlit)
+            {
+                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb((byte)(255 * VolbyTlace.SilaZosvetlenia), 255, 255, 255)), null, new Rect(list));
             }
 
             if (volby.Rozmiestnenie == Rozmiestnenie.Brozura && volby.Ramcek)

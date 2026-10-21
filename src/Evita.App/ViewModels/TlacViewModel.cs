@@ -521,13 +521,26 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     /// <summary>Pre automatický test: cesta k PDF bez okna Uložiť ako.</summary>
     public string? CestaBezDialogu { get; set; }
 
+    /// <summary>Nastavenia PDF (zabezpečenie, sivá, strany na list …) pre všetky PDF z EviTA.</summary>
+    [RelayCommand]
+    private void NastaveniaPdf() =>
+        new TlacWindow(null, false, "PDF", RezimOknaTlace.NastaveniaPdf, null, null) { Owner = Dialogy.Vlastnik }.ShowDialog();
+
     [RelayCommand]
     private void UlozitPdf()
     {
         try
         {
             var moznosti = Moznosti();
-            NahladWindow.UlozPdf(() => _zostavy.Vytvor(moznosti), ZostavyService.NazovSuboru(Vybrana.Druh), CestaBezDialogu);
+            if (CestaBezDialogu is not null)
+            {
+                NahladWindow.UlozPdf(() => _zostavy.Vytvor(moznosti), ZostavyService.NazovSuboru(Vybrana.Druh), CestaBezDialogu);
+            }
+            else
+            {
+                // okno volieb PDF (šifrovanie, heslo, zákazy, strany na list, sivá …) s náhľadom
+                NahladWindow.UlozitPdfSVolbami(null, () => _zostavy.Vytvor(moznosti), moznosti.NaSirku, Vybrana.Nazov, ZostavyService.NazovSuboru(Vybrana.Druh));
+            }
         }
         catch (EvitaException ex)
         {

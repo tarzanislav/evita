@@ -66,8 +66,10 @@ public sealed class PolozkaService
             })
             .ToList();
 
+        var ikony = db.Kategorie.AsNoTracking().ToList().ToDictionary(k => k.Id, k => IkonyKategorii.Pre(k.Ikona, k.Farba, k.Nazov));
         foreach (var r in riadky)
         {
+            r.IkonaKategorie = ikony.GetValueOrDefault(r.KategoriaId);
             r.Hladanie = Sk.BezDiakritiky(string.Join(' ',
                 r.PrirastkoveCislo, r.Nazov, r.Kategoria, r.Miestnost, r.Osoba, r.Vyrobca, r.Model,
                 r.SerioveCislo, r.InventarneCislo, r.Ean, r.Poznamka));

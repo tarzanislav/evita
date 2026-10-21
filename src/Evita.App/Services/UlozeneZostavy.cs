@@ -27,6 +27,7 @@ public sealed class UlozenaZostava
     public bool VrataneVyradenych { get; set; }
     public bool Podpis { get; set; } = true;
     public bool KazdaNaNovejStrane { get; set; } = true;
+    public bool IkonaKategorie { get; set; } = true;
     public string? Zoskupenie { get; set; }
     public string Obdobie { get; set; } = nameof(ObdobieZostavy.PevneDatumy);
     public DateTime? Od { get; set; }

@@ -27,6 +27,9 @@ public sealed class CiselnikService
                         Aktivna = k.Aktivna,
                         Pocet = pocty.GetValueOrDefault(k.Id),
                         Pole1 = k.Nazov,
+                        Ikona = IkonyKategorii.Pre(k.Ikona, k.Farba, k.Nazov),
+                        IkonaKluc = k.Ikona,
+                        IkonaFarba = k.Farba,
                     })
                     .ToList();
                 break;
@@ -221,5 +224,15 @@ public sealed class CiselnikService
         {
             throw new EvitaException(Preklad.F($"{co} s názvom „{nazov}“ už existuje."));
         }
+    }
+
+    /// <summary>Ikona a farba kategórie (null = automaticky podľa názvu / predvolená farba ikony).</summary>
+    public void NastavIkonu(int idKategorie, string? ikona, string? farba)
+    {
+        using var db = Databaza.Otvor();
+        var kategoria = db.Kategorie.Find(idKategorie) ?? throw new EvitaException(Preklad.T("Kategória už neexistuje."));
+        kategoria.Ikona = ikona is null ? null : IkonyKategorii.Podla(ikona).Kluc;
+        kategoria.Farba = IkonyKategorii.PlatnaFarba(farba);
+        db.SaveChanges();
     }
 }

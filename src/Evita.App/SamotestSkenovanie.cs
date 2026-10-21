@@ -122,6 +122,9 @@ internal static partial class Samotest
         // karta novej položky: záruka a revízia podľa dátumu nákupu, výrobca a model podľa názvu
         KartaDoplnanie();
 
+        // ikony kategórií (evidencia, číselník, tlačová zostava)
+        SamotestIkonKategorii(exportPriecinok);
+
         // --------------------------------------------------------------- štítky
         var stitky = new StitkyService();
         var udaje = stitky.NacitajUdaje(riadky.Take(30).Select(r => r.Id));

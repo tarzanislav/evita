@@ -169,6 +169,8 @@ Odinštalovanie programu databázu ani zálohy nemaže.
 - C# / .NET 10 (LTS), WPF s Fluent vzhľadom Windows 11
 - SQLite cez Entity Framework Core
 - Čiarové a QR kódy: [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) v3.1.1 (Apache-2.0); kamera cez Windows.Media.Capture
+- Ikony kategórií: tvary zo sady [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons) (Microsoft, MIT) –
+  vložené ako dáta kresby (cesty), žiadna knižnica ani spustiteľný kód; licencia je priložená k programu
 
 ### Bezpečnosť čítačky kódov
 

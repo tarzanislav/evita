@@ -54,6 +54,12 @@ public class Kategoria
     public int Id { get; set; }
     public string Nazov { get; set; } = "";
     public bool Aktivna { get; set; } = true;
+
+    /// <summary>Kľúč ikony (Services.IkonyKategorii); null = podľa názvu kategórie.</summary>
+    public string? Ikona { get; set; }
+
+    /// <summary>Vlastná farba ikony #RRGGBB; null = predvolená farba ikony.</summary>
+    public string? Farba { get; set; }
 }
 
 public class Miestnost

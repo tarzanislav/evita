@@ -54,6 +54,9 @@ public sealed class MoznostiZostavy
     public bool Podpis { get; init; }
     public bool KazdaNaNovejStrane { get; init; }
 
+    /// <summary>Stĺpec s ikonou kategórie (medzi číslom a názvom). Dá sa vypnúť – napr. pri tlači na čiernobielu tlačiareň.</summary>
+    public bool IkonaKategorie { get; init; } = true;
+
     /// <summary>Len tieto položky (vyfiltrované v evidencii).</summary>
     public IReadOnlyCollection<int>? IdPoloziek { get; init; }
 
@@ -231,8 +234,28 @@ public sealed class ZostavyService
         var vsetkyRiadky = polozky.Select(Riadok).ToList();
         var sirky = zostava.Sirky(hlavicky, vsetkyRiadky);
 
+        // ikona kategórie: úzky stĺpec za číslom (ak číslo nie je vybrané, na začiatku); obrázok sa vykreslí raz na kategóriu
+        PdfZostava.StlpecIkon? ikony = null;
+        if (m.IkonaKategorie)
+        {
+            var obrazky = new Dictionary<int, byte[]>();
+            var stlpecCisla = stlpce.FindIndex(s => s.Kluc == StlpcePrenosu.Cislo);
+            ikony = new PdfZostava.StlpecIkon(stlpecCisla + 1, p =>
+            {
+                var polozka = (Polozka)p;
+                if (!obrazky.TryGetValue(polozka.KategoriaId, out var png))
+                {
+                    png = IkonyKategorii.Png(IkonyKategorii.Pre(polozka.Kategoria?.Ikona, polozka.Kategoria?.Farba, polozka.Kategoria?.Nazov));
+                    obrazky[polozka.KategoriaId] = png;
+                }
+
+                return png;
+            });
+        }
+
         void Tabulka(IReadOnlyList<Polozka> zoznam) =>
-            zostava.Tabulka(hlavicky, vpravo, zoznam.Select(Riadok).ToList(), sirky, zoznam.Select(p => p.Stav == StavPolozky.Vyradene).ToList());
+            zostava.Tabulka(hlavicky, vpravo, zoznam.Select(Riadok).ToList(), sirky, zoznam.Select(p => p.Stav == StavPolozky.Vyradene).ToList(),
+                ikony?.Pre(zoznam));
 
         if (polozky.Count == 0)
         {

@@ -293,14 +293,42 @@ public sealed class PdfZostava
         }
     }
 
+    /// <summary>Stĺpec s obrázkom (ikona kategórie) vložený pred stĺpec s daným poradím; obrázok PNG pre každý riadok.</summary>
+    public sealed record StlpecIkon(int Poradie, Func<object, byte[]> Obrazok)
+    {
+        public const double Sirka = 0.7;
+
+        public (int Poradie, IReadOnlyList<byte[]> Obrazky) Pre<T>(IEnumerable<T> riadky) where T : notnull =>
+            (Poradie, riadky.Select(r => Obrazok(r)).ToList());
+    }
+
     /// <summary>Tabuľka s hlavičkou, ktorá sa opakuje na každej strane. Sivé riadky (napr. vyradené) sú voliteľné.</summary>
     public void Tabulka(
         IReadOnlyList<string> hlavicky,
         IReadOnlyList<bool> vpravo,
         IReadOnlyList<string[]> riadky,
         double[] sirky,
-        IReadOnlyList<bool>? sede = null)
+        IReadOnlyList<bool>? sede = null,
+        (int Poradie, IReadOnlyList<byte[]> Obrazky)? ikony = null)
     {
+        if (ikony is { } stlpec)
+        {
+            // stĺpec s obrázkom: v textoch prázdna bunka, šírka sa vezme z ostatných stĺpcov (celková šírka sa nemení)
+            var poradie = Math.Clamp(stlpec.Poradie, 0, hlavicky.Count);
+            hlavicky = hlavicky.Take(poradie).Append("").Concat(hlavicky.Skip(poradie)).ToList();
+            vpravo = vpravo.Take(poradie).Append(false).Concat(vpravo.Skip(poradie)).ToList();
+            riadky = riadky.Select(r => r.Take(poradie).Append("").Concat(r.Skip(poradie)).ToArray()).ToList();
+            var zvysok = sirky.Sum() - StlpecIkon.Sirka;
+            var nasobok = zvysok / Math.Max(0.01, sirky.Sum());
+            sirky = sirky.Take(poradie).Select(s => s * nasobok).Append(StlpecIkon.Sirka)
+                .Concat(sirky.Skip(poradie).Select(s => s * nasobok)).ToArray();
+            _ikonyTabulky = (poradie, stlpec.Obrazky);
+        }
+        else
+        {
+            _ikonyTabulky = null;
+        }
+
         var tabulka = Sekcia.AddTable();
         tabulka.Borders.Width = 0.25;
         tabulka.Borders.Color = new Color(210, 210, 210);
@@ -341,6 +369,15 @@ public sealed class PdfZostava
 
             for (var i = 0; i < hlavicky.Count; i++)
             {
+                if (_ikonyTabulky is { } ik && i == ik.Poradie && r < ik.Obrazky.Count)
+                {
+                    var obrazok = riadok.Cells[i].AddParagraph().AddImage("base64:" + Convert.ToBase64String(ik.Obrazky[r]));
+                    obrazok.Width = Unit.FromPoint(_velkostPisma + 3);
+                    obrazok.Height = Unit.FromPoint(_velkostPisma + 3);
+                    riadok.Cells[i].VerticalAlignment = VerticalAlignment.Center;
+                    continue;
+                }
+
                 var odsek = riadok.Cells[i].AddParagraph(riadky[r][i]);
                 if (vpravo[i])
                 {
@@ -348,7 +385,11 @@ public sealed class PdfZostava
                 }
             }
         }
+
+        _ikonyTabulky = null;
     }
+
+    private (int Poradie, IReadOnlyList<byte[]> Obrazky)? _ikonyTabulky;
 
     // ------------------------------------------------------------------ šírky stĺpcov
 

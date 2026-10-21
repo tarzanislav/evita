@@ -138,6 +138,8 @@
                                           Visibility="{Binding UkazNovuStranu, Converter={StaticResource BoolNaViditelnost}}" />
                                 <CheckBox Content="{Binding TextPodpisu}" IsChecked="{Binding Podpis}" Margin="0,2,0,4"
                                           Visibility="{Binding UkazPodpis, Converter={StaticResource BoolNaViditelnost}}" />
+                                <CheckBox Content="Tlačiť ikonu kategórie (stĺpec medzi číslom a názvom)" IsChecked="{Binding IkonaKategorie}" Margin="0,2,0,4"
+                                          Visibility="{Binding UkazIkonu, Converter={StaticResource BoolNaViditelnost}}" />
                                 <StackPanel Visibility="{Binding UkazKalendar, Converter={StaticResource BoolNaViditelnost}}" Margin="0,2,0,4">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                         <RadioButton GroupName="kalendar" Content="mesačný kalendár (mesiac na strane)" IsChecked="{Binding KalendarMriezka}" />

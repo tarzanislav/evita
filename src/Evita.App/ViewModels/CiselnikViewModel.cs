@@ -66,6 +66,69 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private string _formularNadpis = "";
     [ObservableProperty] private bool _upravujem;
 
+    // ------------------------------------------------------------------ ikona a farba kategórie
+
+    public bool SuKategorie => Typ == TypCiselnika.Kategorie;
+
+    /// <summary>Všetky ikony na výber (každá v predvolenej farbe).</summary>
+    public List<FarebnaIkona> IkonyNaVyber { get; } = IkonyKategorii.Vsetky.Select(i => i.SFarbou(null)).ToList();
+
+    public IReadOnlyList<string> FarbyNaVyber => IkonyKategorii.Farby;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NahladIkony), nameof(PopisIkony))]
+    private bool _ikonaAutomaticky = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NahladIkony), nameof(PopisIkony))]
+    private FarebnaIkona? _vybranaIkona;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NahladIkony))]
+    private bool _farbaPredvolena = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NahladIkony))]
+    private string? _vybranaFarba;
+
+    /// <summary>Ikona tak, ako sa uloží (automatická podľa názvu alebo zvolená, vo zvolenej farbe).</summary>
+    public FarebnaIkona NahladIkony => IkonyKategorii.Pre(
+        IkonaAutomaticky ? null : VybranaIkona?.Ikona.Kluc, FarbaPredvolena ? null : VybranaFarba, Pole1);
+
+    public string PopisIkony => IkonaAutomaticky
+        ? Preklad.F($"Ikona: {NahladIkony.Nazov} (podľa názvu)")
+        : Preklad.F($"Ikona: {NahladIkony.Nazov}");
+
+    partial void OnPole1Changed(string value)
+    {
+        OnPropertyChanged(nameof(NahladIkony));
+        OnPropertyChanged(nameof(PopisIkony));
+    }
+
+    partial void OnVybranaIkonaChanged(FarebnaIkona? value)
+    {
+        if (value is not null)
+        {
+            IkonaAutomaticky = false;
+        }
+    }
+
+    partial void OnVybranaFarbaChanged(string? value)
+    {
+        if (value is not null)
+        {
+            FarbaPredvolena = false;
+        }
+    }
+
+    private void NastavIkonuFormulara(string? kluc, string? farba)
+    {
+        VybranaIkona = kluc is null ? null : IkonyNaVyber.FirstOrDefault(i => i.Ikona.Kluc == kluc);
+        IkonaAutomaticky = VybranaIkona is null;
+        VybranaFarba = IkonyKategorii.PlatnaFarba(farba) is { } f ? FarbyNaVyber.FirstOrDefault(x => x == f) ?? f : null;
+        FarbaPredvolena = VybranaFarba is null;
+    }
+
     public void Obnov()
     {
         var vybraneId = Vybrana?.Id;
@@ -87,6 +150,7 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
         Pole1 = value.Pole1;
         Pole2 = value.Pole2 ?? "";
         Pole3 = value.Pole3 ?? "";
+        NastavIkonuFormulara(value.IkonaKluc, value.IkonaFarba);
         FormularNadpis = Preklad.F($"Úprava: {value.Nazov}");
         Upravujem = true;
     }
@@ -98,6 +162,7 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
         Pole1 = "";
         Pole2 = "";
         Pole3 = "";
+        NastavIkonuFormulara(null, null);
         FormularNadpis = NovaText;
         Upravujem = false;
     }
@@ -106,6 +171,10 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
     private void Ulozit()
     {
         var id = _sluzba.Uloz(Typ, Upravujem ? Vybrana?.Id ?? 0 : 0, Pole1, Pole2, Pole3);
+        if (SuKategorie)
+        {
+            _sluzba.NastavIkonu(id, IkonaAutomaticky ? null : VybranaIkona?.Ikona.Kluc, FarbaPredvolena ? null : VybranaFarba);
+        }
         _hlavne.DataZmenene();
         Polozky = _sluzba.Nacitaj(Typ);
         Vybrana = Polozky.FirstOrDefault(p => p.Id == id);

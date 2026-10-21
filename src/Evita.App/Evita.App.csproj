@@ -37,6 +37,11 @@
     <Resource Include="Assets\evita.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- licencia sady ikon kategórií (Fluent UI System Icons, MIT) – priložená k programu -->
+    <None Include="Assets\LICENSE-fluentui-system-icons.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup Condition="Exists('Native\ZXing.dll')">
     <!-- čítačka kódov zxing-cpp: zostavuje ju GitHub Actions zo zdrojového kódu overenej verzie -->
     <None Include="Native\ZXing.dll" Link="ZXing.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

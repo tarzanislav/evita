@@ -152,6 +152,14 @@
                   SelectionChanged="Tabulka_SelectionChanged">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Č." Binding="{Binding PrirastkoveCislo}" Width="64" />
+                <DataGridTemplateColumn Header="" Width="34" CanUserResize="False" SortMemberPath="Kategoria">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ContentPresenter Content="{Binding IkonaKategorie}" ContentTemplate="{StaticResource IkonaKategorie}"
+                                              ToolTip="{Binding Kategoria}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="2*" MinWidth="200">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">

@@ -21,6 +21,18 @@
 
             <FontFamily x:Key="IkonovePismo">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
+            <!-- ikona kategórie (Services.FarebnaIkona): biely symbol na farebnom zaoblenom štvorčeku -->
+            <DataTemplate x:Key="IkonaKategorie">
+                <Border Width="22" Height="22" CornerRadius="5" Background="{Binding Stetec}" ToolTip="{Binding Nazov}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                    <Viewbox Margin="4">
+                        <Canvas Width="{Binding Ikona.Mierka}" Height="{Binding Ikona.Mierka}">
+                            <Path Data="{Binding Geometria}" Fill="White" />
+                        </Canvas>
+                    </Viewbox>
+                </Border>
+            </DataTemplate>
+
             <Style x:Key="Karta" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />

@@ -18,6 +18,13 @@
                       CanUserAddRows="False" CanUserDeleteRows="False"
                       HeadersVisibility="Column" GridLinesVisibility="Horizontal">
                 <DataGrid.Columns>
+                    <DataGridTemplateColumn x:Name="StlpecIkony" Header="" Width="34" CanUserResize="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ContentPresenter Content="{Binding Ikona}" ContentTemplate="{StaticResource IkonaKategorie}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="2*" />
                     <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
                     <DataGridTextColumn Header="Položiek" Binding="{Binding Pocet}" Width="80" />
@@ -40,6 +47,62 @@
                     <StackPanel Visibility="{Binding MaPole3, Converter={StaticResource BoolNaViditelnost}}">
                         <TextBlock Text="{Binding Pole3Popis}" Style="{StaticResource Stitok}" />
                         <TextBox Text="{Binding Pole3, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <!-- ikona a farba kategórie -->
+                    <StackPanel Visibility="{Binding SuKategorie, Converter={StaticResource BoolNaViditelnost}}">
+                        <DockPanel Margin="0,12,0,4">
+                            <ContentPresenter DockPanel.Dock="Left" Content="{Binding NahladIkony}" ContentTemplate="{StaticResource IkonaKategorie}"
+                                              Margin="0,0,8,0" />
+                            <TextBlock Text="{Binding PopisIkony}" Style="{StaticResource Stitok}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
+                        </DockPanel>
+                        <CheckBox Content="Ikona automaticky podľa názvu kategórie" IsChecked="{Binding IkonaAutomaticky}" Margin="0,2,0,6" />
+                        <ListBox ItemsSource="{Binding IkonyNaVyber}" SelectedItem="{Binding VybranaIkona}"
+                                 IsEnabled="{Binding IkonaAutomaticky, Converter={StaticResource InverzBool}}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" MaxHeight="170" Padding="0"
+                                 BorderThickness="0" Background="Transparent">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                    <Setter Property="Padding" Value="3" />
+                                    <Setter Property="Margin" Value="0" />
+                                    <Setter Property="MinHeight" Value="0" />
+                                    <Setter Property="ToolTip" Value="{Binding Nazov}" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource IkonaKategorie}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Text="Farba" Style="{StaticResource Stitok}" />
+                        <CheckBox Content="Predvolená farba ikony" IsChecked="{Binding FarbaPredvolena}" Margin="0,2,0,6" />
+                        <ListBox ItemsSource="{Binding FarbyNaVyber}" SelectedItem="{Binding VybranaFarba}"
+                                 IsEnabled="{Binding FarbaPredvolena, Converter={StaticResource InverzBool}}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" Padding="0" BorderThickness="0" Background="Transparent">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                    <Setter Property="Padding" Value="3" />
+                                    <Setter Property="Margin" Value="0" />
+                                    <Setter Property="MinHeight" Value="0" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="20" Height="20" CornerRadius="10" Background="{Binding Converter={StaticResource FarbaNaStetec}}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
 
                     <WrapPanel Margin="0,16,0,0">

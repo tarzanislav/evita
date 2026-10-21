@@ -50,6 +50,9 @@ public sealed class PolozkaRiadok
     public DateTime DatumZmeny { get; init; }
     public string? Poznamka { get; init; }
 
+    /// <summary>Ikona kategórie (farebný štvorček so symbolom) – stĺpec v evidencii.</summary>
+    public FarebnaIkona? IkonaKategorie { get; set; }
+
     public string Stav => StavyPoloziek.Nazov(StavHodnota);
     public bool Vyradena => StavHodnota == StavPolozky.Vyradene;
 
@@ -68,6 +71,11 @@ public sealed class CiselnikRiadok
     public string Pole1 { get; init; } = "";
     public string? Pole2 { get; init; }
     public string? Pole3 { get; init; }
+
+    /// <summary>Len kategórie: zobrazená ikona a uložené hodnoty (null = automaticky podľa názvu / predvolená farba).</summary>
+    public FarebnaIkona? Ikona { get; init; }
+    public string? IkonaKluc { get; init; }
+    public string? IkonaFarba { get; init; }
 
     public string AktivnaText => Aktivna ? Preklad.T("áno") : Preklad.T("nie");
 }

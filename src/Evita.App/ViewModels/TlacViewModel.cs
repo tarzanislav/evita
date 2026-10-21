@@ -42,7 +42,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(UkazObdobie), nameof(UkazVyradene), nameof(UkazPodpis), nameof(UkazNovuStranu),
         nameof(UkazStlpce), nameof(UkazZoskupenie), nameof(UkazMiestnost), nameof(UkazOsobu), nameof(UkazKategoriu),
-        nameof(UkazPolozku), nameof(Dostupna), nameof(Poznamka), nameof(TextPodpisu), nameof(PopisVyfiltrovanych), nameof(UkazKalendar))]
+        nameof(UkazPolozku), nameof(Dostupna), nameof(Poznamka), nameof(TextPodpisu), nameof(PopisVyfiltrovanych), nameof(UkazKalendar), nameof(UkazIkonu))]
     private PopisZostavy _vybrana;
 
     partial void OnVybranaChanged(PopisZostavy value)
@@ -149,6 +149,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
             VrataneVyradenych = zostava.VrataneVyradenych;
             Podpis = zostava.Podpis;
             KazdaNaNovejStrane = zostava.KazdaNaNovejStrane;
+            IkonaKategorie = zostava.IkonaKategorie;
             if (Enum.TryParse<Zoskupenie>(zostava.Zoskupenie, out var zoskupenie))
             {
                 Zoskupenie = zoskupenie;
@@ -224,6 +225,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
             VrataneVyradenych = VrataneVyradenych,
             Podpis = Podpis,
             KazdaNaNovejStrane = KazdaNaNovejStrane,
+            IkonaKategorie = IkonaKategorie,
             Zoskupenie = Zoskupenie.ToString(),
             Obdobie = UkazObdobie ? ObdobieUlozenia.ToString() : nameof(ObdobieZostavy.PevneDatumy),
             Od = UkazObdobie && pevne ? Od : null,
@@ -277,6 +279,9 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     public bool UkazVyradene => Vybrana.MaVyradene;
     public bool UkazPodpis => Vybrana.MaPodpis;
     public bool UkazNovuStranu => Vybrana.MaNovuStranu;
+
+    /// <summary>Voľba ikony kategórie – pri zostavách so zoznamom položiek (nie pri histórii a kalendári).</summary>
+    public bool UkazIkonu => Vybrana.Druh is not (DruhZostavy.Historia or DruhZostavy.Kalendar);
     public bool UkazStlpce => Vybrana.MaVolbuStlpcov && Vybrana.Dostupna;
     public bool UkazZoskupenie => Vybrana.Druh == DruhZostavy.SuhrnnyZoznam;
     public bool UkazMiestnost => Vybrana.Druh is DruhZostavy.PoMiestnostiach or DruhZostavy.Historia;
@@ -323,6 +328,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private bool _vrataneVyradenych;
     [ObservableProperty] private bool _podpis = true;
     [ObservableProperty] private bool _kazdaNaNovejStrane = true;
+    [ObservableProperty] private bool _ikonaKategorie = true;
     [ObservableProperty] private bool _naSirku;
     [ObservableProperty] private Zoskupenie _zoskupenie = Zoskupenie.Kategoria;
     [ObservableProperty] private int _miestnostId;
@@ -474,6 +480,7 @@ public partial class TlacViewModel : ObservableObject, IObnovitelny
             Zoskupenie = Zoskupenie,
             Podpis = UkazPodpis && Podpis,
             KazdaNaNovejStrane = UkazNovuStranu && KazdaNaNovejStrane,
+            IkonaKategorie = UkazIkonu && IkonaKategorie,
             IdPoloziek = id,
             PopisFiltra = popisFiltra,
             KategoriaId = UkazKategoriu ? KategoriaId : null,

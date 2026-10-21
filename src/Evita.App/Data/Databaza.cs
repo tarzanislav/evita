@@ -10,7 +10,7 @@ namespace Evita.Data;
 public static class Databaza
 {
     /// <summary>Aktuálna verzia dátovej štruktúry. Pri každej zmene štruktúry sa zvýši a pribudne krok v <see cref="Migracie"/>.</summary>
-    public const int VerziaSchemy = 5;
+    public const int VerziaSchemy = 6;
 
     /// <summary>
     /// Kroky, ktoré upravia staršiu databázu na novú verziu štruktúry. Každý príkaz musí byť bezpečný aj pri
@@ -57,6 +57,11 @@ public static class Databaza
             """CREATE TABLE IF NOT EXISTS "InventuraZaznamy" ("Id" INTEGER NOT NULL CONSTRAINT "PK_InventuraZaznamy" PRIMARY KEY AUTOINCREMENT, "InventuraId" INTEGER NOT NULL, "PolozkaId" INTEGER NULL, "Kod" TEXT NOT NULL, "MiestnostId" INTEGER NULL, "EvidovanaMiestnostId" INTEGER NULL, "Cas" TEXT NOT NULL, "Sposob" TEXT NOT NULL, "Pouzivatel" TEXT NOT NULL, CONSTRAINT "FK_InventuraZaznamy_Inventury_InventuraId" FOREIGN KEY ("InventuraId") REFERENCES "Inventury" ("Id") ON DELETE CASCADE, CONSTRAINT "FK_InventuraZaznamy_Polozky_PolozkaId" FOREIGN KEY ("PolozkaId") REFERENCES "Polozky" ("Id") ON DELETE SET NULL);""",
             """CREATE INDEX IF NOT EXISTS "IX_InventuraZaznamy_InventuraId" ON "InventuraZaznamy" ("InventuraId");""",
             """CREATE INDEX IF NOT EXISTS "IX_InventuraZaznamy_PolozkaId" ON "InventuraZaznamy" ("PolozkaId");""",
+        }),
+        (6, "ikony kategórií", new[]
+        {
+            """ALTER TABLE "Kategorie" ADD COLUMN "Ikona" TEXT NULL;""",
+            """ALTER TABLE "Kategorie" ADD COLUMN "Farba" TEXT NULL;""",
         }),
     };
 

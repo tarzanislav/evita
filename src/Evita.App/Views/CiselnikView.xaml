@@ -103,6 +103,11 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
+                        <DockPanel Margin="0,6,0,0">
+                            <TextBlock DockPanel.Dock="Left" Text="Iná farba (kód #RRGGBB):" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBox Text="{Binding FarbaText, UpdateSourceTrigger=LostFocus}" Width="96" HorizontalAlignment="Left"
+                                     ToolTip="Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie" />
+                        </DockPanel>
                     </StackPanel>
 
                     <WrapPanel Margin="0,16,0,0">

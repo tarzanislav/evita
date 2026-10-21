@@ -1842,5 +1842,7 @@
  "Herná technika": "游戏设备",
  "Komponent": "组件",
  "Náradie": "工具",
- "Iné": "其他"
+ "Iné": "其他",
+ "Iná farba (kód #RRGGBB):": "其他颜色（代码 #RRGGBB）：",
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "例如 #1E90FF——任意颜色，例如贵单位的标准色"
 }

@@ -1842,5 +1842,7 @@
  "Herná technika": "Sprzęt do gier",
  "Komponent": "Podzespół",
  "Náradie": "Narzędzia",
- "Iné": "Inne"
+ "Iné": "Inne",
+ "Iná farba (kód #RRGGBB):": "Inny kolor (kod #RRGGBB):",
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Np. #1E90FF – dowolny kolor, na przykład zgodny z kolorami Twojej organizacji"
 }

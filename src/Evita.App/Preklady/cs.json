@@ -1842,5 +1842,7 @@
  "Herná technika": "Herní technika",
  "Komponent": "Komponenta",
  "Náradie": "Nářadí",
- "Iné": "Jiné"
+ "Iné": "Jiné",
+ "Iná farba (kód #RRGGBB):": "Jiná barva (kód #RRGGBB):",
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Např. #1E90FF – libovolná barva, například podle barev vaší organizace"
 }

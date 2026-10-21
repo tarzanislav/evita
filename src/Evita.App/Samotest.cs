@@ -817,7 +817,22 @@ internal static partial class Samotest
                     Over(model.ImportExport.StiahnutyVzor.EndsWith(".xlsx", StringComparison.Ordinal), "obrazovka Import a export: stiahnutie vzoru");
                 }
 
-                if (sekcia is "import" or "evidencia" or "tlac" or "kalendar" or "dashboard" or "ulohy" or "poznamky" or "nastavenia" or "kalendarium")
+                if (sekcia is "kategorie")
+                {
+                    // formulár kategórie s výberom ikony a farby
+                    model.Kategorie.Vybrana = model.Kategorie.Polozky.First(k => k.Pocet > 0);
+                    model.Kategorie.FarbaText = "#0F766E";
+                    Pumpuj();
+                    Over(model.Kategorie.VybranaFarba == "#0F766E" && !model.Kategorie.FarbaPredvolena && model.Kategorie.NahladIkony.Farba == "#0F766E",
+                        "kategórie: vlastná farba ikony zadaná kódom");
+                    model.Kategorie.FarbaText = "zlá";
+                    Over(model.Kategorie.VybranaFarba == "#0F766E", "kategórie: neplatný kód farby sa nepoužije");
+                    model.Kategorie.VybranaFarba = IkonyKategorii.Farby[8];
+                    Pumpuj();
+                    Over(model.Kategorie.FarbaText == IkonyKategorii.Farby[8], "kategórie: farba z palety sa ukáže aj ako kód");
+                }
+
+                if (sekcia is "import" or "evidencia" or "tlac" or "kalendar" or "dashboard" or "ulohy" or "poznamky" or "nastavenia" or "kalendarium" or "kategorie")
                 {
                     Snimka(okno, "okno_" + sekcia);
                 }

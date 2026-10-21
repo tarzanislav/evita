@@ -1842,5 +1842,7 @@
  "Herná technika": "Gaming",
  "Komponent": "Component",
  "Náradie": "Tools",
- "Iné": "Other"
+ "Iné": "Other",
+ "Iná farba (kód #RRGGBB):": "Other colour (code #RRGGBB):",
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "E.g. #1E90FF – any colour, for example your organisation's colours"
 }

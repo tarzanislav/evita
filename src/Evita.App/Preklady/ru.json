@@ -1842,5 +1842,7 @@
  "Herná technika": "Игровая техника",
  "Komponent": "Комплектующие",
  "Náradie": "Инструменты",
- "Iné": "Прочее"
+ "Iné": "Прочее",
+ "Iná farba (kód #RRGGBB):": "Другой цвет (код #RRGGBB):",
+ "Napr. #1E90FF – ľubovoľná farba, napríklad podľa farieb vašej organizácie": "Например, #1E90FF – любой цвет, например в цветах вашей организации"
 }

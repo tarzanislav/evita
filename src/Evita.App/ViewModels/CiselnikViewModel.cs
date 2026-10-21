@@ -76,15 +76,15 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
     public IReadOnlyList<string> FarbyNaVyber => IkonyKategorii.Farby;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(NahladIkony), nameof(PopisIkony))]
+    [NotifyPropertyChangedFor(nameof(NahladIkony), nameof(PopisIkony), nameof(FarbaText))]
     private bool _ikonaAutomaticky = true;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(NahladIkony), nameof(PopisIkony))]
+    [NotifyPropertyChangedFor(nameof(NahladIkony), nameof(PopisIkony), nameof(FarbaText))]
     private FarebnaIkona? _vybranaIkona;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(NahladIkony))]
+    [NotifyPropertyChangedFor(nameof(NahladIkony), nameof(FarbaText))]
     private bool _farbaPredvolena = true;
 
     [ObservableProperty]
@@ -103,6 +103,7 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
     {
         OnPropertyChanged(nameof(NahladIkony));
         OnPropertyChanged(nameof(PopisIkony));
+        OnPropertyChanged(nameof(FarbaText));
     }
 
     partial void OnVybranaIkonaChanged(FarebnaIkona? value)
@@ -118,6 +119,21 @@ public partial class CiselnikViewModel : ObservableObject, IObnovitelny
         if (value is not null)
         {
             FarbaPredvolena = false;
+        }
+
+        OnPropertyChanged(nameof(FarbaText));
+    }
+
+    /// <summary>Farba ako kód #RRGGBB – ľubovoľná farba okrem palety. Neplatný kód sa ignoruje.</summary>
+    public string FarbaText
+    {
+        get => FarbaPredvolena ? NahladIkony.Farba : VybranaFarba ?? NahladIkony.Farba;
+        set
+        {
+            if (IkonyKategorii.PlatnaFarba(value?.Trim()) is { } farba)
+            {
+                VybranaFarba = FarbyNaVyber.FirstOrDefault(f => f == farba) ?? farba;
+            }
         }
     }
 

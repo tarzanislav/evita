@@ -124,6 +124,12 @@
                                         <TextBlock Grid.Column="2" Text="{Binding Text}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                                    MaxHeight="40" ToolTip="{Binding Text}" />
                                     </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+            </Grid>
 
             <!-- Úlohy, počasie, kurzový lístok -->
             <UniformGrid Rows="1">

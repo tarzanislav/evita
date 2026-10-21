@@ -73,7 +73,7 @@
         </ItemsControl>
 
         <!-- podokno s položkami vybraného riadku -->
-        <Border DockPanel.Dock="Right" Width="560" Margin="12,0,0,0" Style="{StaticResource Karta}" Padding="14,12"
+        <Border DockPanel.Dock="Right" Width="540" Margin="12,0,0,0" Style="{StaticResource Karta}" Padding="14,12"
                 Visibility="{Binding JeVybrany, Converter={StaticResource BoolNaViditelnost}}">
             <DockPanel>
                 <DockPanel DockPanel.Dock="Top">
@@ -120,7 +120,7 @@
         </Border>
 
         <!-- bloky -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Bloky}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

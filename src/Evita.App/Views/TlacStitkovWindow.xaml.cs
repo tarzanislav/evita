@@ -24,7 +24,7 @@ public partial class TlacStitkovWindow : Window
         _rozlozenie = rozlozenie;
         InitializeComponent();
         Do.Text = rozlozenie.PocetStran.ToString(CultureInfo.InvariantCulture);
-        FormatText.Text = rozlozenie.Sablona.Nazov + " · " + rozlozenie.Sablona.Rozmer;
+        FormatText.Text = rozlozenie.Sablona.Nazov;
         string? ulozena;
         using (var db = Databaza.Otvor())
         {

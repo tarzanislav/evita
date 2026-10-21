@@ -178,12 +178,27 @@ public static class VyrobcaModelService
     /// </summary>
     public static async Task<int> DoplnCakajuceAsync(CancellationToken zrusenie = default, int najviac = 40)
     {
-        if (!ZInternetuZapnute || LimitDnesVycerpany)
+        if (!ZInternetuZapnute)
         {
             return 0;
         }
 
         var sluzba = new PolozkaService();
+
+        // položky, ktorým výrobcu a model medzičasom zadal používateľ (alebo sú zmazané), už nečakajú – aj pri vyčerpanom limite
+        foreach (var id in Cakajuce())
+        {
+            if (sluzba.Nacitaj(id) is not { } p || (!string.IsNullOrWhiteSpace(p.Vyrobca) && !string.IsNullOrWhiteSpace(p.Model)))
+            {
+                OdoberCakajuce(id);
+            }
+        }
+
+        if (LimitDnesVycerpany)
+        {
+            return 0;
+        }
+
         var zname = await Task.Run(NacitajZEvidencie, zrusenie).ConfigureAwait(false);
         var kategorie = new CiselnikService().Volby(TypCiselnika.Kategorie, null, null).Select(k => k.Nazov).ToList();
         var doplnene = 0;

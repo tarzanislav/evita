@@ -59,7 +59,10 @@ public static class NahladDokumentu
         return kresba;
     }
 
-    /// <summary>Vytlačí dokument cez okno tlače Windows. Vráti false, ak používateľ tlač zrušil.</summary>
+    /// <summary>
+    /// Vytlačí dokument cez okno tlače EviTA: výber tlačiarne, kópie, obojstranná tlač, 1/2/4/8 strán na list, opakovanie
+    /// strán, brožúra, zväčšenie, rámik, odtiene sivej a dierovač. Vráti false, ak používateľ tlač zrušil.
+    /// </summary>
     public static bool Vytlac(Func<Document> tvorba, bool naSirku, string nazovUlohy)
     {
         if (Dialogy.TichyRezim)
@@ -68,104 +71,115 @@ public static class NahladDokumentu
             return true;
         }
 
-        var dialog = new PrintDialog { UserPageRangeEnabled = true };
-        try
-        {
-            dialog.PrintTicket.PageOrientation = naSirku ? PageOrientation.Landscape : PageOrientation.Portrait;
-            dialog.PrintTicket.PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4);
-        }
-        catch (Exception)
-        {
-            // niektoré tlačiarne nastavenie nepodporujú – použijú svoje predvolené
-        }
-
-        if (dialog.ShowDialog() != true)
-        {
-            return false;
-        }
-
-        // orientácia zostavy platí pre každú tlačiareň: po výbere inej tlačiarne v okne tlače má tá svoje predvolené
-        // nastavenie, preto sa orientácia a A4 nastavia znova a zosúladia s možnosťami vybranej tlačiarne
-        NastavOrientaciu(dialog, naSirku);
-
         DocumentRenderer? vykreslenie = null;
         Dialogy.Cakaj(() => vykreslenie = Priprav(tvorba()));
-        var strankovac = new Strankovac(vykreslenie!, naSirku);
-        if (dialog.PageRangeSelection == PageRangeSelection.UserPages)
-        {
-            strankovac.Rozsah(dialog.PageRange.PageFrom, dialog.PageRange.PageTo);
-        }
-
-        dialog.PrintDocument(strankovac, nazovUlohy);
-        return true;
+        var okno = new Views.TlacWindow(vykreslenie!, naSirku, nazovUlohy) { Owner = Dialogy.Vlastnik };
+        return okno.ShowDialog() == true;
     }
 
-    /// <summary>Orientácia (na výšku / na šírku) a formát A4 pre vybranú tlačiareň.</summary>
-    private static void NastavOrientaciu(PrintDialog dialog, bool naSirku)
+    /// <summary>Strana zostavy ako kresba na umiestnenie na list.</summary>
+    public static LogickaStrana LogickaStrana(DocumentRenderer vykreslenie, int strana, bool naSirku)
     {
-        var orientacia = naSirku ? PageOrientation.Landscape : PageOrientation.Portrait;
-        try
+        var vizual = Strana(vykreslenie, strana, naSirku, out var velkost);
+        var kresba = vizual.Drawing;
+        if (kresba.CanFreeze)
         {
-            var tiket = dialog.PrintTicket.Clone();
-            tiket.PageOrientation = orientacia;
-            tiket.PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4);
-            if (dialog.PrintQueue is { } fronta)
-            {
-                var overeny = fronta.MergeAndValidatePrintTicket(fronta.UserPrintTicket ?? fronta.DefaultPrintTicket, tiket).ValidatedPrintTicket;
-                overeny.PageOrientation = orientacia;
-                tiket = overeny;
-            }
+            kresba.Freeze();
+        }
 
-            dialog.PrintTicket = tiket;
-        }
-        catch (Exception)
-        {
-            try
-            {
-                dialog.PrintTicket.PageOrientation = orientacia;
-            }
-            catch (Exception)
-            {
-                // tlačiareň nastavenie nepodporuje – použije svoje predvolené
-            }
-        }
+        return new LogickaStrana(kresba, velkost);
     }
 
-    /// <summary>Strany zostavy pre tlač Windows.</summary>
-    private sealed class Strankovac : DocumentPaginator
+    /// <summary>Listy na tlač podľa volieb (rozmiestnenie strán, sivá …) pre tlačiareň Windows.</summary>
+    public sealed class StrankovacRozvrhu : DocumentPaginator
     {
         private readonly DocumentRenderer _vykreslenie;
         private readonly bool _naSirku;
-        private int _od = 1;
-        private int _po;
+        private readonly VolbyTlace _volby;
+        private readonly List<int?[]> _listy;
+        private readonly Dictionary<int, LogickaStrana> _strany = new();
 
-        public Strankovac(DocumentRenderer vykreslenie, bool naSirku)
+        public StrankovacRozvrhu(DocumentRenderer vykreslenie, bool naSirku, VolbyTlace volby)
         {
             _vykreslenie = vykreslenie;
             _naSirku = naSirku;
-            _po = PocetStran(vykreslenie);
-            PageSize = naSirku ? new Size(29.7 / 2.54 * 96, 21.0 / 2.54 * 96) : new Size(21.0 / 2.54 * 96, 29.7 / 2.54 * 96);
+            _volby = volby;
+            _listy = RozvrhTlace.Rozdel(PocetStran(vykreslenie), volby);
+            ListNaSirku = RozvrhTlace.Mriezka(volby.Rozmiestnenie, naSirku).ListNaSirku;
+            PageSize = RozvrhTlace.VelkostListu(ListNaSirku);
         }
 
-        public void Rozsah(int od, int po)
-        {
-            var pocet = PocetStran(_vykreslenie);
-            _od = Math.Clamp(od, 1, pocet);
-            _po = Math.Clamp(po, _od, pocet);
-        }
+        public bool ListNaSirku { get; }
+
+        /// <summary>Strany listov (pri obojstrannej tlači každá druhá je zadná strana).</summary>
+        public int PocetListov => _listy.Count;
 
         public override bool IsPageCountValid => true;
 
-        public override int PageCount => _po - _od + 1;
+        public override int PageCount => _listy.Count;
 
         public override Size PageSize { get; set; }
 
         public override IDocumentPaginatorSource? Source => null;
 
+        /// <summary>Strana listu ako vizuál (aj pre náhľad v okne tlače).</summary>
+        public DrawingVisual List(int index) =>
+            RozvrhTlace.List(_listy[index], Strana, _volby, _naSirku, index % 2 == 1);
+
+        private LogickaStrana Strana(int cislo)
+        {
+            if (!_strany.TryGetValue(cislo, out var strana))
+            {
+                strana = LogickaStrana(_vykreslenie, cislo, _naSirku);
+                if (_volby.OdtieneSivej)
+                {
+                    strana = RozvrhTlace.NaSivu(strana, NahladDpi ?? 250);
+                }
+
+                _strany[cislo] = strana;
+            }
+
+            return strana;
+        }
+
+        /// <summary>Rozlíšenie sivých strán v náhľade (nižšie = rýchlejšie); pri tlači null = 250 dpi.</summary>
+        public double? NahladDpi { get; init; }
+
         public override DocumentPage GetPage(int pageNumber)
         {
-            var kresba = Strana(_vykreslenie, _od + pageNumber, _naSirku, out var velkost);
-            return new DocumentPage(kresba, velkost, new Rect(velkost), new Rect(velkost));
+            var vizual = List(pageNumber);
+            return new DocumentPage(vizual, PageSize, new Rect(PageSize), new Rect(PageSize));
+        }
+    }
+
+    /// <summary>
+    /// Tlačový lístok pre vybranú tlačiareň: A4, orientácia listu, obojstranná tlač, kópie a sivá – nastaví sa pri každej
+    /// tlačiarni znova (každá má svoje predvolené) a zosúladí sa s jej možnosťami.
+    /// </summary>
+    public static PrintTicket Tiket(PrintQueue fronta, VolbyTlace volby, bool listNaSirku)
+    {
+        var tiket = (fronta.UserPrintTicket ?? fronta.DefaultPrintTicket).Clone();
+        tiket.PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4);
+        tiket.PageOrientation = listNaSirku ? PageOrientation.Landscape : PageOrientation.Portrait;
+        tiket.CopyCount = volby.Kopie;
+        tiket.Collation = Collation.Collated;
+        tiket.Duplexing = !volby.TlacitObojstranne
+            ? Duplexing.OneSided
+            : listNaSirku ? Duplexing.TwoSidedShortEdge : Duplexing.TwoSidedLongEdge;
+        if (volby.OdtieneSivej)
+        {
+            tiket.OutputColor = OutputColor.Grayscale;
+        }
+
+        try
+        {
+            var overeny = fronta.MergeAndValidatePrintTicket(fronta.UserPrintTicket ?? fronta.DefaultPrintTicket, tiket).ValidatedPrintTicket;
+            overeny.PageOrientation = tiket.PageOrientation;
+            return overeny;
+        }
+        catch (Exception)
+        {
+            return tiket;
         }
     }
 }

@@ -1087,6 +1087,9 @@ internal static partial class Samotest
             Pumpuj();
             Krok("okno: náhľad tlače");
 
+            // okno tlače: strany na list, brožúra, sivá, dierovač …
+            SamotestOknaTlace();
+
             // kalendár: týždeň, zoznam, udalosť, typy, nastavenia, prehľad dňa, upozornenie
             okno.OznacSekciu("kalendar");
             Pumpuj();

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,14 +12,41 @@ using PdfSharp.Pdf.Advanced;
 
 namespace Evita.Services;
 
+/// <summary>Formát ukladanej zostavy.</summary>
+public enum FormatVystupu
+{
+    /// <summary>Bežné PDF (dá sa zašifrovať a chrániť heslom).</summary>
+    Pdf,
+
+    /// <summary>Archívne PDF/A-2b (ISO 19005-2).</summary>
+    PdfA2b,
+
+    /// <summary>Archívne PDF/A-3b s vloženými dátami zostavy v Exceli.</summary>
+    PdfA3b,
+
+    /// <summary>PDF/X-4 pre tlačiarne (ISO 15930-7).</summary>
+    PdfX4,
+
+    /// <summary>Strany ako obrázky PNG.</summary>
+    Png,
+
+    /// <summary>Všetky strany v jednom obrázku TIFF.</summary>
+    Tiff,
+}
+
+/// <summary>Súbor vytvorený zo zostavy (PDF alebo obrázok) – na uloženie alebo ako príloha e-mailu.</summary>
+public sealed record SuborVystupu(string Nazov, byte[] Data, string Mime);
+
 /// <summary>
-/// Voľby ukladania do PDF (podobne ako pdfFactory): šifrovanie, heslo na otvorenie, zákazy (tlač, kopírovanie, úpravy,
-/// poznámky), odtiene sivej, zosvetlenie a rozmiestnenie strán (1/2/4/8 na list, brožúra). Text v PDF zostáva textom –
-/// dá sa označiť a kopírovať (OCR netreba), písma sú vždy vložené.
+/// Voľby ukladania do PDF (podobne ako pdfFactory): formát (PDF, PDF/A, PDF/X, obrázky), šifrovanie, heslo na otvorenie,
+/// zákazy (tlač, kopírovanie, úpravy, poznámky), odtiene sivej, zosvetlenie a rozmiestnenie strán (1/2/4/8 na list,
+/// brožúra). Text v PDF zostáva textom – dá sa označiť a kopírovať (OCR netreba), písma sú vždy vložené.
 /// </summary>
 public sealed record VolbyPdf
 {
     public const string KlucNastavenia = "Tlac.Pdf";
+
+    public FormatVystupu Format { get; init; } = FormatVystupu.Pdf;
 
     /// <summary>Rozmiestnenie strán, rámik, zväčšenie, sivá, zosvetlenie, dierovač (rovnaké ako pri tlači).</summary>
     public VolbyTlace Rozvrh { get; init; } = new();
@@ -39,10 +67,27 @@ public sealed record VolbyPdf
     /// <summary>Heslo na zmenu zákazov (nepovinné) – tiež len v pamäti.</summary>
     [JsonIgnore] public static string? HesloVlastnika { get; set; }
 
-    [JsonIgnore] public bool MaZakazy => ZakazTlace || ZakazKopirovania || ZakazUprav || ZakazPoznamok;
+    /// <summary>Výsledok je PDF (nie obrázok).</summary>
+    [JsonIgnore] public bool JePdf => Format is FormatVystupu.Pdf or FormatVystupu.PdfA2b or FormatVystupu.PdfA3b or FormatVystupu.PdfX4;
+
+    /// <summary>Šifrovanie, heslo a zákazy – len bežné PDF (normy PDF/A a PDF/X šifrovanie nepovoľujú).</summary>
+    [JsonIgnore] public bool MozeZabezpecit => Format == FormatVystupu.Pdf;
+
+    [JsonIgnore] public bool MaZakazy => MozeZabezpecit && (ZakazTlace || ZakazKopirovania || ZakazUprav || ZakazPoznamok);
+
+    /// <summary>Heslo na otvorenie sa naozaj použije.</summary>
+    [JsonIgnore] public bool SHeslom => MozeZabezpecit && PouzitHeslo;
 
     /// <summary>PDF sa zašifruje (zvolené šifrovanie, heslo alebo niektorý zákaz).</summary>
-    [JsonIgnore] public bool Zasifrovat => Sifrovat || PouzitHeslo || MaZakazy;
+    [JsonIgnore] public bool Zasifrovat => MozeZabezpecit && (Sifrovat || PouzitHeslo || MaZakazy);
+
+    /// <summary>Prípona súboru podľa formátu.</summary>
+    [JsonIgnore] public string Pripona => Format switch
+    {
+        FormatVystupu.Png => ".png",
+        FormatVystupu.Tiff => ".tif",
+        _ => ".pdf",
+    };
 
     /// <summary>Treba vlastné poskladanie strán (inak sa PDF uloží priamo, aj s odkazmi a záložkami).</summary>
     [JsonIgnore] public bool ZlozitStrany => Rozvrh.Rozmiestnenie != Rozmiestnenie.Jedna || Rozvrh.OdtieneSivej || Rozvrh.Zosvetlit
@@ -55,7 +100,11 @@ public sealed record VolbyPdf
             using var db = Databaza.Otvor();
             if (Databaza.Citaj(db, KlucNastavenia) is { Length: > 0 } json && JsonSerializer.Deserialize<VolbyPdf>(json) is { } volby)
             {
-                return volby with { Rozvrh = volby.Rozvrh.Opravene() };
+                return volby with
+                {
+                    Rozvrh = volby.Rozvrh.Opravene(),
+                    Format = Enum.IsDefined(volby.Format) ? volby.Format : FormatVystupu.Pdf,
+                };
             }
         }
         catch (Exception)
@@ -74,16 +123,40 @@ public sealed record VolbyPdf
     }
 }
 
-/// <summary>Uloženie zostavy do PDF podľa volieb – vektorovo (text sa dá kopírovať), voliteľne zašifrované.</summary>
+/// <summary>Uloženie zostavy do PDF podľa volieb – vektorovo (text sa dá kopírovať), voliteľne zašifrované, PDF/A, PDF/X alebo obrázky.</summary>
 public static class PdfVystup
 {
     private const double BodovNaMm = 72.0 / 25.4;
 
-    /// <summary>Uloží dokument do PDF s uloženými voľbami PDF (alebo so zadanými).</summary>
-    public static void Uloz(Document dokument, string cesta, VolbyPdf? volby = null)
+    /// <summary>
+    /// Uloží zostavu podľa uložených (alebo zadaných) volieb a vráti cesty k súborom. Pri obrázkoch PNG s viacerými
+    /// stranami vznikne súbor pre každú stranu (názov-1.png, názov-2.png …). Cesta s príponou .pdf vždy dá PDF.
+    /// </summary>
+    public static IReadOnlyList<string> Uloz(Document dokument, string cesta, VolbyPdf? volby = null)
     {
         volby ??= VolbyPdf.Nacitaj();
-        if (volby.PouzitHeslo && string.IsNullOrEmpty(VolbyPdf.Heslo))
+        if (!volby.JePdf && string.Equals(Path.GetExtension(cesta), ".pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            volby = volby with { Format = FormatVystupu.Pdf };
+        }
+
+        var priecinok = Path.GetDirectoryName(Path.GetFullPath(cesta))!;
+        var cesty = new List<string>();
+        foreach (var subor in Vytvor(dokument, Path.GetFileNameWithoutExtension(cesta), volby))
+        {
+            var ciel = Path.Combine(priecinok, subor.Nazov);
+            File.WriteAllBytes(ciel, subor.Data);
+            cesty.Add(ciel);
+        }
+
+        return cesty;
+    }
+
+    /// <summary>Vytvorí súbory zostavy v pamäti (na uloženie alebo odoslanie e-mailom bez ukladania na disk).</summary>
+    public static IReadOnlyList<SuborVystupu> Vytvor(Document dokument, string nazov, VolbyPdf? volby = null)
+    {
+        volby ??= VolbyPdf.Nacitaj();
+        if (volby.SHeslom && string.IsNullOrEmpty(VolbyPdf.Heslo))
         {
             throw new EvitaException(Preklad.T("PDF sa má chrániť heslom, ale heslo nie je zadané. Zadajte ho v nastaveniach PDF."));
         }
@@ -91,6 +164,11 @@ public static class PdfVystup
         if (volby.Rozvrh.BezPozadia)
         {
             PozadieDokumentu.Odstran(dokument);
+        }
+
+        if (!volby.JePdf)
+        {
+            return ObrazkyDokumentu.Vytvor(dokument, nazov, volby.Rozvrh, volby.Format == FormatVystupu.Tiff);
         }
 
         PdfDocument pdf;
@@ -106,8 +184,30 @@ public static class PdfVystup
         }
 
         pdf.Info.Creator = $"EviTA {AktualizaciaService.AktualnaVerzia}";
-        Zabezpec(pdf, volby);
-        pdf.Save(cesta);
+        if (string.IsNullOrWhiteSpace(pdf.Info.Title))
+        {
+            pdf.Info.Title = string.IsNullOrWhiteSpace(dokument.Info.Title) ? nazov : dokument.Info.Title;
+        }
+
+        if (pdf.Outlines.Count > 0)
+        {
+            pdf.PageMode = PdfPageMode.UseOutlines;
+        }
+
+        byte[] data;
+        if (volby.Format == FormatVystupu.Pdf)
+        {
+            Zabezpec(pdf, volby);
+            using var prud = new MemoryStream();
+            pdf.Save(prud, false);
+            data = prud.ToArray();
+        }
+        else
+        {
+            data = PdfNorma.Uloz(pdf, volby.Format, nazov, volby.Format == FormatVystupu.PdfA3b ? TabulkyDokumentu.Xlsx(dokument) : null);
+        }
+
+        return new[] { new SuborVystupu(nazov + ".pdf", data, "application/pdf") };
     }
 
     /// <summary>
@@ -230,6 +330,16 @@ public static class PdfVystup
                 var obsahStrany = strana.Contents.AppendContent();
                 obsahStrany.CreateStream(Encoding.ASCII.GetBytes(
                     FormattableString.Invariant($"q {nazov} gs 0.5 g -10 -10 {sirka + 20:0.##} {vyska + 20:0.##} re f Q\n")));
+            }
+        }
+
+        // záložky (nadpisy skupín) – pri opakovaní strán len prvý výskyt
+        var videne = new HashSet<string>();
+        foreach (var zalozka in pdf.Outlines.ToList())
+        {
+            if (!videne.Add(zalozka.Title))
+            {
+                pdf.Outlines.Remove(zalozka);
             }
         }
 

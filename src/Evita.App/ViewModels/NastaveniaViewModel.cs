@@ -370,6 +370,9 @@ public partial class NastaveniaViewModel : ObservableObject, IObnovitelny
     private void NastaveniaKalendara() => new Views.NastaveniaKalendaraWindow { Owner = Dialogy.Vlastnik }.ShowDialog();
 
     [RelayCommand]
+    private void NastavenieEmailu() => new Views.EmailNastaveniaWindow { Owner = Dialogy.Vlastnik }.ShowDialog();
+
+    [RelayCommand]
     private void OtvorSekciu(string? sekcia)
     {
         if (sekcia is not null)

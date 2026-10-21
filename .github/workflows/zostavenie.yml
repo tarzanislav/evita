@@ -129,6 +129,48 @@ jobs:
           if ($p.ExitCode -ne 0) { exit 1 }
           Write-Host "::notice::Samotest OK"
 
+      - name: Overenie PDF/A (veraPDF)
+        # nezávislá kontrola archívnych PDF zo samotestu validátorom veraPDF (PDF Association)
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $export = Join-Path $env:RUNNER_TEMP "evita-samotest\Export"
+          $subory = @(Get-ChildItem $export -Filter "samotest_pdf_pdfa*.pdf" -ErrorAction SilentlyContinue)
+          if ($subory.Count -eq 0) { Write-Host "::warning::Žiadne PDF/A na overenie"; exit 0 }
+          if ($env:JAVA_HOME_17_X64) { $env:JAVA_HOME = $env:JAVA_HOME_17_X64; $env:Path = "$env:JAVA_HOME_17_X64\bin;$env:Path" }
+          $tmp = Join-Path $env:RUNNER_TEMP "verapdf-instalacia"
+          $ciel = Join-Path $env:RUNNER_TEMP "verapdf"
+          New-Item -ItemType Directory -Force $tmp | Out-Null
+          Invoke-WebRequest "https://software.verapdf.org/releases/verapdf-installer.zip" -OutFile "$tmp\instalator.zip"
+          Expand-Archive "$tmp\instalator.zip" $tmp -Force
+          $xml = @"
+          <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+          <AutomatedInstallation langpack="eng">
+            <com.izforge.izpack.panels.htmlhello.HTMLHelloPanel id="welcome"/>
+            <com.izforge.izpack.panels.target.TargetPanel id="install_dir"><installpath>$ciel</installpath></com.izforge.izpack.panels.target.TargetPanel>
+            <com.izforge.izpack.panels.packs.PacksPanel id="sdk_pack_select">
+              <pack index="0" name="veraPDF GUI" selected="true"/>
+              <pack index="1" name="veraPDF CLI" selected="true"/>
+              <pack index="2" name="veraPDF Documentation" selected="false"/>
+              <pack index="3" name="veraPDF Sample Plugins" selected="false"/>
+            </com.izforge.izpack.panels.packs.PacksPanel>
+            <com.izforge.izpack.panels.install.InstallPanel id="install"/>
+            <com.izforge.izpack.panels.finish.FinishPanel id="finish"/>
+          </AutomatedInstallation>
+          "@
+          Set-Content "$tmp\auto-install.xml" $xml.Trim() -Encoding utf8
+          $instalator = Get-ChildItem $tmp -Recurse -Filter "vera-install.bat" | Select-Object -First 1
+          & $instalator.FullName "$tmp\auto-install.xml" | Out-Host
+          $cli = Get-ChildItem $ciel -Recurse -Filter "verapdf.bat" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $cli) { Write-Host "::warning::veraPDF sa nenainštaloval"; exit 0 }
+          $sprava = Join-Path $export "verapdf.txt"
+          & $cli.FullName --format text -v ($subory | ForEach-Object FullName) 2>&1 | Tee-Object -FilePath $sprava | Out-Host
+          foreach ($riadok in Get-Content $sprava) {
+            if ($riadok -match '^PASS\s') { Write-Host "::notice::veraPDF $($riadok -replace '%', '%25')" }
+            elseif ($riadok -match '^FAIL\s') { Write-Host "::error::veraPDF $($riadok -replace '%', '%25')" }
+          }
+
       - name: Uložiť výstupy samotestu (len vývojové vetvy)
         # aj po neúspešnom samoteste – záznam a snímky pomôžu nájsť chybu
         if: ${{ !cancelled() && github.ref != 'refs/heads/main' }}

@@ -104,6 +104,22 @@ zosvetlenie, bez pozadia (farebné podklady sa netlačia – platí aj pri tlač
 zatvorenia programu) a zákazy tlače, kopírovania, úprav a poznámok. Písma sa do PDF vkladajú vždy a text zostáva
 skutočným textom – dá sa označiť, kopírovať a vyhľadávať (OCR netreba), ak kopírovanie nie je zakázané.
 
+**Formát súboru:** bežné PDF, **PDF/A-2b** (archívne, ISO 19005-2), **PDF/A-3b** (archívne s vloženou tabuľkou zostavy
+v Exceli), **PDF/X-4** (pre tlačiareň, ISO 15930-7, farebný profil pre ofsetovú tlač), **obrázky PNG** (každá strana
+zvlášť, 300 dpi) alebo **TIFF** (všetky strany v jednom súbore, 300 dpi). Normy PDF/A a PDF/X nepovoľujú šifrovanie
+ani heslo, preto sa vtedy zabezpečenie nepoužije. Farebné profily sa berú zo systému Windows. Nadpisy skupín
+(napr. miestnosti) sú v PDF ako **záložky** – v prehliadači PDF sa dá kliknutím skočiť na miestnosť.
+
+**Poslať e-mailom…** (v okne Uložiť ako PDF) pošle zostavu ako prílohu v zvolenom formáte. Spôsob nastavíte
+v *Nastavenia → E-mail (posielanie PDF)…*:
+- **poštový program počítača** (predvolené, nič sa nenastavuje) – otvorí sa nový e-mail s prílohou v klasickom
+  Outlooku, Thunderbirde a pod.; nový Outlook a pošta v prehliadači prílohu od iných programov neprevezmú, vtedy
+  EviTA otvorí priečinok so súborom na pretiahnutie do e-mailu,
+- **priamo z EviTA cez SMTP** – server, port, zabezpečenie SSL/TLS alebo STARTTLS, odosielateľ a heslo (uložené
+  zašifrované pre účet Windows, do exportu konfigurácie sa neprenáša). Príloha ide priamo z pamäte, na disk sa
+  neukladá. Tlačidlo *Odoslať skúšobný e-mail* nastavenie overí. Gmail vyžaduje heslo aplikácie, Microsoft 365
+  prihlásenie heslom (SMTP AUTH) povoleným správcom.
+
 ## Skenovanie, štítky a inventúra
 
 - **Čítačka čiarových a QR kódov** (USB alebo Bluetooth, správa sa ako klávesnica) funguje v celom programe: naskenovaný
@@ -170,6 +186,8 @@ Odinštalovanie programu databázu ani zálohy nemaže.
   - [ ] vyskúšať čítanie kódov webovou kamerou notebooku (Kamera ako skener) na skutočných krabiciach
   - [ ] vyskúšať ručnú USB čítačku čiarových kódov, najmä príjem nového tovaru, ktorý ešte nie je v evidencii
         (sken EAN z krabice → údaje z internetu → nová položka)
+  - [ ] interaktívne PDF: vyplniteľný inventúrny protokol (nájdené / chýba, poznámka) a načítanie vyplnených
+        odpovedí späť do evidencie
 
 ## Technické informácie
 

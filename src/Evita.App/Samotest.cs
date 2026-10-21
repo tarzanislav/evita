@@ -1090,6 +1090,7 @@ internal static partial class Samotest
             // okno tlače: strany na list, brožúra, sivá, dierovač …
             SamotestOknaTlace();
             SamotestPdf();
+            SamotestEmail();
 
             // kalendár: týždeň, zoznam, udalosť, typy, nastavenia, prehľad dňa, upozornenie
             okno.OznacSekciu("kalendar");

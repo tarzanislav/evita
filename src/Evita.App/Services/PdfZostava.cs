@@ -236,6 +236,7 @@ public sealed class PdfZostava
         odsek.Format.SpaceBefore = Unit.FromPoint(10);
         odsek.Format.SpaceAfter = Unit.FromPoint(4);
         odsek.Format.KeepWithNext = true;
+        odsek.Format.OutlineLevel = OutlineLevel.Level1; // záložka v PDF (panel Záložky v prehliadači)
         var hlavny = odsek.AddFormattedText(text);
         hlavny.Font.Size = 11;
         hlavny.Font.Bold = true;

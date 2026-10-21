@@ -58,12 +58,13 @@ public static class KonfiguraciaService
         ("Stitky.", Preklad.N("formát a obsah štítkov")),
         ("Ean.", Preklad.N("účet Icecat pre údaje podľa EAN")),
         ("Vyrobca.ZInternetu", Preklad.N("výrobca a model z internetu")),
+        ("Email.", Preklad.N("posielanie PDF e-mailom (bez hesla)")),
     };
 
     /// <summary>Kľúče, ktoré sa neprenášajú: heslo je zašifrované len pre tento počítač, ostatné sú interné.</summary>
     private static readonly HashSet<string> Vynechane = new(StringComparer.Ordinal)
     {
-        "Zaloha.HesloAutomatickych", "Zaloha.TypyOpravene", "Skenovanie.Kamera",
+        "Zaloha.HesloAutomatickych", "Zaloha.TypyOpravene", "Skenovanie.Kamera", EmailNastavenia.KlucHeslo,
     };
 
     private static readonly JsonSerializerOptions Moznosti = new()

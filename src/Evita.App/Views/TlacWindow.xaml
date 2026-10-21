@@ -10,6 +10,13 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource LayerFillColorDefaultBrush}">
             <DockPanel>
                 <StackPanel x:Name="Tlacidla" DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="PoslatEmail" Padding="14,6" Margin="0,0,8,0" Click="PoslatEmail_Click" Visibility="Collapsed"
+                            ToolTip="Pošle zostavu ako prílohu e-mailu (podľa nastavenia e-mailu cez poštový program alebo priamo z EviTA).">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE715;" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock Text="Poslať e-mailom…" />
+                        </StackPanel>
+                    </Button>
                     <Button x:Name="Vytlacit" Style="{DynamicResource AccentButtonStyle}" Padding="18,6" IsDefault="True" Click="Vytlacit_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock x:Name="IkonaHlavneho" Style="{StaticResource Ikona}" Text="&#xE749;" FontSize="14" Margin="0,0,8,0" />
@@ -43,6 +50,18 @@
 
                 <!-- PDF: šifrovanie, heslo, zákazy (len pri ukladaní do PDF) -->
                 <StackPanel x:Name="SekciaPdf" Visibility="Collapsed">
+                    <TextBlock Text="Formát súboru" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                    <ComboBox x:Name="FormatSuboru" SelectionChanged="Volba_Changed">
+                        <ComboBoxItem Tag="Pdf" Content="PDF" />
+                        <ComboBoxItem Tag="PdfA2b" Content="PDF/A-2b – archívne" />
+                        <ComboBoxItem Tag="PdfA3b" Content="PDF/A-3b – archívne s dátami v Exceli" />
+                        <ComboBoxItem Tag="PdfX4" Content="PDF/X-4 – pre tlačiareň" />
+                        <ComboBoxItem Tag="Png" Content="Obrázky PNG (300 dpi)" />
+                        <ComboBoxItem Tag="Tiff" Content="Obrázok TIFF (300 dpi, všetky strany)" />
+                    </ComboBox>
+                    <TextBlock x:Name="PopisFormatu" Style="{StaticResource Popis}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
+
+                    <StackPanel x:Name="Zabezpecenie">
                     <TextBlock Text="Zabezpečenie PDF" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
                     <CheckBox x:Name="Sifrovat" Content="Šifrovať PDF (AES)" Click="Volba_Changed" />
                     <CheckBox x:Name="PouzitHeslo" Content="Heslo na otvorenie" Margin="0,6,0,0" Click="Volba_Changed" />
@@ -60,10 +79,15 @@
                     </CheckBox>
                     <TextBlock Text="Heslo na zrušenie zákazov (nepovinné)" Style="{StaticResource Popis}" FontSize="12" Margin="0,8,0,2" TextWrapping="Wrap" />
                     <PasswordBox x:Name="HesloVlastnikaPole" ToolTip="Bez neho sa zákazy nedajú zrušiť. Heslo sa neukladá." />
+                    </StackPanel>
+                    <StackPanel x:Name="InfoPisma">
                     <CheckBox Content="Vložiť všetky písma" IsChecked="True" IsEnabled="False" Margin="0,10,0,0"
                               ToolTip="Písma sa do PDF vkladajú vždy – dokument vyzerá rovnako na každom počítači." />
                     <TextBlock Style="{StaticResource Popis}" FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0"
                                Text="Text v PDF z EviTA je skutočný text – dá sa označiť myšou, kopírovať a vyhľadávať (OCR netreba), ak nie je zakázané kopírovanie. Aj v odtieňoch sivej a pri viacerých stranách na list." />
+                    </StackPanel>
+                    <Button Content="Nastavenie e-mailu…" Padding="10,4" Margin="0,10,0,0" HorizontalAlignment="Left" Click="NastavenieEmailu_Click"
+                            ToolTip="Ako sa PDF posiela e-mailom: cez poštový program počítača alebo priamo z EviTA (SMTP)." />
                 </StackPanel>
 
                 <TextBlock Text="Strany na list" Style="{StaticResource Stitok}" />

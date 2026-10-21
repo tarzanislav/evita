@@ -48,6 +48,7 @@ public partial class NahladWindow : Window
         _tvorba = () => volby.Tvorba(_naSirku, _stlpce);
         _nazovSuboru = nazovSuboru;
         InitializeComponent();
+        _titulok = titulok;
         Title = Preklad.F($"Náhľad – {titulok}");
         Volby.Visibility = Visibility.Visible;
         _nacitavam = true;
@@ -178,12 +179,16 @@ public partial class NahladWindow : Window
         _naSirku = naSirku;
         _nazovSuboru = nazovSuboru;
         InitializeComponent();
+        _titulok = titulok;
         Title = Preklad.F($"Náhľad – {titulok}");
         Zvacsenie.SelectedIndex = 6;
         NacitajStrany();
     }
 
     public int PocetStran { get; private set; }
+
+    /// <summary>Názov zostavy (pre okno PDF a predmet e-mailu).</summary>
+    private string _titulok = "";
 
     /// <summary>Pre automatický test: cesta k PDF bez okna Uložiť ako.</summary>
     public string? CestaBezDialogu { get; set; }
@@ -252,7 +257,7 @@ public partial class NahladWindow : Window
     }
 
     /// <summary>Uložiť ako PDF: okno volieb PDF (šifrovanie, heslo, zákazy, strany na list, sivá …) s náhľadom.</summary>
-    private void UlozitPdf_Click(object sender, RoutedEventArgs e) => UlozitPdfSVolbami(this, _tvorba, _naSirku, Title, _nazovSuboru);
+    private void UlozitPdf_Click(object sender, RoutedEventArgs e) => UlozitPdfSVolbami(this, _tvorba, _naSirku, _titulok, _nazovSuboru);
 
     /// <summary>Otvorí okno volieb PDF pre zostavu a uloží ju. Vráti true, ak sa PDF uložilo.</summary>
     public static bool UlozitPdfSVolbami(Window? vlastnik, Func<MigraDoc.DocumentObjectModel.Document> tvorba, bool naSirku, string titulok, string nazovSuboru)
@@ -278,6 +283,9 @@ public partial class NahladWindow : Window
     public static string? UlozPdf(Func<MigraDoc.DocumentObjectModel.Document> tvorba, string nazovSuboru, string? cestaBezDialogu, Window? vlastnik = null,
         VolbyPdf? volbyPdf = null)
     {
+        volbyPdf ??= VolbyPdf.Nacitaj();
+        var pripona = volbyPdf.Pripona;
+        nazovSuboru = Path.ChangeExtension(nazovSuboru, pripona);
         var cesta = cestaBezDialogu;
         if (cesta is null)
         {
@@ -302,8 +310,13 @@ public partial class NahladWindow : Window
 
             var dialog = new SaveFileDialog
             {
-                Title = Preklad.T("Uložiť zostavu ako PDF"),
-                Filter = "PDF (*.pdf)|*.pdf",
+                Title = volbyPdf.JePdf ? Preklad.T("Uložiť zostavu ako PDF") : Preklad.T("Uložiť zostavu ako obrázok"),
+                Filter = pripona switch
+                {
+                    ".png" => Preklad.T("Obrázky PNG") + " (*.png)|*.png",
+                    ".tif" => Preklad.T("Obrázok TIFF") + " (*.tif;*.tiff)|*.tif;*.tiff",
+                    _ => "PDF (*.pdf)|*.pdf",
+                },
                 FileName = nazovSuboru,
                 InitialDirectory = priecinok,
                 OverwritePrompt = true,
@@ -318,15 +331,24 @@ public partial class NahladWindow : Window
 
         try
         {
-            Dialogy.Cakaj(() => PdfVystup.Uloz(tvorba(), cesta, volbyPdf));
+            IReadOnlyList<string> subory = Array.Empty<string>();
+            Dialogy.Cakaj(() => subory = PdfVystup.Uloz(tvorba(), cesta, volbyPdf));
             using (var db = Data.Databaza.Otvor())
             {
                 Data.Databaza.Zapis(db, KlucPriecinok, Path.GetDirectoryName(cesta));
                 db.SaveChanges();
             }
 
-            Tlac.OtvorSubor(cesta);
-            return cesta;
+            if (subory.Count == 1)
+            {
+                Tlac.OtvorSubor(subory[0]);
+            }
+            else if (subory.Count > 1)
+            {
+                Tlac.OtvorPriecinok(Path.GetDirectoryName(subory[0])!, subory[0]);
+            }
+
+            return subory.Count > 0 ? subory[0] : cesta;
         }
         catch (EvitaException ex)
         {

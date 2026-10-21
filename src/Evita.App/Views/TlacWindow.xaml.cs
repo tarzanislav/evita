@@ -67,6 +67,7 @@ public partial class TlacWindow : Window
             SekciaPdf.Visibility = Visibility.Visible;
             IkonaHlavneho.Text = "\uEA90";
             TextHlavneho.Text = rezim == RezimOknaTlace.Pdf ? Preklad.T("Uložiť PDF…") : Preklad.T("Uložiť nastavenia");
+            PoslatEmail.Visibility = rezim == RezimOknaTlace.Pdf && tvorba is not null ? Visibility.Visible : Visibility.Collapsed;
         }
 
         if (vykreslenie is null)
@@ -94,6 +95,7 @@ public partial class TlacWindow : Window
         var volby = pdf?.Rozvrh ?? VolbyTlace.Nacitaj();
         if (pdf is not null)
         {
+            NastavFormat(pdf.Format);
             Sifrovat.IsChecked = pdf.Sifrovat;
             PouzitHeslo.IsChecked = pdf.PouzitHeslo;
             HesloPole.Password = VolbyPdf.Heslo ?? "";
@@ -134,6 +136,9 @@ public partial class TlacWindow : Window
     /// <summary>Voľby PDF z okna (rozmiestnenie strán + zabezpečenie).</summary>
     public VolbyPdf VolbyPdfOkna => new()
     {
+        Format = (FormatSuboru.SelectedItem as ComboBoxItem)?.Tag is string tag && Enum.TryParse<FormatVystupu>(tag, out var format)
+            ? format
+            : FormatVystupu.Pdf,
         Rozvrh = Volby with { Tlaciaren = null, Kopie = 1 },
         Sifrovat = Sifrovat.IsChecked == true,
         PouzitHeslo = PouzitHeslo.IsChecked == true,
@@ -150,6 +155,7 @@ public partial class TlacWindow : Window
     public void NastavPdf(VolbyPdf volby, string? heslo)
     {
         _nacitavam = true;
+        NastavFormat(volby.Format);
         Sifrovat.IsChecked = volby.Sifrovat;
         PouzitHeslo.IsChecked = volby.PouzitHeslo;
         HesloPole.Password = heslo ?? "";
@@ -161,20 +167,65 @@ public partial class TlacWindow : Window
         NastavVolby(volby.Rozvrh);
     }
 
-    /// <summary>Uloží voľby PDF (heslá len do pamäte) a pri zostave uloží PDF. Vráti cestu k PDF alebo null.</summary>
-    public string? UlozitPdf()
+    private void NastavFormat(FormatVystupu format) =>
+        FormatSuboru.SelectedItem = FormatSuboru.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (string)i.Tag == format.ToString())
+                                    ?? FormatSuboru.Items[0];
+
+    /// <summary>Skontroluje heslo, uloží voľby PDF (heslá len do pamäte) a vráti ich (null = chýba heslo).</summary>
+    private VolbyPdf? PripravPdf()
     {
         var volby = VolbyPdfOkna;
-        if (volby.PouzitHeslo && HesloPole.Password.Length == 0)
+        if (volby.SHeslom && HesloPole.Password.Length == 0)
         {
             Dialogy.Upozornenie(Preklad.T("Zadajte heslo na otvorenie PDF."));
             HesloPole.Focus();
             return null;
         }
 
-        VolbyPdf.Heslo = volby.PouzitHeslo ? HesloPole.Password : null;
+        VolbyPdf.Heslo = volby.SHeslom ? HesloPole.Password : null;
         VolbyPdf.HesloVlastnika = HesloVlastnikaPole.Password.Length > 0 ? HesloVlastnikaPole.Password : null;
         volby.Uloz();
+        return volby;
+    }
+
+    /// <summary>Súbory zostavy podľa volieb okna v pamäti (pre e-mail aj samotest).</summary>
+    public IReadOnlyList<SuborVystupu>? VytvorSubory()
+    {
+        if (_tvorba is null || PripravPdf() is not { } volby)
+        {
+            return null;
+        }
+
+        IReadOnlyList<SuborVystupu>? subory = null;
+        try
+        {
+            Dialogy.Cakaj(() => subory = PdfVystup.Vytvor(_tvorba(), System.IO.Path.GetFileNameWithoutExtension(_nazovSuboru ?? "EviTA"), volby));
+        }
+        catch (EvitaException ex)
+        {
+            Dialogy.Upozornenie(ex.Message);
+        }
+
+        return subory;
+    }
+
+    private async void PoslatEmail_Click(object sender, RoutedEventArgs e)
+    {
+        if (VytvorSubory() is { Count: > 0 } subory && await EmailService.PosliAsync(subory, _nazovUlohy, this))
+        {
+            DialogResult = true;
+        }
+    }
+
+    private void NastavenieEmailu_Click(object sender, RoutedEventArgs e) => new EmailNastaveniaWindow { Owner = this }.ShowDialog();
+
+    /// <summary>Uloží voľby PDF (heslá len do pamäte) a pri zostave uloží PDF. Vráti cestu k PDF alebo null.</summary>
+    public string? UlozitPdf()
+    {
+        if (PripravPdf() is not { } volby)
+        {
+            return null;
+        }
         if (_rezim == RezimOknaTlace.NastaveniaPdf || _tvorba is null)
         {
             return "";
@@ -298,6 +349,19 @@ public partial class TlacWindow : Window
         DierovacMm.IsEnabled = Dierovac.IsEnabled && Dierovac.IsChecked == true;
         Obojstranne.IsEnabled = volby.Rozmiestnenie != Rozmiestnenie.Brozura;
         HesloPole.IsEnabled = PouzitHeslo.IsChecked == true;
+        if (_rezim != RezimOknaTlace.Tlac)
+        {
+            var format = VolbyPdfOkna;
+            Zabezpecenie.IsEnabled = format.MozeZabezpecit;
+            Zabezpecenie.Opacity = format.MozeZabezpecit ? 1 : 0.5;
+            InfoPisma.Visibility = format.JePdf ? Visibility.Visible : Visibility.Collapsed;
+            PopisFormatu.Text = PopisFormatuText(format.Format);
+            if (_rezim == RezimOknaTlace.Pdf)
+            {
+                TextHlavneho.Text = format.JePdf ? Preklad.T("Uložiť PDF…") : Preklad.T("Uložiť obrázky…");
+            }
+        }
+
         if (_rezim == RezimOknaTlace.Tlac && ProfilText is not null)
         {
             AktualizujProfil();
@@ -318,9 +382,12 @@ public partial class TlacWindow : Window
         {
             var pdf = VolbyPdfOkna;
             Suhrn.Text = Preklad.Pocet(stran, "{0} strana zostavy", "{0} strany zostavy", "{0} strán zostavy") + " → "
-                         + Preklad.Pocet(_nahlad.PocetListov, "{0} strana PDF", "{0} strany PDF", "{0} strán PDF")
+                         + (pdf.JePdf
+                             ? Preklad.Pocet(_nahlad.PocetListov, "{0} strana PDF", "{0} strany PDF", "{0} strán PDF")
+                             : Preklad.Pocet(_nahlad.PocetListov, "{0} obrázok", "{0} obrázky", "{0} obrázkov"))
+                         + (pdf.Format != FormatVystupu.Pdf ? " · " + NazovFormatu(pdf.Format) : "")
                          + (pdf.Zasifrovat ? " · " + Preklad.T("zašifrované") : "")
-                         + (pdf.PouzitHeslo ? " · " + Preklad.T("s heslom") : "");
+                         + (pdf.SHeslom ? " · " + Preklad.T("s heslom") : "");
             return;
         }
 
@@ -331,6 +398,26 @@ public partial class TlacWindow : Window
                      + (volby.TlacitObojstranne ? " · " + Preklad.T("obojstranne") : "")
                      + " · A4 " + (_nahlad.ListNaSirku ? Preklad.T("na šírku") : Preklad.T("na výšku"));
     }
+
+    public static string NazovFormatu(FormatVystupu format) => format switch
+    {
+        FormatVystupu.PdfA2b => "PDF/A-2b",
+        FormatVystupu.PdfA3b => "PDF/A-3b",
+        FormatVystupu.PdfX4 => "PDF/X-4",
+        FormatVystupu.Png => "PNG",
+        FormatVystupu.Tiff => "TIFF",
+        _ => "PDF",
+    };
+
+    private static string PopisFormatuText(FormatVystupu format) => format switch
+    {
+        FormatVystupu.PdfA2b => Preklad.T("Archívne PDF podľa normy ISO 19005-2 – písma aj farby sú v súbore, otvorí sa rovnako aj o desiatky rokov. Šifrovanie a heslo norma nepovoľuje."),
+        FormatVystupu.PdfA3b => Preklad.T("Archívne PDF s prílohou – v PDF je vložená aj tabuľka zostavy v Exceli na ďalšie spracovanie. Šifrovanie a heslo norma nepovoľuje."),
+        FormatVystupu.PdfX4 => Preklad.T("PDF pre tlačiareň a reklamné štúdio (ISO 15930-7) s farebným profilom pre ofsetovú tlač. Šifrovanie a heslo norma nepovoľuje."),
+        FormatVystupu.Png => Preklad.T("Každá strana ako samostatný obrázok PNG (300 dpi), napr. na vloženie do Wordu. Text sa z obrázka nedá kopírovať."),
+        FormatVystupu.Tiff => Preklad.T("Všetky strany v jednom obrázku TIFF (300 dpi), napr. pre registratúru alebo archívny systém. Text sa z obrázka nedá kopírovať."),
+        _ => Preklad.T("Bežné PDF – dá sa zašifrovať, chrániť heslom a obmedziť tlač či kopírovanie."),
+    };
 
     private void UkazList()
     {

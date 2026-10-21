@@ -209,6 +209,7 @@ public sealed class EanService
 
         if (odpoved.StatusCode == HttpStatusCode.TooManyRequests)
         {
+            VyrobcaModelService.OznacVycerpanyLimit();
             throw new HttpRequestException("429", null, HttpStatusCode.TooManyRequests);
         }
 

@@ -1798,5 +1798,9 @@
  "Otvoriť v prehliadači Chrome": "Megnyitás Chrome böngészőben",
  "Hľadám výrobcu a model na internete…": "Gyártó és modell keresése az interneten…",
  "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "A vásárlás dátumának megadása után két évvel későbbi dátum kerül ide – módosítható",
- "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "A vásárlás dátumának megadása után egy évvel későbbi, legközelebbi munkanap kerül ide – módosítható"
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "A vásárlás dátumának megadása után egy évvel későbbi, legközelebbi munkanap kerül ide – módosítható",
+ "{0} čaká na doplnenie (denný limit vyčerpaný, pokračuje zajtra)": "{0} kiegészítésre vár (napi korlát elérve, holnap folytatódik)",
+ "{0} čaká na doplnenie": "{0} kiegészítésre vár",
+ "Výrobca a model z internetu": "Gyártó és modell az internetről",
+ "Pri novej položke doplniť výrobcu a model podľa názvu aj z internetu (UPCitemdb, odosiela sa len názov). Bez internetu sa doplnia len známe značky a modely z evidencie. Po vyčerpaní denného limitu (asi 100 dopytov) sa prázdne polia doplnia v ďalšie dni.": "Új tételnél a gyártót és a modellt a név alapján az internetről is kitölti (UPCitemdb, csak a név kerül elküldésre). Internet nélkül csak az ismert márkák és a nyilvántartás modelljei kerülnek kitöltésre. A napi korlát (kb. 100 lekérdezés) elérése után az üres mezők a következő napokon töltődnek ki."
 }

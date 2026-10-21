@@ -85,11 +85,47 @@ internal static partial class Samotest
             Pumpuj();
             Over(upravovana.PosledneHladanieVyrobcu is null && upravovana.Vyrobca == povodny, "karta existujúcej položky: výrobca sa sám nemení");
 
-            // internet (len záznam – služba nemusí byť dostupná); nesmie trvať dlhšie ako limit
+            // voľba v Evidencii: vypnuté hľadanie na internete sa zapamätá
+            VyrobcaModelService.ZInternetuZapnute = false;
+            var vypnute = Cakaj(VyrobcaModelService.ZInternetuAsync("Monitor Latitude 5540 test", null, CancellationToken.None));
+            Over(!VyrobcaModelService.ZInternetuZapnute && vypnute.Navrh is null, "vypnuté hľadanie výrobcu na internete sa nepýta internetu");
+            VyrobcaModelService.ZInternetuZapnute = true;
+
+            // vyčerpaný denný limit: nová položka bez výrobcu sa zaradí na neskoršie doplnenie
+            VyrobcaModelService.OznacVycerpanyLimit();
+            var sLimitom = new PolozkaEditViewModel(null, null);
+            sLimitom.Nazov = "Monitor Latitude 5540";
+            CakajNa(sLimitom.PosledneHladanieVyrobcu);
+            sLimitom.KategoriaId = sLimitom.Kategorie.First(k => k.Id > 0).Id;
+            sLimitom.UlozitCommand.Execute(null);
+            var cakajuca = sLimitom.UlozeneId.Single();
+            Over(string.IsNullOrEmpty(sLimitom.Vyrobca) && VyrobcaModelService.Cakajuce().Contains(cakajuca),
+                $"po vyčerpaní limitu čaká položka {cakajuca} na doplnenie výrobcu a modelu");
+            Over(Cakaj(VyrobcaModelService.DoplnCakajuceAsync()) == 0 && VyrobcaModelService.Cakajuce().Contains(cakajuca),
+                "v deň vyčerpaného limitu sa na doplnenie nečaká – zostane na ďalší deň");
+
+            // ďalší deň (limit zrušený): doplnenie na pozadí – výsledok len do záznamu, služba nemusí byť dostupná
+            VyrobcaModelService.ZrusLimit();
             var cas = System.Diagnostics.Stopwatch.StartNew();
-            var zInternetu = Cakaj(VyrobcaModelService.ZInternetuAsync("Monitor Latitude 5540", null, CancellationToken.None));
-            Krok($"výrobca z internetu pre „Latitude 5540“: {zInternetu?.Vyrobca ?? "nič"} / {zInternetu?.Model ?? "nič"} ({cas.ElapsedMilliseconds} ms)");
-            Over(cas.Elapsed < VyrobcaModelService.LimitInternetu + TimeSpan.FromSeconds(2), "hľadanie výrobcu na internete neprekročí časový limit");
+            var doplnene = Cakaj(VyrobcaModelService.DoplnCakajuceAsync());
+            var poDoplneni = new PolozkaService().Nacitaj(cakajuca)!;
+            Krok($"doplnenie čakajúcich položiek: {doplnene}, položka {cakajuca}: {poDoplneni.Vyrobca ?? "nič"} / {poDoplneni.Model ?? "nič"}, "
+                 + $"ešte čaká: {VyrobcaModelService.Cakajuce().Count} ({cas.ElapsedMilliseconds} ms)");
+            Over(cas.Elapsed < VyrobcaModelService.LimitInternetu + TimeSpan.FromSeconds(5), "doplnenie čakajúcich položiek neprekročí časový limit");
+            if (VyrobcaModelService.Cakajuce().Contains(cakajuca))
+            {
+                Krok("internet/UPCitemdb nedostupný – položka čaká ďalej (správne)");
+            }
+
+            // doplnená položka sa z frontu odstráni aj vtedy, keď výrobcu a model medzičasom zadal používateľ
+            VyrobcaModelService.PridajCakajuce(new[] { cakajuca });
+            var rucne = new PolozkaService().Nacitaj(cakajuca)!;
+            rucne.Vyrobca = "Dell";
+            rucne.Model = "Latitude 5540";
+            new PolozkaService().Uloz(rucne);
+            Cakaj(VyrobcaModelService.DoplnCakajuceAsync());
+            Over(!VyrobcaModelService.Cakajuce().Contains(cakajuca), "položka s ručne doplneným výrobcom a modelom už nečaká");
+            new PolozkaService().Vymaz(new[] { cakajuca });
         }
         finally
         {

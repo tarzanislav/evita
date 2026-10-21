@@ -42,6 +42,12 @@
                     <TextBlock Text="Nová položka" />
                 </StackPanel>
             </Button>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,14,6">
+                <CheckBox IsChecked="{Binding VyrobcaZInternetu}" VerticalAlignment="Center"
+                          Content="Výrobca a model z internetu"
+                          ToolTip="Pri novej položke doplniť výrobcu a model podľa názvu aj z internetu (UPCitemdb, odosiela sa len názov). Bez internetu sa doplnia len známe značky a modely z evidencie. Po vyčerpaní denného limitu (asi 100 dopytov) sa prázdne polia doplnia v ďalšie dni." />
+                <TextBlock Text="{Binding CakajuceText}" Style="{StaticResource Popis}" VerticalAlignment="Center" Margin="8,0,0,0" />
+            </StackPanel>
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding UpravitCommand}" ToolTip="Enter alebo F2"
                     Content="Upraviť" />
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding KopiaCommand}"

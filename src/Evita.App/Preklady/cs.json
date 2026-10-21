@@ -1798,5 +1798,9 @@
  "Otvoriť v prehliadači Chrome": "Otevřít v prohlížeči Chrome",
  "Hľadám výrobcu a model na internete…": "Hledám výrobce a model na internetu…",
  "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "Po zadání data nákupu se doplní o dva roky později – lze změnit",
- "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "Po zadání data nákupu se doplní o rok později, na nejbližší pracovní den – lze změnit"
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "Po zadání data nákupu se doplní o rok později, na nejbližší pracovní den – lze změnit",
+ "{0} čaká na doplnenie (denný limit vyčerpaný, pokračuje zajtra)": "{0} čeká na doplnění (denní limit vyčerpán, pokračuje zítra)",
+ "{0} čaká na doplnenie": "{0} čeká na doplnění",
+ "Výrobca a model z internetu": "Výrobce a model z internetu",
+ "Pri novej položke doplniť výrobcu a model podľa názvu aj z internetu (UPCitemdb, odosiela sa len názov). Bez internetu sa doplnia len známe značky a modely z evidencie. Po vyčerpaní denného limitu (asi 100 dopytov) sa prázdne polia doplnia v ďalšie dni.": "U nové položky doplnit výrobce a model podle názvu i z internetu (UPCitemdb, odesílá se jen název). Bez internetu se doplní jen známé značky a modely z evidence. Po vyčerpání denního limitu (asi 100 dotazů) se prázdná pole doplní v dalších dnech."
 }

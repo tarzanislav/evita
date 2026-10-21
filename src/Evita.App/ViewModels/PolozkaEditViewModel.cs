@@ -306,6 +306,9 @@ public partial class PolozkaEditViewModel : ObservableObject
     private string? _automatickyVyrobca;
     private string? _automatickyModel;
 
+    /// <summary>Hľadanie k aktuálnemu názvu skončilo (našlo sa, alebo naozaj nič nie je). Inak sa položka po uložení zaradí na neskôr.</summary>
+    private bool _hladanieDokoncene;
+
     /// <summary>Práve sa hľadá výrobca a model na internete (len informácia v okne, práca nie je zablokovaná).</summary>
     [ObservableProperty] private bool _hladamVyrobcu;
 
@@ -321,6 +324,7 @@ public partial class PolozkaEditViewModel : ObservableObject
 
         _hladanieVyrobcu?.Cancel();
         _hladanieVyrobcu = new CancellationTokenSource();
+        _hladanieDokoncene = false;
         PosledneHladanieVyrobcu = DoplnVyrobcuAsync(value, _hladanieVyrobcu.Token);
     }
 
@@ -353,13 +357,26 @@ public partial class PolozkaEditViewModel : ObservableObject
             Dopln(navrh);
             if (navrh?.Model is not null)
             {
+                _hladanieDokoncene = true;
                 return;
             }
 
-            HladamVyrobcu = true;
+            if (!VyrobcaModelService.ZInternetuZapnute)
+            {
+                _hladanieDokoncene = true;
+                return;
+            }
+
+            HladamVyrobcu = !VyrobcaModelService.LimitDnesVycerpany;
             var kategorie = Kategorie.Select(k => k.Nazov).ToList();
-            var zInternetu = await VyrobcaModelService.ZInternetuAsync(nazov, kategorie, zrusenie);
-            if (!zrusenie.IsCancellationRequested && zInternetu is not null
+            var vysledok = await VyrobcaModelService.ZInternetuAsync(nazov, kategorie, zrusenie);
+            if (zrusenie.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _hladanieDokoncene = vysledok.Hotovo;
+            if (vysledok.Navrh is { } zInternetu
                 && (navrh is null || zInternetu.Vyrobca.Equals(navrh.Vyrobca, StringComparison.OrdinalIgnoreCase)))
             {
                 Dopln(zInternetu with { Vyrobca = navrh?.Vyrobca ?? zInternetu.Vyrobca });
@@ -489,6 +506,15 @@ public partial class PolozkaEditViewModel : ObservableObject
             }
 
             UlozeneId = _sluzba.Pridaj(p, PocetKusov, serioveCisla);
+
+            // výrobca alebo model chýba a na internete sa ešte hľadať nedalo (limit, bez internetu, rýchle uloženie) –
+            // doplnia sa na pozadí neskôr (aj v ďalšie dni), ak polia zostanú prázdne
+            if (VyrobcaModelService.ZInternetuZapnute && !_hladanieDokoncene && Nazov.Trim().Length >= 3
+                && (string.IsNullOrWhiteSpace(Vyrobca) || string.IsNullOrWhiteSpace(Model)))
+            {
+                _hladanieVyrobcu?.Cancel();
+                VyrobcaModelService.PridajCakajuce(UlozeneId);
+            }
         }
         else
         {

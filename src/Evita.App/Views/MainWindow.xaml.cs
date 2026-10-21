@@ -13,6 +13,8 @@ public partial class MainWindow : Window
     private readonly MainViewModel _model = new();
     private readonly DispatcherTimer _pripomienky = new() { Interval = TimeSpan.FromMinutes(1) };
     private readonly HashSet<string> _oznamene = new();
+    private readonly DispatcherTimer _doplnanieVyrobcov = new() { Interval = TimeSpan.FromMinutes(1) };
+    private bool _doplnamVyrobcov;
 
     public MainWindow()
     {
@@ -78,6 +80,41 @@ public partial class MainWindow : Window
         _pripomienky.Tick += (_, _) => SkontrolujPripomienky();
         _pripomienky.Start();
         SkontrolujPripomienky();
+
+        // položky čakajúce na výrobcu/model z internetu: minútu po spustení, potom každú pol hodinu (po limite až v ďalší deň)
+        _doplnanieVyrobcov.Tick += async (_, _) =>
+        {
+            _doplnanieVyrobcov.Interval = TimeSpan.FromMinutes(30);
+            await DoplnVyrobcovAsync();
+        };
+        _doplnanieVyrobcov.Start();
+    }
+
+    private async Task DoplnVyrobcovAsync()
+    {
+        if (_doplnamVyrobcov)
+        {
+            return;
+        }
+
+        _doplnamVyrobcov = true;
+        try
+        {
+            var doplnene = await Task.Run(() => VyrobcaModelService.DoplnCakajuceAsync());
+            _model.Evidencia.AktualizujCakajuce();
+            if (doplnene > 0)
+            {
+                _model.Evidencia.OznacNaObnovenie();
+            }
+        }
+        catch (Exception)
+        {
+            // doplnenie na pozadí nie je nevyhnutné – skúsi sa nabudúce
+        }
+        finally
+        {
+            _doplnamVyrobcov = false;
+        }
     }
 
     private void SkontrolujPripomienky()

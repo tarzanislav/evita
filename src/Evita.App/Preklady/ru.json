@@ -1798,5 +1798,9 @@
  "Otvoriť v prehliadači Chrome": "Открыть в Chrome",
  "Hľadám výrobcu a model na internete…": "Ищу производителя и модель в интернете…",
  "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "После ввода даты покупки заполняется на два года позже – можно изменить",
- "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "После ввода даты покупки заполняется на год позже, на ближайший рабочий день – можно изменить"
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "После ввода даты покупки заполняется на год позже, на ближайший рабочий день – можно изменить",
+ "{0} čaká na doplnenie (denný limit vyčerpaný, pokračuje zajtra)": "{0} ожидает дополнения (дневной лимит исчерпан, продолжится завтра)",
+ "{0} čaká na doplnenie": "{0} ожидает дополнения",
+ "Výrobca a model z internetu": "Производитель и модель из интернета",
+ "Pri novej položke doplniť výrobcu a model podľa názvu aj z internetu (UPCitemdb, odosiela sa len názov). Bez internetu sa doplnia len známe značky a modely z evidencie. Po vyčerpaní denného limitu (asi 100 dopytov) sa prázdne polia doplnia v ďalšie dni.": "Для новой позиции дополнять производителя и модель по названию также из интернета (UPCitemdb, отправляется только название). Без интернета дополняются только известные марки и модели из учёта. После исчерпания дневного лимита (около 100 запросов) пустые поля будут заполнены в следующие дни."
 }

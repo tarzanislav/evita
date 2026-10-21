@@ -84,8 +84,42 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
 
     public void OznacNaObnovenie() => _trebaObnovit = true;
 
+    /// <summary>Doplňovať výrobcu a model z internetu (voľba vedľa tlačidla Nová položka, platí pre celý program).</summary>
+    public bool VyrobcaZInternetu
+    {
+        get => VyrobcaModelService.ZInternetuZapnute;
+        set
+        {
+            try
+            {
+                VyrobcaModelService.ZInternetuZapnute = value;
+            }
+            catch (Exception ex)
+            {
+                Dialogy.Chyba(Preklad.T("Nastavenie sa nepodarilo uložiť."), ex);
+            }
+
+            OnPropertyChanged();
+            AktualizujCakajuce();
+        }
+    }
+
+    /// <summary>Koľko položiek čaká na doplnenie výrobcu/modelu z internetu (prázdne, ak žiadna).</summary>
+    [ObservableProperty] private string _cakajuceText = "";
+
+    public void AktualizujCakajuce()
+    {
+        var pocet = VyrobcaModelService.Cakajuce().Count;
+        CakajuceText = pocet == 0
+            ? ""
+            : VyrobcaModelService.LimitDnesVycerpany
+                ? Preklad.F($"{pocet} čaká na doplnenie (denný limit vyčerpaný, pokračuje zajtra)")
+                : Preklad.F($"{pocet} čaká na doplnenie");
+    }
+
     public void Obnov()
     {
+        AktualizujCakajuce();
         if (!_trebaObnovit && Pohlad is not null)
         {
             return;

@@ -1798,5 +1798,9 @@
  "Otvoriť v prehliadači Chrome": "在 Chrome 中打开",
  "Hľadám výrobcu a model na internete…": "正在网上查找制造商和型号…",
  "Po zadaní dátumu nákupu sa doplní o dva roky neskôr – dá sa zmeniť": "输入购买日期后自动填入两年后的日期——可修改",
- "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "输入购买日期后自动填入一年后最近的工作日——可修改"
+ "Po zadaní dátumu nákupu sa doplní o rok neskôr, na najbližší pracovný deň – dá sa zmeniť": "输入购买日期后自动填入一年后最近的工作日——可修改",
+ "{0} čaká na doplnenie (denný limit vyčerpaný, pokračuje zajtra)": "{0} 项等待补全（今日限额已用完，明天继续）",
+ "{0} čaká na doplnenie": "{0} 项等待补全",
+ "Výrobca a model z internetu": "从网上获取制造商和型号",
+ "Pri novej položke doplniť výrobcu a model podľa názvu aj z internetu (UPCitemdb, odosiela sa len názov). Bez internetu sa doplnia len známe značky a modely z evidencie. Po vyčerpaní denného limitu (asi 100 dopytov) sa prázdne polia doplnia v ďalšie dni.": "新建物品时，也根据名称从网上补全制造商和型号（UPCitemdb，仅发送名称）。无网络时只补全已知品牌和台账中的型号。每日限额（约 100 次查询）用完后，空字段将在之后几天补全。"
 }

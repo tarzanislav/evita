@@ -5,12 +5,16 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Evita.Data;
+using Evita.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Evita.Services;
 
 /// <summary>Návrh výrobcu a modelu podľa názvu položky (Model môže chýbať).</summary>
 public sealed record NavrhVyrobcu(string Vyrobca, string? Model, string Zdroj);
+
+/// <summary>Výsledok hľadania na internete. Hotovo = false: limit, sieť alebo časový limit – skúsi sa to znova neskôr.</summary>
+public sealed record VysledokInternetu(NavrhVyrobcu? Navrh, bool Hotovo);
 
 /// <summary>Výrobca a model, ktoré už sú v evidencii (na rýchle doplnenie bez internetu).</summary>
 public sealed record ZnamyVyrobok(string Vyrobca, string? Model);
@@ -56,8 +60,188 @@ public static class VyrobcaModelService
     /// <summary>Výsledky z internetu podľa hľadaného textu (aby sa rovnaký názov nehľadal dvakrát).</summary>
     private static readonly Dictionary<string, NavrhVyrobcu?> Pamat = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Po vyčerpaní denného limitu UPCitemdb sa až do reštartu programu na internet nepýta.</summary>
-    private static bool _limitVycerpany;
+    public const string KlucZInternetu = "Vyrobca.ZInternetu";
+    public const string KlucLimitDen = "Vyrobca.LimitDen";
+    public const string KlucCakajuce = "Vyrobca.Cakajuce";
+
+    /// <summary>Deň, keď sa vyčerpal denný bezplatný limit UPCitemdb (v ten deň sa už na internet nepýta).</summary>
+    private static DateTime? _limitDen;
+    private static bool? _zInternetu;
+
+    /// <summary>Hľadanie výrobcu a modelu na internete je zapnuté (voľba v Evidencii; predvolene áno).</summary>
+    public static bool ZInternetuZapnute
+    {
+        get
+        {
+            if (_zInternetu is null)
+            {
+                try
+                {
+                    using var db = Databaza.Otvor();
+                    _zInternetu = Databaza.Citaj(db, KlucZInternetu) != "0";
+                    _limitDen = DateTime.TryParse(Databaza.Citaj(db, KlucLimitDen), System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out var den) ? den.Date : null;
+                }
+                catch (Exception)
+                {
+                    _zInternetu = true;
+                }
+            }
+
+            return _zInternetu.Value;
+        }
+        set
+        {
+            _zInternetu = value;
+            using var db = Databaza.Otvor();
+            Databaza.Zapis(db, KlucZInternetu, value ? "1" : "0");
+            db.SaveChanges();
+        }
+    }
+
+    /// <summary>Dnes je denný limit UPCitemdb vyčerpaný (zajtra sa pokračuje).</summary>
+    public static bool LimitDnesVycerpany => _limitDen == DateTime.Today;
+
+    /// <summary>Zapamätá vyčerpanie denného limitu (aj po reštarte programu v ten istý deň). Volá aj hľadanie podľa EAN.</summary>
+    public static void OznacVycerpanyLimit()
+    {
+        _limitDen = DateTime.Today;
+        try
+        {
+            using var db = Databaza.Otvor();
+            Databaza.Zapis(db, KlucLimitDen, DateTime.Today.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+            db.SaveChanges();
+        }
+        catch (Exception)
+        {
+            // stačí v pamäti
+        }
+    }
+
+    /// <summary>Len pre samotest: zrušenie zapamätaného limitu.</summary>
+    internal static void ZrusLimit()
+    {
+        _limitDen = null;
+        using var db = Databaza.Otvor();
+        Databaza.Zapis(db, KlucLimitDen, null);
+        db.SaveChanges();
+    }
+
+    // ------------------------------------------------------------------ položky čakajúce na doplnenie
+
+    /// <summary>Položky, ktorým sa výrobca/model nedal hľadať (limit, bez internetu) – doplnia sa neskôr, ak sú polia prázdne.</summary>
+    public static List<int> Cakajuce()
+    {
+        try
+        {
+            using var db = Databaza.Otvor();
+            return (Databaza.Citaj(db, KlucCakajuce) ?? "")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(x => int.TryParse(x, out var id) ? id : 0)
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+        }
+        catch (Exception)
+        {
+            return new List<int>();
+        }
+    }
+
+    private static void UlozCakajuce(IEnumerable<int> idcka)
+    {
+        using var db = Databaza.Otvor();
+        var zoznam = idcka.Distinct().TakeLast(2000).ToList();
+        Databaza.Zapis(db, KlucCakajuce, zoznam.Count == 0 ? null : string.Join(',', zoznam));
+        db.SaveChanges();
+    }
+
+    public static void PridajCakajuce(IEnumerable<int> idcka)
+    {
+        lock (Pamat)
+        {
+            UlozCakajuce(Cakajuce().Concat(idcka));
+        }
+    }
+
+    private static void OdoberCakajuce(int id)
+    {
+        lock (Pamat)
+        {
+            UlozCakajuce(Cakajuce().Where(x => x != id));
+        }
+    }
+
+    /// <summary>
+    /// Doplní výrobcu/model čakajúcim položkám (pri spustení programu a potom raz za čas): len prázdne polia, zmena sa zapíše
+    /// do histórie. Skončí pri vyčerpaní limitu alebo výpadku internetu – zvyšok počká. Vráti počet doplnených položiek.
+    /// </summary>
+    public static async Task<int> DoplnCakajuceAsync(CancellationToken zrusenie = default, int najviac = 40)
+    {
+        if (!ZInternetuZapnute || LimitDnesVycerpany)
+        {
+            return 0;
+        }
+
+        var sluzba = new PolozkaService();
+        var zname = await Task.Run(NacitajZEvidencie, zrusenie).ConfigureAwait(false);
+        var kategorie = new CiselnikService().Volby(TypCiselnika.Kategorie, null, null).Select(k => k.Nazov).ToList();
+        var doplnene = 0;
+        foreach (var id in Cakajuce().Take(najviac))
+        {
+            zrusenie.ThrowIfCancellationRequested();
+            var polozka = sluzba.Nacitaj(id);
+            if (polozka is null || (!string.IsNullOrWhiteSpace(polozka.Vyrobca) && !string.IsNullOrWhiteSpace(polozka.Model)))
+            {
+                OdoberCakajuce(id);
+                continue;
+            }
+
+            var navrh = ZNazvu(polozka.Nazov, zname);
+            var hotovo = true;
+            if (navrh?.Model is null)
+            {
+                var zInternetu = await ZInternetuAsync(polozka.Nazov, kategorie, zrusenie).ConfigureAwait(false);
+                hotovo = zInternetu.Hotovo;
+                if (zInternetu.Navrh is { } n && (navrh is null || n.Vyrobca.Equals(navrh.Vyrobca, StringComparison.OrdinalIgnoreCase)))
+                {
+                    navrh = n with { Vyrobca = navrh?.Vyrobca ?? n.Vyrobca };
+                }
+            }
+
+            if (navrh is not null)
+            {
+                var zmena = false;
+                if (string.IsNullOrWhiteSpace(polozka.Vyrobca))
+                {
+                    polozka.Vyrobca = navrh.Vyrobca;
+                    zmena = true;
+                }
+
+                if (string.IsNullOrWhiteSpace(polozka.Model) && navrh.Model is not null)
+                {
+                    polozka.Model = navrh.Model;
+                    zmena = true;
+                }
+
+                if (zmena)
+                {
+                    sluzba.Uloz(polozka);
+                    doplnene++;
+                }
+            }
+
+            if (!hotovo)
+            {
+                break; // limit alebo bez internetu – pokračuje sa nabudúce
+            }
+
+            OdoberCakajuce(id);
+            await Task.Delay(1500, zrusenie).ConfigureAwait(false);
+        }
+
+        return doplnene;
+    }
 
     private static HttpClient VytvorKlienta()
     {
@@ -131,7 +315,7 @@ public static class VyrobcaModelService
     /// Návrh z internetu (UPCitemdb, hľadanie podľa textu). Výrobca = najčastejšia značka v nájdených výrobkoch;
     /// model sa doplní len vtedy, keď ho názov naozaj obsahuje (nevymýšľa sa). Pri chybe, limite alebo pomalej sieti vráti null.
     /// </summary>
-    public static async Task<NavrhVyrobcu?> ZInternetuAsync(string nazov, IEnumerable<string>? dalsieVseobecneSlova, CancellationToken zrusenie)
+    public static async Task<VysledokInternetu> ZInternetuAsync(string nazov, IEnumerable<string>? dalsieVseobecneSlova, CancellationToken zrusenie)
     {
         var slova = Regex.Split(nazov.Trim(), @"\s+").Where(s => s.Length > 0).ToList();
         var vseobecne = new HashSet<string>(VseobecneSlova, StringComparer.OrdinalIgnoreCase);
@@ -144,17 +328,22 @@ public static class VyrobcaModelService
         }
 
         var hladat = string.Join(' ', slova.Where(s => !vseobecne.Contains(s.Trim(',', '.', '(', ')'))));
-        if (_limitVycerpany || Normalizuj(hladat).Length < 3)
+        if (Normalizuj(hladat).Length < 3)
         {
-            return null;
+            return new VysledokInternetu(null, true);
         }
 
         lock (Pamat)
         {
             if (Pamat.TryGetValue(hladat, out var ulozeny))
             {
-                return ulozeny;
+                return new VysledokInternetu(ulozeny, true);
             }
+        }
+
+        if (!ZInternetuZapnute || LimitDnesVycerpany)
+        {
+            return new VysledokInternetu(null, false);
         }
 
         using var limit = CancellationTokenSource.CreateLinkedTokenSource(zrusenie);
@@ -166,13 +355,13 @@ public static class VyrobcaModelService
                 $"https://api.upcitemdb.com/prod/trial/search?s={Uri.EscapeDataString(hladat)}&match_mode=0&type=product", limit.Token).ConfigureAwait(false);
             if (odpoved.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                _limitVycerpany = true;
-                return null;
+                OznacVycerpanyLimit();
+                return new VysledokInternetu(null, false);
             }
 
             if (!odpoved.IsSuccessStatusCode)
             {
-                return null;
+                return new VysledokInternetu(null, false);
             }
 
             using var json = JsonDocument.Parse(await odpoved.Content.ReadAsStringAsync(limit.Token).ConfigureAwait(false));
@@ -180,8 +369,8 @@ public static class VyrobcaModelService
         }
         catch (Exception) when (!zrusenie.IsCancellationRequested)
         {
-            // bez internetu, pomalá sieť, neplatná odpoveď – nič sa nevyplní
-            return null;
+            // bez internetu, pomalá sieť, neplatná odpoveď – nič sa nevyplní, skúsi sa neskôr
+            return new VysledokInternetu(null, false);
         }
 
         lock (Pamat)
@@ -189,7 +378,7 @@ public static class VyrobcaModelService
             Pamat[hladat] = navrh;
         }
 
-        return navrh;
+        return new VysledokInternetu(navrh, true);
     }
 
     /// <summary>Výber výrobcu a modelu z odpovede UPCitemdb (verejné kvôli samotestu).</summary>

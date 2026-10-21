@@ -162,8 +162,9 @@ jobs:
           </AutomatedInstallation>
           "@
           Set-Content "$tmp\auto-install.xml" $xml.Trim() -Encoding utf8
-          $instalator = Get-ChildItem $tmp -Recurse -Filter "vera-install.bat" | Select-Object -First 1
-          & $instalator.FullName "$tmp\auto-install.xml" | Out-Host
+          Get-ChildItem $tmp -Recurse | Select-Object -First 40 | ForEach-Object { Write-Host $_.FullName }
+          $instalator = Get-ChildItem $tmp -Recurse -Filter "*.jar" | Where-Object { $_.Name -match 'install' } | Select-Object -First 1
+          & java -jar $instalator.FullName "$tmp\auto-install.xml" | Out-Host
           $cli = Get-ChildItem $ciel -Recurse -Filter "verapdf.bat" -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $cli) { Write-Host "::warning::veraPDF sa nenainštaloval"; exit 0 }
           $sprava = Join-Path $export "verapdf.txt"

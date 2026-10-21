@@ -171,13 +171,24 @@ internal static partial class Samotest
 
                 var prijate = prijem.Wait(TimeSpan.FromSeconds(20)) ? prijem.Result : new PrijatyEmail();
                 var priloha = Priloha(prijate.Data);
-                Over(chyba is null && prijate.Sifrovane == (zabezpecenie != ZabezpecenieSmtp.Ziadne)
-                     && prijate.Prihlasenie == "|evita@skola.sk|tajné heslo 123"
-                     && prijate.Adresati.SequenceEqual(new[] { "jana@skola.sk", "evita@skola.sk" })
-                     && !prijate.Data.Contains("Bcc", StringComparison.OrdinalIgnoreCase)
-                     && prijate.Data.Contains("filename*=UTF-8''S%C3%BAhrnn%C3%BD%20zoznam.pdf")
-                     && priloha.SequenceEqual(subory[0].Data)
-                     && Telo(prijate.Data).Contains("\r\n.bodka na začiatku\r\n"),
+                var kontroly = new (string Nazov, bool Ok)[]
+                {
+                    ("chyba", chyba is null),
+                    ("šifrovanie", prijate.Sifrovane == (zabezpecenie != ZabezpecenieSmtp.Ziadne)),
+                    ("prihlásenie " + prijate.Prihlasenie, prijate.Prihlasenie == "|evita@skola.sk|tajné heslo 123"),
+                    ("adresáti " + string.Join(",", prijate.Adresati), prijate.Adresati.SequenceEqual(new[] { "jana@skola.sk", "evita@skola.sk" })),
+                    ("bez Bcc", !prijate.Data.Contains("Bcc:", StringComparison.OrdinalIgnoreCase)),
+                    ("názov prílohy", prijate.Data.Contains("filename*=UTF-8''S%C3%BAhrnn%C3%BD%20zoznam.pdf")),
+                    ("príloha", priloha.SequenceEqual(subory[0].Data)),
+                    ("text", Telo(prijate.Data).Contains("\r\n.bodka na začiatku\r\n")),
+                };
+                if (kontroly.Any(k => !k.Ok))
+                {
+                    Krok($"e-mail {zabezpecenie}: nesedí " + string.Join("; ", kontroly.Where(k => !k.Ok).Select(k => k.Nazov)));
+                    Krok("e-mail – hlavičky: " + string.Join(" / ", prijate.Data.Split("\r\n").Take(14)));
+                }
+
+                Over(kontroly.All(k => k.Ok),
                     $"e-mail cez SMTP ({zabezpecenie}): prihlásenie, adresáti so skrytou kópiou, príloha PDF bez zmeny ({priloha.Length} B)"
                     + (chyba is null ? "" : " – " + chyba.Message));
             }

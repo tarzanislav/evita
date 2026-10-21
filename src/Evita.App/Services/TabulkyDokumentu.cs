@@ -16,13 +16,6 @@ public static class TabulkyDokumentu
         using var kniha = new XLWorkbook();
         var list = kniha.AddWorksheet(Preklad.T("Zostava"));
         var riadok = 1;
-        if (!string.IsNullOrWhiteSpace(dokument.Info.Title))
-        {
-            list.Cell(riadok, 1).Value = dokument.Info.Title;
-            list.Cell(riadok, 1).Style.Font.Bold = true;
-            list.Cell(riadok, 1).Style.Font.FontSize = 13;
-            riadok += 2;
-        }
 
         foreach (var sekcia in dokument.Sections.OfType<Section>())
         {

@@ -81,10 +81,12 @@ public static class PdfNorma
                 }
 
                 farby.Elements.SetReference("/DefaultRGB", rgb);
-                if (strana.Elements.GetDictionary("/Group") is { } skupina && skupina.Elements.GetName("/CS") == "/DeviceRGB")
-                {
-                    skupina.Elements.SetReference("/CS", rgb);
-                }
+
+                // skupina priehľadnosti s farbami sRGB (inak by PDFsharp pri ukladaní doplnil neoznačené DeviceRGB)
+                var skupina = new PdfDictionary(pdf);
+                skupina.Elements.SetName("/S", "/Transparency");
+                skupina.Elements.SetReference("/CS", rgb);
+                strana.Elements["/Group"] = skupina;
             }
         }
 

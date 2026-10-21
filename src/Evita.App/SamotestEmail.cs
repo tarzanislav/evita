@@ -145,7 +145,11 @@ internal static partial class Samotest
             Over(SmtpKlient.Slovo("Súhrnný zoznam – miestnosti") is var slovo && slovo.StartsWith("=?UTF-8?B?", StringComparison.Ordinal)
                  && SmtpKlient.Slovo("Report") == "Report", "e-mail: predmet s diakritikou ako encoded-word");
 
-            var subory = PdfVystup.Vytvor(new ZostavyService().Vytvor(new MoznostiZostavy { Druh = DruhZostavy.SuhrnnyZoznam }), "Súhrnný zoznam",
+            var subory = PdfVystup.Vytvor(new ZostavyService().Vytvor(new MoznostiZostavy
+            {
+                Druh = DruhZostavy.SuhrnnyZoznam,
+                Stlpce = new[] { StlpcePrenosu.Cislo, StlpcePrenosu.Nazov, StlpcePrenosu.Miestnost },
+            }), "Súhrnný zoznam",
                 new VolbyPdf());
             foreach (var zabezpecenie in new[] { ZabezpecenieSmtp.Ziadne, ZabezpecenieSmtp.SslTls, ZabezpecenieSmtp.StartTls })
             {

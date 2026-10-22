@@ -211,7 +211,7 @@ internal static partial class Samotest
         Over(vlozene is not null && DokladService.ZXml(vlozene, "pdf") is { Riadky.Count: 2 }, "doklad: e-faktúra vložená v PDF sa nájde a prečíta");
         Over(DokladService.XmlZPdf(pdfText) is null, "doklad: PDF bez prílohy nemá e-faktúru (ide na OCR)");
 
-        if (OcrDokladu.Engine(out var jazyk) is null)
+        if (Cakaj(OcrDokladu.DostupnyJazykAsync()) is not { } jazyk)
         {
             Krok("doklad – OCR: preskočené (Windows nemá rozpoznávanie textu)");
         }

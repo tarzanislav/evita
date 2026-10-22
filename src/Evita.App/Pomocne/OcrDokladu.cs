@@ -46,6 +46,9 @@ public static class OcrDokladu
         return null;
     }
 
+    /// <summary>Jazyk rozpoznávania, ak je OCR vo Windows dostupné (zisťuje sa mimo vlákna okna), inak null.</summary>
+    public static Task<string?> DostupnyJazykAsync() => Task.Run(() => Engine(out var jazyk) is null ? null : jazyk);
+
     /// <summary>Text z PDF (každá strana sa vykreslí a rozpozná) alebo z obrázka.</summary>
     /// <remarks>
     /// Beží na vlákne mimo okna (MTA): objekty Windows Runtime (PDF, OCR) tak nie sú viazané na vlákno okna a uvoľnia sa

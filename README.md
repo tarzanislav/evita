@@ -201,7 +201,7 @@ Odinštalovanie programu databázu ani zálohy nemaže.
         (sken EAN z krabice → údaje z internetu → nová položka)
   - [ ] interaktívne PDF: vyplniteľný inventúrny protokol (nájdené / chýba, poznámka) a načítanie vyplnených
         odpovedí späť do evidencie
-- [ ] Etapa 10 – Viac používateľov, prístupové práva a sieťová databáza (špecifikácia:
+- [ ] Etapa 10 (len plán, termín neurčený) – Viac používateľov, prístupové práva a sieťová databáza (špecifikácia:
       [docs/Etapa10_viac_pouzivatelov.md](docs/Etapa10_viac_pouzivatelov.md)) – lokálny režim zostáva; navyše prihlasovanie
       10 – 20 používateľov s rolami a právami a voliteľne databáza na serveri (MariaDB/MySQL, SQL Server, PostgreSQL)
 

@@ -1,6 +1,6 @@
 # Etapa 10 – Viac používateľov, prístupové práva a sieťová databáza
 
-Špecifikácia na neskoršie spracovanie (nezačatá). Cieľ: EviTA zostane plnohodnotným programom na jednom počítači
+Len plán – termín realizácie nie je určený; začne sa až na výslovnú požiadavku. Špecifikácia (nezačatá). Cieľ: EviTA zostane plnohodnotným programom na jednom počítači
 (ako doteraz), ale bude vedieť pracovať aj s **viacerými používateľmi (cca 10 – 20)** s **prístupovými právami**
 a voliteľne s **databázou na serveri**, ku ktorej sa pripája viac počítačov naraz.
 

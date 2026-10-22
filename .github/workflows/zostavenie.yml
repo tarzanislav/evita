@@ -138,15 +138,16 @@ jobs:
             Write-Host "::error::Prepis hlasu používa nepovolené knižnice: $($zakazane -join ', ')"
             exit 1
           }
-          # z advapi32.dll smie volať len generátor náhodných čísel (RtlGenRandom = SystemFunction036, použije ho
-          # knižnica C++ pre std::random_device) – nie registre, služby ani zabezpečenie
+          # z advapi32.dll smie len čítať názov procesora z registra (ggml: HKLM\HARDWARE\DESCRIPTION\System\
+          # CentralProcessor\0, kľúč otvorený len na čítanie) – žiadny zápis do registra, služby ani zabezpečenie
           $aktualna = ""
           $funkcieAdvapi = foreach ($riadok in $importy) {
+            if ($riadok -match '^\s+Summary\s*$') { break }
             if ($riadok -match '^\s+(\S+\.dll)\s*$') { $aktualna = $Matches[1].ToLowerInvariant() }
             elseif ($aktualna -eq "advapi32.dll" -and $riadok -match '^\s+[0-9A-Fa-f]+\s+(\S+)\s*$') { $Matches[1] }
           }
           if ($funkcieAdvapi) { Write-Host "::notice::EvitaHlas.dll z advapi32.dll volá: $($funkcieAdvapi -join ', ')" }
-          $inePrava = $funkcieAdvapi | Where-Object { $_ -ne "SystemFunction036" }
+          $inePrava = $funkcieAdvapi | Where-Object { $_ -notin @("RegOpenKeyExA", "RegQueryValueExA", "RegCloseKey") }
           if ($inePrava) {
             Write-Host "::error::Prepis hlasu volá z advapi32.dll nepovolené funkcie: $($inePrava -join ', ')"
             exit 1

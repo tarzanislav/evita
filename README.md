@@ -218,7 +218,7 @@ Odinštalovanie programu databázu ani zálohy nemaže.
 - Prepis diktovania bez internetu: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) v1.9.5 (MIT, commit
   d1be6fde…) – zostavuje sa v GitHub Actions zo zdrojového kódu spolu s tenkou vrstvou `nastroje/hlas/evita_hlas.c`
   do jednej knižnice EvitaHlas.dll (bez GPU, bez OpenMP, nič sa počas zostavenia nesťahuje); kontroluje sa, že volá len
-  jadro Windows. Modely Whisper (OpenAI, MIT) v prevedení ggml z huggingface.co/ggerganov/whisper.cpp, overené SHA-256.
+  jadro Windows a z advapi32.dll len čítanie názvu procesora z registra (RegOpenKeyExA, RegQueryValueExA, RegCloseKey). Modely Whisper (OpenAI, MIT) v prevedení ggml z huggingface.co/ggerganov/whisper.cpp, overené SHA-256.
   Mikrofón cez rozhranie Windows (winmm), hlasové písanie Windows cez Win+H.
 - Ikony kategórií: tvary zo sady [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons) (Microsoft, MIT) –
   vložené ako dáta kresby (cesty), žiadna knižnica ani spustiteľný kód; licencia je priložená k programu

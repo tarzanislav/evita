@@ -92,7 +92,7 @@
 
         <Grid Margin="16,4,16,12">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="300" />
                 <ColumnDefinition Width="14" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
@@ -109,10 +109,10 @@
                           GridLinesVisibility="Horizontal" CellEditEnding="Riadky_CellEditEnding">
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="" Binding="{Binding Pridat, UpdateSourceTrigger=PropertyChanged}" Width="34" />
-                        <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="2*" />
-                        <DataGridTextColumn Header="Ks" Binding="{Binding Pocet}" Width="48" />
-                        <DataGridTextColumn Header="Cena/ks" Binding="{Binding CenaText}" Width="90" />
-                        <DataGridTemplateColumn Header="Kategória" Width="150">
+                        <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="*" MinWidth="180" />
+                        <DataGridTextColumn Header="Ks" Binding="{Binding Pocet}" Width="40" />
+                        <DataGridTextColumn Header="Cena/ks" Binding="{Binding CenaText}" Width="78" />
+                        <DataGridTemplateColumn Header="Kategória" Width="135">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox ItemsSource="{Binding Kategorie, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -121,9 +121,9 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Výrobca" Binding="{Binding Vyrobca}" Width="*" />
-                        <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="*" />
-                        <DataGridTextColumn Header="EAN" Binding="{Binding Ean}" Width="110" />
+                        <DataGridTextColumn Header="Výrobca" Binding="{Binding Vyrobca}" Width="85" />
+                        <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="115" />
+                        <DataGridTextColumn Header="EAN" Binding="{Binding Ean}" Width="105" />
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

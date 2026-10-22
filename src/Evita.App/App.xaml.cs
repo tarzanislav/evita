@@ -24,6 +24,13 @@ public partial class App : Application
         if (samotest)
         {
             Dialogy.TichyRezim = true;
+            AppDomain.CurrentDomain.UnhandledException += (_, a) => Samotest.ZapisPriebeh("NEOŠETRENÁ VÝNIMKA: " + a.ExceptionObject);
+            TaskScheduler.UnobservedTaskException += (_, a) =>
+            {
+                Samotest.ZapisPriebeh("nepozorovaná výnimka úlohy: " + a.Exception);
+                a.SetObserved();
+            };
+            Exit += (_, a) => Samotest.ZapisPriebeh($"koniec programu, kód {a.ApplicationExitCode}");
             Shutdown(Samotest.Spusti(this));
             return;
         }

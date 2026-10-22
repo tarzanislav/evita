@@ -1634,6 +1634,9 @@ internal static partial class Samotest
     /// <summary>Záznam písaný priebežne – ak sa test zasekne, ukáže, kde.</summary>
     private static string? _priebeznyZaznam;
 
+    /// <summary>Zápis do priebežného záznamu aj po skončení samotestu (ukončenie programu, neošetrené výnimky).</summary>
+    internal static void ZapisPriebeh(string text) => Krok(text);
+
     private static void Krok(string text)
     {
         var riadok = $"{DateTime.Now:HH:mm:ss} {text}";

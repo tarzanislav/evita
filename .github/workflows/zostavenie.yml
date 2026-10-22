@@ -241,7 +241,14 @@ jobs:
           } else {
             Write-Host "::error::Samotest nevytvoril záznam (kód $($p.ExitCode))"
           }
-          if ($p.ExitCode -ne 0) { exit 1 }
+          if ($p.ExitCode -ne 0) {
+            Write-Host ("::error::Program skončil s kódom {0} (0x{0:X8})" -f $p.ExitCode)
+            $priebeh = Join-Path $env:EVITA_DATA_DIR "samotest_priebeh.log"
+            if (Test-Path $priebeh) {
+              Get-Content $priebeh -Tail 4 | ForEach-Object { Write-Host "::error::priebeh: $($_ -replace '%', '%25')" }
+            }
+            exit 1
+          }
           Write-Host "::notice::Samotest OK"
 
       - name: Overenie PDF/A (veraPDF)

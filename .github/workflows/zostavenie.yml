@@ -132,10 +132,23 @@ jobs:
           $importy = & $dumpbin.FullName /nologo /imports $dll.FullName
           $kniznice = $importy | ForEach-Object { if ($_ -match '^\s+(\S+\.dll)\s*$') { $Matches[1].ToLowerInvariant() } } | Sort-Object -Unique
           Write-Host "::notice::EvitaHlas.dll používa len tieto knižnice Windows: $($kniznice -join ', ')"
-          $povolene = '^(kernel32\.dll|vcruntime140(_1)?\.dll|msvcp140\.dll|api-ms-win-crt-[a-z0-9-]+\.dll)$'
+          $povolene = '^(kernel32\.dll|advapi32\.dll|vcruntime140(_1)?\.dll|msvcp140\.dll|api-ms-win-crt-[a-z0-9-]+\.dll)$'
           $zakazane = $kniznice | Where-Object { $_ -notmatch $povolene }
           if ($zakazane) {
             Write-Host "::error::Prepis hlasu používa nepovolené knižnice: $($zakazane -join ', ')"
+            exit 1
+          }
+          # z advapi32.dll smie volať len generátor náhodných čísel (RtlGenRandom = SystemFunction036, použije ho
+          # knižnica C++ pre std::random_device) – nie registre, služby ani zabezpečenie
+          $aktualna = ""
+          $funkcieAdvapi = foreach ($riadok in $importy) {
+            if ($riadok -match '^\s+(\S+\.dll)\s*$') { $aktualna = $Matches[1].ToLowerInvariant() }
+            elseif ($aktualna -eq "advapi32.dll" -and $riadok -match '^\s+[0-9A-Fa-f]+\s+(\S+)\s*$') { $Matches[1] }
+          }
+          if ($funkcieAdvapi) { Write-Host "::notice::EvitaHlas.dll z advapi32.dll volá: $($funkcieAdvapi -join ', ')" }
+          $inePrava = $funkcieAdvapi | Where-Object { $_ -ne "SystemFunction036" }
+          if ($inePrava) {
+            Write-Host "::error::Prepis hlasu volá z advapi32.dll nepovolené funkcie: $($inePrava -join ', ')"
             exit 1
           }
           $exporty = (& $dumpbin.FullName /nologo /exports $dll.FullName) -join "`n"

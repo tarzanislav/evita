@@ -1,0 +1,145 @@
+{
+  "format": "EviTA",
+  "verziaFormatu": 1,
+  "program": "EviTA 0.7.141",
+  "vytvorene": "2026-10-22T07:12:59",
+  "kategorie": [
+    {
+      "nazov": "notebook",
+      "aktivna": true
+    },
+    {
+      "nazov": "tlačiareň",
+      "aktivna": true
+    },
+    {
+      "nazov": "projektor",
+      "aktivna": true
+    },
+    {
+      "nazov": "príslušenstvo",
+      "aktivna": true
+    },
+    {
+      "nazov": "PC",
+      "aktivna": true
+    }
+  ],
+  "miestnosti": [
+    {
+      "nazov": "Kancelária 101",
+      "budova": "A",
+      "aktivna": true
+    },
+    {
+      "nazov": "Sekretariát",
+      "budova": "A",
+      "aktivna": true
+    },
+    {
+      "nazov": "Učebňa 12",
+      "budova": "B",
+      "aktivna": true
+    },
+    {
+      "nazov": "Sklad",
+      "budova": "B",
+      "aktivna": true
+    }
+  ],
+  "osoby": [
+    {
+      "meno": "Ján",
+      "priezvisko": "Novák",
+      "funkcia": "účtovník",
+      "aktivna": true
+    },
+    {
+      "meno": "Mária",
+      "priezvisko": "Kováčová",
+      "funkcia": "učiteľka",
+      "aktivna": true
+    }
+  ],
+  "polozky": [
+    {
+      "prirastkoveCislo": 1,
+      "nazov": "Notebook Dell Latitude 5540",
+      "kategoria": "notebook",
+      "miestnost": "Kancelária 101",
+      "pridelene": "Ján Novák",
+      "vyrobca": "Dell",
+      "model": "Latitude 5540",
+      "serioveCislo": "5CD1234XYZ",
+      "inventarneCislo": "INV-2026-001",
+      "stav": "v prevádzke",
+      "datumNakupu": "2026-03-15",
+      "cena": 1089.00,
+      "zarukaDo": "2029-03-15",
+      "datumPridania": "2026-03-16T00:00:00",
+      "poznamka": "nabíjačka v taške"
+    },
+    {
+      "prirastkoveCislo": 2,
+      "nazov": "Tlačiareň HP LaserJet Pro M404dn",
+      "kategoria": "tlačiareň",
+      "miestnost": "Sekretariát",
+      "vyrobca": "HP",
+      "model": "LaserJet Pro M404dn",
+      "serioveCislo": "PHBQK12345",
+      "inventarneCislo": "INV-2025-014",
+      "stav": "v prevádzke",
+      "datumNakupu": "2025-11-04",
+      "cena": 289.90,
+      "zarukaDo": "2027-11-04",
+      "dalsiaRevizia": "2027-05-01",
+      "datumPridania": "2025-11-05T00:00:00"
+    },
+    {
+      "prirastkoveCislo": 3,
+      "nazov": "Projektor Epson EB-W51",
+      "kategoria": "projektor",
+      "miestnost": "Učebňa 12",
+      "pridelene": "Mária Kováčová",
+      "vyrobca": "Epson",
+      "model": "EB-W51",
+      "serioveCislo": "X5LK0123456",
+      "stav": "v oprave",
+      "datumNakupu": "2024-09-02",
+      "cena": 459.00,
+      "zarukaDo": "2026-09-02",
+      "datumPridania": "2024-09-03T00:00:00",
+      "poznamka": "nesvieti lampa, v servise od 10. 10. 2026"
+    },
+    {
+      "prirastkoveCislo": 4,
+      "nazov": "Monitor Dell P2422H",
+      "kategoria": "príslušenstvo",
+      "miestnost": "Sklad",
+      "vyrobca": "Dell",
+      "model": "P2422H",
+      "serioveCislo": "CN-0ABC12-34567",
+      "stav": "v sklade",
+      "datumNakupu": "2026-01-20",
+      "cena": 179.00,
+      "zarukaDo": "2029-01-20",
+      "datumPridania": "2026-01-21T00:00:00"
+    },
+    {
+      "prirastkoveCislo": 5,
+      "nazov": "PC Lenovo ThinkCentre M70q",
+      "kategoria": "PC",
+      "miestnost": "Učebňa 12",
+      "vyrobca": "Lenovo",
+      "model": "ThinkCentre M70q Gen 2",
+      "serioveCislo": "MJ0ABCDE",
+      "stav": "vyradené",
+      "datumNakupu": "2019-08-26",
+      "cena": 649.00,
+      "zarukaDo": "2022-08-26",
+      "datumPridania": "2019-08-27T00:00:00",
+      "datumVyradenia": "2026-06-30",
+      "dovodVyradenia": "poškodená základná doska"
+    }
+  ]
+}

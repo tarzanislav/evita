@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EviTA xsi:noNamespaceSchemaLocation="evita.xsd" verziaFormatu="1" program="EviTA 0.7.141" vytvorene="2026-10-22T07:12:59" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Kategorie>
+    <Kategoria nazov="notebook" aktivna="true" />
+    <Kategoria nazov="tlačiareň" aktivna="true" />
+    <Kategoria nazov="projektor" aktivna="true" />
+    <Kategoria nazov="príslušenstvo" aktivna="true" />
+    <Kategoria nazov="PC" aktivna="true" />
+  </Kategorie>
+  <Miestnosti>
+    <Miestnost nazov="Kancelária 101" budova="A" aktivna="true" />
+    <Miestnost nazov="Sekretariát" budova="A" aktivna="true" />
+    <Miestnost nazov="Učebňa 12" budova="B" aktivna="true" />
+    <Miestnost nazov="Sklad" budova="B" aktivna="true" />
+  </Miestnosti>
+  <Osoby>
+    <Osoba meno="Ján" priezvisko="Novák" funkcia="účtovník" aktivna="true" />
+    <Osoba meno="Mária" priezvisko="Kováčová" funkcia="učiteľka" aktivna="true" />
+  </Osoby>
+  <Polozky>
+    <Polozka prirastkoveCislo="1">
+      <Nazov>Notebook Dell Latitude 5540</Nazov>
+      <Kategoria>notebook</Kategoria>
+      <Miestnost>Kancelária 101</Miestnost>
+      <Pridelene>Ján Novák</Pridelene>
+      <Vyrobca>Dell</Vyrobca>
+      <Model>Latitude 5540</Model>
+      <SerioveCislo>5CD1234XYZ</SerioveCislo>
+      <InventarneCislo>INV-2026-001</InventarneCislo>
+      <Stav>v prevádzke</Stav>
+      <DatumNakupu>2026-03-15</DatumNakupu>
+      <Cena>1089.00</Cena>
+      <ZarukaDo>2029-03-15</ZarukaDo>
+      <DatumPridania>2026-03-16T00:00:00</DatumPridania>
+      <Poznamka>nabíjačka v taške</Poznamka>
+    </Polozka>
+    <Polozka prirastkoveCislo="2">
+      <Nazov>Tlačiareň HP LaserJet Pro M404dn</Nazov>
+      <Kategoria>tlačiareň</Kategoria>
+      <Miestnost>Sekretariát</Miestnost>
+      <Vyrobca>HP</Vyrobca>
+      <Model>LaserJet Pro M404dn</Model>
+      <SerioveCislo>PHBQK12345</SerioveCislo>
+      <InventarneCislo>INV-2025-014</InventarneCislo>
+      <Stav>v prevádzke</Stav>
+      <DatumNakupu>2025-11-04</DatumNakupu>
+      <Cena>289.90</Cena>
+      <ZarukaDo>2027-11-04</ZarukaDo>
+      <DalsiaRevizia>2027-05-01</DalsiaRevizia>
+      <DatumPridania>2025-11-05T00:00:00</DatumPridania>
+    </Polozka>
+    <Polozka prirastkoveCislo="3">
+      <Nazov>Projektor Epson EB-W51</Nazov>
+      <Kategoria>projektor</Kategoria>
+      <Miestnost>Učebňa 12</Miestnost>
+      <Pridelene>Mária Kováčová</Pridelene>
+      <Vyrobca>Epson</Vyrobca>
+      <Model>EB-W51</Model>
+      <SerioveCislo>X5LK0123456</SerioveCislo>
+      <Stav>v oprave</Stav>
+      <DatumNakupu>2024-09-02</DatumNakupu>
+      <Cena>459.00</Cena>
+      <ZarukaDo>2026-09-02</ZarukaDo>
+      <DatumPridania>2024-09-03T00:00:00</DatumPridania>
+      <Poznamka>nesvieti lampa, v servise od 10. 10. 2026</Poznamka>
+    </Polozka>
+    <Polozka prirastkoveCislo="4">
+      <Nazov>Monitor Dell P2422H</Nazov>
+      <Kategoria>príslušenstvo</Kategoria>
+      <Miestnost>Sklad</Miestnost>
+      <Vyrobca>Dell</Vyrobca>
+      <Model>P2422H</Model>
+      <SerioveCislo>CN-0ABC12-34567</SerioveCislo>
+      <Stav>v sklade</Stav>
+      <DatumNakupu>2026-01-20</DatumNakupu>
+      <Cena>179.00</Cena>
+      <ZarukaDo>2029-01-20</ZarukaDo>
+      <DatumPridania>2026-01-21T00:00:00</DatumPridania>
+    </Polozka>
+    <Polozka prirastkoveCislo="5">
+      <Nazov>PC Lenovo ThinkCentre M70q</Nazov>
+      <Kategoria>PC</Kategoria>
+      <Miestnost>Učebňa 12</Miestnost>
+      <Vyrobca>Lenovo</Vyrobca>
+      <Model>ThinkCentre M70q Gen 2</Model>
+      <SerioveCislo>MJ0ABCDE</SerioveCislo>
+      <Stav>vyradené</Stav>
+      <DatumNakupu>2019-08-26</DatumNakupu>
+      <Cena>649.00</Cena>
+      <ZarukaDo>2022-08-26</ZarukaDo>
+      <DatumPridania>2019-08-27T00:00:00</DatumPridania>
+      <DatumVyradenia>2026-06-30</DatumVyradenia>
+      <DovodVyradenia>poškodená základná doska</DovodVyradenia>
+    </Polozka>
+  </Polozky>
+</EviTA>

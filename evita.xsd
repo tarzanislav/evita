@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Popis formátu exportu a importu programu EviTA (verzia formátu 1). -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <xs:simpleType name="Stav">
+    <xs:annotation><xs:documentation>Stav položky.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="v prevádzke" />
+      <xs:enumeration value="v sklade" />
+      <xs:enumeration value="v oprave" />
+      <xs:enumeration value="vyradené" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="EviTA">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Kategorie" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Kategoria" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="nazov" type="xs:string" use="required" />
+                  <xs:attribute name="aktivna" type="xs:boolean" default="true" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="Miestnosti" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Miestnost" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="nazov" type="xs:string" use="required" />
+                  <xs:attribute name="budova" type="xs:string" />
+                  <xs:attribute name="poznamka" type="xs:string" />
+                  <xs:attribute name="aktivna" type="xs:boolean" default="true" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="Osoby" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Osoba" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="meno" type="xs:string" />
+                  <xs:attribute name="priezvisko" type="xs:string" use="required" />
+                  <xs:attribute name="funkcia" type="xs:string" />
+                  <xs:attribute name="aktivna" type="xs:boolean" default="true" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="Polozky">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Polozka" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:all>
+                    <xs:element name="Nazov" type="xs:string" />
+                    <xs:element name="Kategoria" type="xs:string" minOccurs="0" />
+                    <xs:element name="Miestnost" type="xs:string" minOccurs="0" />
+                    <xs:element name="Pridelene" type="xs:string" minOccurs="0" />
+                    <xs:element name="Vyrobca" type="xs:string" minOccurs="0" />
+                    <xs:element name="Model" type="xs:string" minOccurs="0" />
+                    <xs:element name="SerioveCislo" type="xs:string" minOccurs="0" />
+                    <xs:element name="InventarneCislo" type="xs:string" minOccurs="0" />
+                    <xs:element name="Ean" type="xs:string" minOccurs="0" />
+                    <xs:element name="Stav" type="Stav" minOccurs="0" />
+                    <xs:element name="DatumNakupu" type="xs:date" minOccurs="0" />
+                    <xs:element name="Cena" type="xs:decimal" minOccurs="0" />
+                    <xs:element name="ZarukaDo" type="xs:date" minOccurs="0" />
+                    <xs:element name="DalsiaRevizia" type="xs:date" minOccurs="0" />
+                    <xs:element name="DatumPridania" type="xs:dateTime" minOccurs="0" />
+                    <xs:element name="DatumZmeny" type="xs:dateTime" minOccurs="0" />
+                    <xs:element name="DatumVyradenia" type="xs:date" minOccurs="0" />
+                    <xs:element name="DovodVyradenia" type="xs:string" minOccurs="0" />
+                    <xs:element name="Poznamka" type="xs:string" minOccurs="0" />
+                  </xs:all>
+                  <xs:attribute name="guid" type="xs:string" />
+                  <xs:attribute name="prirastkoveCislo" type="xs:positiveInteger" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="Historia" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Zmena" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="guidPolozky" type="xs:string" />
+                  <xs:attribute name="prirastkoveCislo" type="xs:int" use="required" />
+                  <xs:attribute name="nazovPolozky" type="xs:string" />
+                  <xs:attribute name="cas" type="xs:dateTime" use="required" />
+                  <xs:attribute name="pouzivatel" type="xs:string" />
+                  <xs:attribute name="akcia" type="xs:string" use="required" />
+                  <xs:attribute name="pole" type="xs:string" />
+                  <xs:attribute name="staraHodnota" type="xs:string" />
+                  <xs:attribute name="novaHodnota" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="TypyUdalosti" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TypUdalosti" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="nazov" type="xs:string" use="required" />
+                  <xs:attribute name="farba" type="xs:string" />
+                  <xs:attribute name="aktivny" type="xs:boolean" default="true" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="Udalosti" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Udalost" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Popis" type="xs:string" minOccurs="0" />
+                  </xs:sequence>
+                  <xs:attribute name="guid" type="xs:string" />
+                  <xs:attribute name="nazov" type="xs:string" use="required" />
+                  <xs:attribute name="typ" type="xs:string" />
+                  <xs:attribute name="druh" type="xs:string" />
+                  <xs:attribute name="zaciatok" type="xs:dateTime" use="required" />
+                  <xs:attribute name="koniec" type="xs:dateTime" />
+                  <xs:attribute name="celyDen" type="xs:boolean" default="false" />
+                  <xs:attribute name="opakovanie" type="xs:string" />
+                  <xs:attribute name="opakovanieDo" type="xs:date" />
+                  <xs:attribute name="pripomienka" type="xs:string" />
+                  <xs:attribute name="polozkaGuid" type="xs:string" />
+                  <xs:attribute name="polozkaCislo" type="xs:int" />
+                  <xs:attribute name="miestnost" type="xs:string" />
+                  <xs:attribute name="osoba" type="xs:string" />
+                  <xs:attribute name="stav" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="Ulohy" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Uloha" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Popis" type="xs:string" minOccurs="0" />
+                  </xs:sequence>
+                  <xs:attribute name="guid" type="xs:string" />
+                  <xs:attribute name="text" type="xs:string" use="required" />
+                  <xs:attribute name="termin" type="xs:date" />
+                  <xs:attribute name="priorita" type="xs:string" />
+                  <xs:attribute name="hotovo" type="xs:boolean" default="false" />
+                  <xs:attribute name="datumHotovo" type="xs:dateTime" />
+                  <xs:attribute name="vytvorene" type="xs:dateTime" />
+                  <xs:attribute name="polozkaGuid" type="xs:string" />
+                  <xs:attribute name="polozkaCislo" type="xs:int" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="Poznamky" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Poznamka" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Text" type="xs:string" minOccurs="0" />
+                  </xs:sequence>
+                  <xs:attribute name="guid" type="xs:string" />
+                  <xs:attribute name="nazov" type="xs:string" use="required" />
+                  <xs:attribute name="farba" type="xs:string" />
+                  <xs:attribute name="pripnuta" type="xs:boolean" default="false" />
+                  <xs:attribute name="vytvorene" type="xs:dateTime" />
+                  <xs:attribute name="zmenene" type="xs:dateTime" />
+                  <xs:attribute name="datum" type="xs:date" />
+                  <xs:attribute name="polozkaGuid" type="xs:string" />
+                  <xs:attribute name="polozkaCislo" type="xs:int" />
+                  <xs:attribute name="udalostGuid" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="verziaFormatu" type="xs:int" />
+      <xs:attribute name="program" type="xs:string" />
+      <xs:attribute name="vytvorene" type="xs:dateTime" />
+      <xs:attribute name="pocitac" type="xs:string" />
+      <xs:attribute name="poslednePrirastkoveCislo" type="xs:int" />
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

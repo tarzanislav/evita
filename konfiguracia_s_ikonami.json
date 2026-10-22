@@ -1,0 +1,142 @@
+{
+  "Format": "EviTA-konfiguracia",
+  "VerziaFormatu": 1,
+  "Program": "EviTA 0.7.141",
+  "Vytvorene": "2026-10-22T07:12:01",
+  "Pocitac": "runnervm0xl3a",
+  "Nastavenia": {
+    "Dashboard.Skryte": "",
+    "Kalendar.AutoInventura": "1",
+    "Kalendar.AutoRevizie": "1",
+    "Kalendar.AutoZalohy": "1",
+    "Kalendar.AutoZaruky": "1",
+    "Kalendar.DatumInventury": "11-30",
+    "Kalendar.PrehladPriSpusteni": "1",
+    "Kalendar.Upozornenia": "1",
+    "Kurzy.Meny": "USD,CZK,PLN,HUF,GBP,CHF,CNY,JPY",
+    "Organizacia.Logo": "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",
+    "Organizacia.Nazov": "Základná škola Ukážková, Hlavná 1, Bratislava",
+    "Pocasie.Miesto": "{\"Nazov\":\"Pezinok\",\"Oblast\":\"Bratislavsk\\u00FD\",\"Okres\":\"Pezinok\",\"Krajina\":\"Slovensko\",\"KodKrajiny\":\"SK\",\"Sirka\":48.28986,\"Dlzka\":17.26664,\"Popis\":\"Pezinok, Bratislavsk\\u00FD, Slovensko\",\"Suradnice\":\"48.29\\u00B0, 17.27\\u00B0\"}",
+    "Program.Jazyk": "sk",
+    "Vyrobca.ZInternetu": "1",
+    "Zaloha.AutomatickaSHeslom": "0",
+    "Zaloha.Cas": "20:00",
+    "Zaloha.Perioda": "Tyzdenne",
+    "Zaloha.PlanovacWindows": "0",
+    "Zaloha.Ponechat": "2",
+    "Zaloha.Priecinok": "D:\\a\\_temp\\evita-samotest\\Zalohy",
+    "Zaloha.Zapnuta": "1"
+  },
+  "TypyUdalosti": [
+    {
+      "Nazov": "servis",
+      "Farba": "#E67E22",
+      "Aktivny": true
+    },
+    {
+      "Nazov": "revízia",
+      "Farba": "#C0392B",
+      "Aktivny": true
+    },
+    {
+      "Nazov": "nákup",
+      "Farba": "#27AE60",
+      "Aktivny": true
+    },
+    {
+      "Nazov": "inventúra",
+      "Farba": "#8E44AD",
+      "Aktivny": true
+    },
+    {
+      "Nazov": "porada",
+      "Farba": "#2E86C1",
+      "Aktivny": true
+    },
+    {
+      "Nazov": "školenie",
+      "Farba": "#16A085",
+      "Aktivny": true
+    },
+    {
+      "Nazov": "obdobie",
+      "Farba": "#D4AC0D",
+      "Aktivny": true
+    },
+    {
+      "Nazov": "iné",
+      "Farba": "#7F8C8D",
+      "Aktivny": true
+    }
+  ],
+  "Kategorie": [
+    {
+      "Nazov": "All-in-One",
+      "Ikona": "server",
+      "Farba": "#111827",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "interaktívna tabuľa",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "kopírka",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "multiboard",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "multifunkcia",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "notebook",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "PC",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "príslušenstvo",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "projektor",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "router",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "skener",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "slúchadlá",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "switch",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "tablet",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "Testovacia kategória ikon",
+      "Ikona": "hry",
+      "Farba": "#ABCDEF",
+      "Aktivna": true
+    },
+    {
+      "Nazov": "tlačiareň",
+      "Aktivna": true
+    }
+  ]
+}

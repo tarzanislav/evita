@@ -1,0 +1,734 @@
+﻿07:11:35 priečinok: D:\a\_temp\evita-samotest
+07:11:36 databáza vytvorená
+07:11:36 ok – kalendár mien má 467 mien (má 467)
+07:11:36 ok – meniny 20. 10.: Vendelín
+07:11:36 ok – meniny 24. 12.: Adam, Eva
+07:11:36 ok – 1. 1. nemá meniny nikto
+07:11:36 ok – meniny 29. 2.: Radomír
+07:11:36 ok – Veľká noc 2025
+07:11:36 ok – Veľká noc 2026
+07:11:36 ok – Veľká noc 2027
+07:11:36 ok – 2025: 14 dní pracovného pokoja (je 14)
+07:11:36 ok – 2026: 11 dní pracovného pokoja (je 11)
+07:11:36 ok – 2027: 13 dní pracovného pokoja (je 13)
+07:11:36 ok – 17. november od 2026 nie je voľno
+07:11:36 ok – 8. máj: v 2026 výnimka, v 2027 voľno
+07:11:36 ok – 1. 9. a 28. 10. nie sú voľno
+07:11:36 ok – Veľký piatok a Veľkonočný pondelok 2026
+07:11:36 ok – najbližší deň pracovného pokoja po 20. 10. 2026
+07:11:36 ok – ručná zmena dňa pracovného pokoja
+07:11:36 ok – zrušenie ručnej zmeny
+07:11:36 Kalendárium v poriadku
+07:11:37 ok – ukážkové dáta: 200 položiek (je 200)
+07:11:37 ok – prírastkové čísla sú jedinečné
+07:11:37 ok – posledné prírastkové číslo je 200
+07:11:37 ok – 30 osôb
+07:11:37 ok – 25 miestností
+07:11:37 ok – 15 kategórií
+07:11:37 ok – príznak ukážkových dát
+07:11:37 ok – počiatočné typy udalostí
+07:11:37 ok – ukážkové udalosti kalendára: 20 (je 20)
+07:11:37 ok – ukážkové úlohy: 7 (je 7)
+07:11:37 ok – ukážkové poznámky s prepojeniami
+07:11:37 ok – hromadné pridanie 3 ks
+07:11:37 ok – nová položka má číslo 201 (má 201)
+07:11:37 ok – sériové číslo pri hromadnom pridaní
+07:11:37 ok – zmena 2 polí v histórii (je 3)
+07:11:37 ok – súčasná úprava z dvoch miest je zachytená
+07:11:37 ok – hromadná zmena
+07:11:37 ok – vyradenie
+07:11:37 ok – obnovenie
+07:11:37 ok – vymazanie
+07:11:37 ok – vymazané číslo sa znova nepoužije
+07:11:37 ok – duplicitný názov kategórie je zachytený
+07:11:37 služby v poriadku
+07:11:37 ok – týždenná porada sa za 4 týždne zobrazí 4-krát (je 4)
+07:11:37 ok – mesačné opakovanie od 31. 1.: 6 výskytov, vo februári 28. (6)
+07:11:37 ok – udalosť cez viac dní je vidieť aj v jej strede
+07:11:37 ok – koniec pred začiatkom je odmietnutý
+07:11:37 ok – vymazanie udalosti
+07:11:37 ok – automatické termíny záruk a revízií
+07:11:37 ok – automatické termíny inventúry a záloh
+07:11:37 ok – automatický termín sa dá vypnúť
+07:11:38 ok – úloha po termíne v prehľade dňa
+07:11:38 ok – dnešná udalosť v prehľade dňa
+07:11:38 ok – pripomienka týždeň vopred v prehľade dňa
+07:11:38 ok – hotová úloha už nie je po termíne
+07:11:38 ok – export .ics
+07:11:38 ok – riadky .ics majú najviac 75 bajtov
+07:11:38 ok – duplicitný typ udalosti je odmietnutý
+07:11:38 ok – nepoužitý typ sa vymaže
+07:11:38 ok – používaný typ sa len skryje
+07:11:38 pracovný kalendár v poriadku
+07:11:38 ok – citát dňa v jazyku en
+07:11:38 ok – citát dňa v jazyku sk
+07:11:38 ok – citát dňa v jazyku cs
+07:11:38 ok – citát dňa v jazyku pl
+07:11:38 ok – citát dňa v jazyku hu
+07:11:38 ok – citát dňa v jazyku ru
+07:11:38 ok – citát dňa v jazyku zh
+07:11:38 ok – citát dňa je v daný deň stály a na druhý deň iný
+07:11:38 ok – skrytý citát sa nezobrazuje
+07:11:38 ok – vymazaný zabudovaný citát
+07:11:38 ok – vymazaný zabudovaný citát sa pri aktualizácii neobnoví
+07:11:38 ok – obnovenie zabudovaných citátov
+07:11:38 ok – čítanie výročí zo stránky Wikipédie (4)
+07:11:38 ok – čítanie výročí v ruštine a čínštine
+07:11:38 ok – názvy stránok dňa
+07:11:38 ok – skryté výročie zostane skryté aj po novom stiahnutí
+07:11:38 ok – export a import citátov a výročí
+07:11:38 výročia z Wikipédie pre dnešok: 89
+07:11:38 ok – stiahnutie výročí z Wikipédie
+07:11:38 ok – úlohy: zoradenie (vysoká priorita hore) a po termíne
+07:11:38 ok – úloha naviazaná na položku
+07:11:38 ok – úloha označená ako hotová
+07:11:38 ok – prázdna úloha je odmietnutá
+07:11:38 ok – vymazanie hotových úloh
+07:11:38 ok – poznámka bez názvu dostane názov z prvého riadku
+07:11:38 ok – hľadanie v poznámkach bez ohľadu na diakritiku
+07:11:38 ok – poznámka naviazaná na deň v kalendári
+07:11:38 ok – poznámka naviazaná na položku
+07:11:38 ok – pripnutá poznámka je hore
+07:11:38 ok – prázdna poznámka je odmietnutá
+07:11:38 ok – poznámka naviazaná na udalosť
+07:11:38 ok – vymazanie poznámky
+07:11:38 ok – kurzy ECB: čítanie XML (najnovší deň prvý)
+07:11:38 ok – kurzy: prepočet cez euro
+07:11:38 ok – kurzy: zmena oproti predošlému dňu
+07:11:38 ok – počasie: čítanie vyhľadaných miest
+07:11:38 ok – počasie: nič sa nenašlo
+07:11:38 ok – počasie: čítanie predpovede
+07:11:38 ok – počasie: popis podľa kódu WMO
+07:11:39 počasie: vyhľadanie Pezinok – 1 miest, prvé Pezinok, Bratislavský, Slovensko
+07:11:39 počasie: 11 °C, slabý dážď, 5 dní predpovede
+07:11:39 ok – počasie: vyrovnávacia pamäť
+07:11:40 kurzy: 21. 10. 2026 – USD 1,1234 ▲ +0,17 %, CZK 24,2620 ▼ -0,28 %, PLN 4,3635 ▼ -0,30 %, HUF 365,00 ▲ +0,09 %, GBP 0,8383 ▼ -0,24 %, CHF 0,9256 ▲ +0,21 %, CNY 7,4999 ▲ +0,14 %, JPY 177,36 ▲ +0,01 %
+07:11:40 ok – kurzy: stiahnutý kurzový lístok predvolených mien
+07:11:40 ok – konfigurácia: export len nastavení
+07:11:40 ok – konfigurácia: popis obsahu
+07:11:40 ok – konfigurácia: import obnovil nastavenia a farby typov
+07:11:40 ok – konfigurácia: panely dashboardu
+07:11:40 ok – konfigurácia: cudzí súbor je odmietnutý
+07:11:40 ok – preklad: slovenské tvary podľa počtu
+07:11:40 ok – suma s oddeľovačmi tisícov v rôznych jazykoch
+07:11:40 úlohy, poznámky, kurzy, počasie a konfigurácia v poriadku
+07:11:40 ok – aktualizácia štruktúry vytvorí tabuľky kalendára
+07:11:40 ok – aktualizácia štruktúry vytvorí tabuľky úloh a poznámok
+07:11:40 ok – aktualizácia štruktúry z verzie 1
+07:11:40 ok – záloha pred aktualizáciou štruktúry
+07:11:40 ok – predvolené nastavenia záloh
+07:11:40 ok – bez zálohy je čas na zálohu
+07:11:40 ok – záloha obsahuje aj Kalendárium
+07:11:40 ok – ručná záloha ZIP
+07:11:40 ok – po zálohe ešte nie je čas na ďalšiu
+07:11:40 ok – popis zálohy sedí
+07:11:40 ok – záloha s heslom je zašifrovaná
+07:11:40 ok – bez hesla sa záloha neotvorí
+07:11:40 ok – nesprávne heslo je odmietnuté
+07:11:40 ok – správne heslo otvorí zálohu
+07:11:40 ok – pridané položky po zálohe
+07:11:40 ok – obnova vrátila stav zo zálohy
+07:11:40 ok – bezpečnostná záloha pred obnovou
+07:11:40 ok – obnova je v zázname záloh
+07:11:40 ok – záloha pred obnovou má vlastný typ
+07:11:41 ok – názov zálohy pred aktualizáciou
+07:11:41 ok – typ zálohy pred aktualizáciou
+07:11:41 ok – záznam so starým typom
+07:11:41 ok – starý záznam dostal typ pred aktualizáciou
+07:11:41 ok – oprava typov sa robí len raz
+07:11:41 ok – rotácia ponechá 2 automatické zálohy
+07:11:41 ok – ručné zálohy rotácia nemaže
+07:11:41 ok – zálohy majú poradové číslo na začiatku
+07:11:41 ok – poradové čísla záloh sú jedinečné
+07:11:41 ok – prečíslovanie zálohy zo staršej verzie
+07:11:41 ok – stará záloha dostala poradové číslo
+07:11:41 ok – spracovanie údajov o novej verzii
+07:11:41 ok – nová verzia je novšia ako nainštalovaná
+07:11:41 ok – vydanie bez inštalátora sa ignoruje
+07:11:41 ok – úprava textu noviniek
+07:11:41 ok – heslo automatických záloh je uložené
+07:11:41 ok – automatická záloha je zašifrovaná uloženým heslom
+07:11:41 ok – typ: automatická záloha s heslom
+07:11:41 ok – typ: ručná záloha
+07:11:41 ok – typ: ručná záloha s heslom
+07:11:41 ok – typ: záloha pred aktualizáciou
+07:11:41 ok – zmazaním hesla sa šifrovanie automatických záloh vypne
+07:11:41 ok – úloha v Plánovači úloh Windows je vytvorená
+07:11:41 ok – úloha v Plánovači úloh Windows je zrušená
+07:11:41 zálohy a obnova v poriadku
+07:11:41 ok – Rýchla kontrola: Databáza je v poriadku.
+07:11:41 ok – Úplná kontrola integrity: Databáza je v poriadku.
+07:11:41 ok – Kontrola väzieb: Všetky odkazy na kategórie, miestnosti a osoby sú v poriadku.
+07:11:41 ok – Kontrola dát: Prírastkové čísla: 1 až 204, chýba 1 (vymazané v programe: 1). | aktívne položky bez miestnosti: 4 (76, 88, 174, 201). | Nepoužívané kategórie: 0, miestnosti: 0, osoby: 3 (len informácia). | Údaje sú v poriadku.
+07:11:41 ok – Optimalizácia: Štatistiky pre rýchle vyhľadávanie sú aktualizované.
+07:11:41 ok – Obnova indexov: Všetky indexy sú znovu vytvorené.
+07:11:41 ok – Kompaktovanie: Veľkosť pred: 674,0 kB, po: 348,0 kB.
+07:11:41 ok – záchrana dát: Pôvodný súbor je uložený: D:\a\_temp\evita-samotest\Zalohy\00012_EviTA_pred_zachranou_2026-10-22_071141.db | Tabuľka Nastavenia: prenesených 27 záznamov. | Tabuľka Kategorie: prenesených 15 záznamov. | Tabuľka Miestnosti: prenesených 25 záznamov. | Tabuľka Osoby: prenesených 30 záznamov. | Tabuľka Polozky: prenesených 203 záznamov. | Tabuľka HistoriaZmien: prenesených 392 záznamov. | Tabuľka ZaznamyZaloh: prenesených 9 záznamov. | Tabuľka TypyUdalosti: prenesených 8 záznamov. | Tabuľka Udalosti: prenesených 20 záznamov. | Tabuľka Ulohy: prenesených 7 záznamov. | Tabuľka Poznamky: prenesených 5 záznamov. | Prenesených záznamov: 741, nečitateľných: 0.
+07:11:41 ok – záchrana dát zachovala všetky položky
+07:11:41 ok – záchrana dát zachovala udalosti kalendára
+07:11:41 ok – záchrana dát zachovala úlohy a poznámky
+07:11:41 ok – databáza po záchrane je v poriadku
+07:11:41 kontrola a oprava v poriadku
+07:11:42 ok – export Excel
+07:11:42 ok – export Csv
+07:11:43 ok – export Json
+07:11:43 ok – export Xml
+07:11:43 ok – export Html
+07:11:44 ok – export Pdf
+07:11:44 ok – pri exporte XML sa uloží evita.xsd
+07:11:44 ok – export Pdf s predvolenými stĺpcami
+07:11:44 ok – export Html s predvolenými stĺpcami
+07:11:44 ok – export označených položiek
+07:11:44 ok – CSV má slovenské názvy stĺpcov a bodkočiarku
+07:11:47 ok – načítanie .xlsx: 203 riadkov
+07:11:47 ok – stĺpce .xlsx sa rozpoznajú automaticky
+07:11:47 ok – .xlsx: všetky položky sa spoznajú ako existujúce ()
+07:11:47 ok – načítanie .csv: 203 riadkov
+07:11:47 ok – stĺpce .csv sa rozpoznajú automaticky
+07:11:47 ok – .csv: všetky položky sa spoznajú ako existujúce ()
+07:11:47 ok – načítanie .json: 203 riadkov
+07:11:47 ok – stĺpce .json sa rozpoznajú automaticky
+07:11:47 ok – .json: všetky položky sa spoznajú ako existujúce ()
+07:11:47 ok – načítanie .xml: 203 riadkov
+07:11:47 ok – stĺpce .xml sa rozpoznajú automaticky
+07:11:47 ok – .xml: všetky položky sa spoznajú ako existujúce ()
+07:11:47 export v poriadku
+07:11:47 ok – dátumy 20.10.2026, 20. 10. 2026 a 2026-10-20
+07:11:47 ok – nezmyselný dátum sa nerozpozná
+07:11:47 ok – rozpoznanie stavu
+07:11:47 ok – rozpoznanie názvov stĺpcov
+07:11:47 ok – CSV s úvodzovkami a zalomením riadku
+07:11:47 ok – vzorové súbory
+07:11:47 ok – stiahnutie vzoru Excel (.xlsx)
+07:11:47 ok – stiahnutie vzoru CSV (.csv)
+07:11:47 ok – stiahnutie vzoru JSON (.json)
+07:11:47 ok – stiahnutie vzoru XML (.xml)
+07:11:47 ok – stiahnutie vzoru Číselníky (.xlsx)
+07:11:47 ok – pri vzore XML sa stiahne aj evita.xsd
+07:11:47 ok – opakované stiahnutie neprepíše súbor
+07:11:47 ok – vzor EviTA_vzor_Excel.xlsx: 5 riadkov bez chyby ()
+07:11:47 ok – vzor EviTA_vzor_Excel.xlsx zodpovedá popisu formátu (Zošit má 2 hárkov, načítal sa hárok „Položky“.)
+07:11:47 ok – vzor EviTA_vzor_CSV.csv: 5 riadkov bez chyby ()
+07:11:47 ok – vzor EviTA_vzor_CSV.csv zodpovedá popisu formátu ()
+07:11:47 ok – vzor EviTA_vzor_JSON.json: 5 riadkov bez chyby ()
+07:11:47 ok – vzor EviTA_vzor_JSON.json zodpovedá popisu formátu ()
+07:11:47 ok – vzor EviTA_vzor_XML.xml: 5 riadkov bez chyby ()
+07:11:47 ok – vzor EviTA_vzor_XML.xml zodpovedá popisu formátu ()
+07:11:47 ok – riadok bez názvu je chybný
+07:11:47 ok – opravený riadok je v poriadku, nezmyselný dátum je chyba
+07:11:47 ok – náhľad importu: pribudne 5 (je 5)
+07:11:47 ok – import vzoru CSV pridal 5 položiek
+07:11:47 ok – nové prírastkové čísla od posledného + 1
+07:11:47 ok – importovaná položka má opravený názov, osobu a miestnosť
+07:11:47 ok – pôvodné prírastkové číslo je v histórii
+07:11:47 ok – vyradená položka sa naimportovala ako vyradená
+07:11:47 ok – záloha pred importom
+07:11:47 ok – posledný import sa dá vrátiť
+07:11:47 ok – opakovaný import toho istého súboru nič nezdvojí
+07:11:47 ok – vrátenie importu
+07:11:47 ok – po vrátení už nie je čo vracať
+07:11:47 ok – Json: prenos celej databázy do neprázdnej evidencie je odmietnutý
+07:11:48 ok – Json: export obsahuje číselníky a históriu
+07:11:48 ok – Json: všetky riadky v poriadku ()
+07:11:48 ok – Json: prenos celej databázy zachoval čísla a údaje
+07:11:48 ok – Json: prenesená história zmien (595 z 392)
+07:11:48 ok – Json: ďalšie prírastkové číslo zostalo 205
+07:11:48 ok – Json: prenesené osoby (30 z 30)
+07:11:48 ok – Json: prenesené udalosti kalendára (20 z 20)
+07:11:48 ok – Json: udalosti zostali naviazané na položky
+07:11:48 ok – Json: prenesené úlohy (7 z 7)
+07:11:48 ok – Json: prenesené poznámky s prepojeniami (5 z 5)
+07:11:48 ok – Xml: prenos celej databázy do neprázdnej evidencie je odmietnutý
+07:11:48 ok – Xml: export obsahuje číselníky a históriu
+07:11:48 ok – Xml: všetky riadky v poriadku ()
+07:11:49 ok – Xml: prenos celej databázy zachoval čísla a údaje
+07:11:49 ok – Xml: prenesená história zmien (798 z 595)
+07:11:49 ok – Xml: ďalšie prírastkové číslo zostalo 205
+07:11:49 ok – Xml: prenesené osoby (30 z 30)
+07:11:49 ok – Xml: prenesené udalosti kalendára (20 z 20)
+07:11:49 ok – Xml: udalosti zostali naviazané na položky
+07:11:49 ok – Xml: prenesené úlohy (7 z 7)
+07:11:49 ok – Xml: prenesené poznámky s prepojeniami (5 z 5)
+07:11:49 import v poriadku
+07:11:49 ok – názov organizácie a logo pre hlavičku
+07:11:49 ok – zostava Súhrnný zoznam: 10 strán
+07:11:50 ok – zostava Vyfiltrované položky: 2 strán
+07:11:50 ok – zostava Po miestnostiach: 27 strán
+07:11:51 ok – zostava Po kategóriách: 19 strán
+07:11:52 ok – zostava Podľa pridelenia: 30 strán
+07:11:52 ok – zostava Prírastkový zoznam: 8 strán
+07:11:53 ok – zostava Podľa dátumu pridania: 8 strán
+07:11:53 ok – zostava Vyradené položky: 1 strán
+07:11:54 ok – zostava História zmien: 27 strán
+07:11:54 ok – zostava Kalendár: 2 strán
+07:11:54 ok – kalendár s obráteným obdobím je odmietnutý
+07:11:55 ok – zostava bez stĺpcov je odmietnutá
+07:11:55 tlačové zostavy v poriadku
+07:11:55 ok – kód štítku EVITA-číslo
+07:11:55 ok – čítačka v americkom režime na slovenskej klávesnici (EVITA=+ľš)
+07:11:55 ok – číslice zo slovenskej klávesnice
+07:11:55 ok – výmena Y a Z (QWERTZ)
+07:11:55 ok – EAN-13, EAN-8, UPC-A a kontrolná číslica
+07:11:55 ok – čítačka kódov zxing-cpp (ZXing.dll zostavená zo zdrojového kódu) je pri programe
+07:11:55 ZXing.dll: 3397120 B, SHA-256 0943E6F606FD360090766BB1B435BEC8A59387B9078370AD95F9706F889020BC
+07:11:55 ok – QR kód krátkeho textu má 21 × 21 modulov (má 21)
+07:11:55 ok – QR kód sa dá prečítať späť
+07:11:55 ok – čiarový kód Code 128 sa dá prečítať späť
+07:11:55 ok – QR kód z obrázka PNG (fotka z mobilu)
+07:11:55 ok – prázdny obrázok – žiadny kód
+07:11:55 ok – QR kód s diakritikou
+07:11:55 ok – GTIN z kódu GS1 a z odkazu GS1 Digital Link
+07:11:55 ok – GTIN z odkazu je medzi podobami kódu
+07:11:55 ok – dva kódy na jednom obrázku (http://eaton.eu/3SMini, EVITA-5)
+07:11:55 ok – fotky z mobilu: zoznam fotiek
+07:11:55 fotka 6972470564259__krabica.jpg: 154889 B, JPEG Decoder, 1625×720, Bgr24, DPI 96, bez EXIF otočenia
+07:11:55 fotka 6972470564259__krabica.jpg (originál): JPEG 1625×720, 151 kB → 1625×720, 1×, 34 ms, kódy: 6972470564259
+07:11:55 fotka 6972470564259__krabica.jpg (z mobilu): JPEG 1625×720, 151 kB → 1625×720, 1×, 34 ms, kódy: 6972470564259
+07:11:55 fotka 9120072379208__krabica.jpg: 228870 B, JPEG Decoder, 1741×847, Bgr24, DPI 96, bez EXIF otočenia
+07:11:55 fotka 9120072379208__krabica.jpg (originál): JPEG 1741×847, 223 kB → 1741×847, 4×, 146 ms, kódy: 9120072379208
+07:11:55 fotka 9120072379208__krabica.jpg (z mobilu): JPEG 1741×847, 223 kB → 1741×847, 4×, 148 ms, kódy: 9120072379208
+07:11:55 fotka eaton_3s_mini.jpg: 90471 B, JPEG Decoder, 801×720, Bgr24, DPI 96, bez EXIF otočenia
+07:11:55 fotka eaton_3s_mini.jpg (originál): JPEG 801×720, 88 kB → 801×720, 5×, 154 ms, kódy: http://eaton.eu/3SMini
+07:11:56 fotka eaton_3s_mini.jpg (z mobilu): JPEG 801×720, 88 kB → 801×720, 5×, 162 ms, kódy: http://eaton.eu/3SMini
+07:11:56 fotka simulovana_6972470564259_zdialky.jpg: 448911 B, JPEG Decoder, 2400×1800, Bgr24, DPI 96, bez EXIF otočenia
+07:11:56 fotka simulovana_6972470564259_zdialky.jpg (originál): JPEG 2400×1800, 438 kB → 2400×1800, 2×, 194 ms, kódy: 6972470564259
+07:11:56 fotka simulovana_6972470564259_zdialky.jpg (z mobilu): JPEG 2400×1800, 438 kB → 2400×1800, 2×, 188 ms, kódy: 6972470564259
+07:11:56 ok – fotky z mobilu: všetky kódy sa prečítali
+07:11:56 ok – mobil: stránka posiela popis fotky a ponúkne otvorenie v Chrome
+07:11:57 fotka 6972470564259__krabica.jpg cez /foto: {"ok":false,"kod":"6972470564259","text":"Kód sa teraz nedá spracovať."}
+07:11:57 ok – mobil: kód z fotky 6972470564259__krabica.jpg (6972470564259)
+07:11:58 fotka 9120072379208__krabica.jpg cez /foto: {"ok":false,"kod":"9120072379208","text":"Kód sa teraz nedá spracovať."}
+07:11:58 ok – mobil: kód z fotky 9120072379208__krabica.jpg (9120072379208)
+07:11:58 fotka eaton_3s_mini.jpg cez /foto: {"ok":false,"kod":"http://eaton.eu/3SMini","text":"Kód sa teraz nedá spracovať."}
+07:11:58 ok – mobil: kód z fotky eaton_3s_mini.jpg (http://eaton.eu/3SMini)
+07:11:59 fotka simulovana_6972470564259_zdialky.jpg cez /foto: {"ok":false,"kod":"6972470564259","text":"Kód sa teraz nedá spracovať."}
+07:11:59 ok – mobil: kód z fotky simulovana_6972470564259_zdialky.jpg (6972470564259)
+07:11:59 ok – mobil: malý náhľad fotky – rada otvoriť stránku v Chrome ({"ok":false,"kod":null,"text":"Počítač dostal len malý náhľad fotky (160×120 bodov), na ňom sa kód prečítať nedá. Otvorte adresu z QR kódu v prehliadači Chrome (nie v aplikácii Skener) a odfoťte kód znova. (Fotka: JPEG 160×120, 1 kB → 160×120, 5×, 6 ms.)"})
+07:11:59 ok – mobil: nečitateľná fotka je odložená na rozbor aj s popisom z mobilu
+07:11:59 ok – mobil: fotka HEIC – jasné hlásenie ({"ok":false,"kod":null,"text":"Fotku sa nepodarilo spracovať: Fotka je vo formáte HEIC, ktorý Windows bez doplnku neotvorí. Vo fotoaparáte mobilu vypnite formát HEIF (vysoká účinnosť) a odfoťte kód znova. (Fotka: HEIC, 1 kB.)"})
+07:11:59 ok – mobil: poškodený súbor – hlásenie s príčinou ({"ok":false,"kod":null,"text":"Fotku sa nepodarilo spracovať: Súbor sa nedá otvoriť ako obrázok (?, 1 kB). (Fotka: ?, 1 kB.)"})
+07:11:59 fotky z mobilu v poriadku
+07:11:59 ok – sken štítku EviTA
+07:11:59 ok – sken štítku zo slovenskej klávesnice (EVITA=+)
+07:11:59 ok – sken inventárneho čísla (aj malými písmenami)
+07:11:59 ok – sken sériového čísla
+07:11:59 ok – prírastkové číslo napísané ručne
+07:11:59 ok – neznámy kód
+07:11:59 ok – výber kódu z fotky: položka v evidencii, potom EAN, webová adresa až nakoniec
+07:11:59 ok – štítok EviTA neexistujúcej položky
+07:11:59 ok – zmena EAN v histórii položky
+07:11:59 ok – sken EAN (UPC-A) nájde obe položky s EAN-13
+07:11:59 ok – EAN v rýchlom vyhľadávaní evidencie
+07:11:59 ok – údaje o výrobku podľa EAN z vlastnej evidencie
+07:11:59 vyhľadanie podľa kódu v poriadku
+07:11:59 ok – dátum nákupu 21. 10. 2026 → záruka 21. 10. 2028, revízia 21. 10. 2027 (je 21. 10. 2028, 21. 10. 2027)
+07:11:59 ok – zmena dátumu nákupu prepočíta automatické dátumy; revízia cez sviatky a víkend až na pondelok 28. 12. 2026 (je 28. 12. 2026)
+07:11:59 ok – ručne opravená záruka sa neprepíše; revízia zo soboty 27. 2. 2027 na pondelok 1. 3. 2027 (je 31. 1. 2029, 1. 3. 2027)
+07:11:59 ok – najbližší pracovný deň (sviatok, víkend, bežný deň)
+07:11:59 ok – výrobcovia a modely z evidencie (39)
+07:11:59 ok – výrobca a model z názvu „Router TP-Link Archer AX55“ → TP-Link / Archer AX55 (je TP-Link / Archer AX55, evidencia)
+07:11:59 ok – výrobca a model z názvu „Notebook HP ProBook 450 G9“ → HP / ProBook 450 G9 (je HP / ProBook 450 G9, názov)
+07:11:59 ok – výrobca a model z názvu „Tlačiareň Brother HL-L2350DW (kancelária)“ → Brother / HL-L2350DW (je Brother / HL-L2350DW, evidencia)
+07:11:59 ok – výrobca a model z názvu „Monitor dell p2422h“ → Dell / P2422H (je Dell / P2422H, evidencia)
+07:11:59 ok – výrobca a model z názvu „Router tp link Archer C6“ → TP-Link / Archer C6 (je TP-Link / Archer C6, názov)
+07:11:59 ok – výrobca a model z názvu „Záložný zdroj Eaton 3S Mini 36W“ → Eaton / 3S Mini 36W (je Eaton / 3S Mini 36W, názov)
+07:11:59 ok – výrobca a model z názvu „Kancelárska stolička“ → nič / nič (je nič / nič, )
+07:11:59 ok – výrobca a model z odpovede UPCitemdb (Dell/Latitude 5540; Dell/)
+07:11:59 ok – karta: výrobca a model po zadaní názvu (Lenovo / ThinkPad T14 Gen 4)
+07:11:59 ok – karta: zmena názvu zmení aj automaticky doplnené údaje (Dell / Latitude 3540)
+07:11:59 ok – karta: ručne zadaný model sa neprepíše (HP / Latitude 3540 i5)
+07:11:59 ok – karta existujúcej položky: výrobca sa sám nemení
+07:11:59 ok – vypnuté hľadanie výrobcu na internete sa nepýta internetu
+07:11:59 ok – po vyčerpaní limitu čaká položka 611 na doplnenie výrobcu a modelu
+07:11:59 ok – v deň vyčerpaného limitu sa na doplnenie nečaká – zostane na ďalší deň
+07:12:01 doplnenie čakajúcich položiek: 1, položka 611: Dell / Latitude 5540, ešte čaká: 0 (1877 ms)
+07:12:01 ok – doplnenie čakajúcich položiek neprekročí časový limit
+07:12:01 ok – položka s ručne doplneným výrobcom a modelom už nečaká
+07:12:01 karta položky: doplnenie dátumov, výrobcu a modelu v poriadku
+07:12:01 ok – sada ikon kategórií: 36 ikon, každá s vlastnou farbou a platnou kresbou
+07:12:01 ok – počiatočné kategórie: All-in-One → aio, interaktívna tabuľa → tabula, kopírka → kopirka, multiboard → multiboard, multifunkcia → multifunkcia, notebook → notebook, PC → pc, príslušenstvo → prislusenstvo, projektor → projektor, router → router, skener → skener, slúchadlá → sluchadla, switch → switch, tablet → tablet, tlačiareň → tlaciaren
+07:12:01 ok – ikona podľa názvu kategórie „Multifunkčná tlačiareň“ → multifunkcia (je multifunkcia)
+07:12:01 ok – ikona podľa názvu kategórie „Notebooky“ → notebook (je notebook)
+07:12:01 ok – ikona podľa názvu kategórie „Záložný zdroj UPS“ → ups (je ups)
+07:12:01 ok – ikona podľa názvu kategórie „Monitory“ → monitor (je monitor)
+07:12:01 ok – ikona podľa názvu kategórie „Myš a klávesnica“ → prislusenstvo (je prislusenstvo)
+07:12:01 ok – ikona podľa názvu kategórie „NAS“ → disk (je disk)
+07:12:01 ok – ikona podľa názvu kategórie „Wi-Fi access point“ → wifi (je wifi)
+07:12:01 ok – ikona podľa názvu kategórie „IP telefón“ → ip_telefon (je ip_telefon)
+07:12:01 ok – ikona podľa názvu kategórie „Mobilné telefóny“ → mobil (je mobil)
+07:12:01 ok – ikona podľa názvu kategórie „Dokovacia stanica“ → dok (je dok)
+07:12:01 ok – ikona podľa názvu kategórie „Kancelárska stolička“ → ine (je ine)
+07:12:01 ok – ikona ako obrázok PNG (aj na pozadí)
+07:12:01 ok – číselník kategórií: každá kategória má ikonu
+07:12:01 ok – vlastná ikona a farba kategórie „All-in-One“ sa uloží a ukáže v evidencii
+07:12:01 ok – návrat na automatickú ikonu a predvolenú farbu (neplatná farba sa neuloží)
+07:12:01 ok – evidencia: každá položka má ikonu kategórie
+07:12:01 ok – konfigurácia: export obsahuje kategórie s ikonami a farbami aj voľbu výrobcu z internetu
+07:12:01 ok – konfigurácia: potvrdenie importu uvádza kategórie s ikonami
+07:12:01 ok – konfigurácia: import obnovil ikony a farby (16 kategórií) a doplnil chýbajúcu kategóriu (1)
+07:12:02 ok – zostava s ikonami kategórií (136 kB) a bez nich (105 kB)
+07:12:02 ok – ikona kategórie je v zostavách predvolene zapnutá
+07:12:02 ikony kategórií v poriadku
+07:12:02 ok – údaje pre štítky (zoradené podľa čísla)
+07:12:02 ok – štítky na hárku A4 od 5. pozície
+07:12:02 ok – čiarové kódy, 2 kópie, 40 na hárku
+07:12:02 ok – tlačiareň štítkov – jeden štítok na stranu
+07:12:02 ok – vlastný formát štítkov
+07:12:02 ok – PDF so štítkami
+07:12:02 ok – kód štítku: inventárne číslo, bez neho štítok EviTA
+07:12:02 ok – nastavenia štítkov sa zapamätajú (bez kópií)
+07:12:02 štítky v poriadku
+07:12:02 ok – inventúra: položka v správnej miestnosti (25 – Počítač Lenovo ThinkCentre M70s – nájdená.)
+07:12:02 ok – inventúra: opakovaný sken
+07:12:02 ok – inventúra: položka z inej miestnosti
+07:12:02 ok – inventúra: neznámy kód
+07:12:02 ok – inventúra: kód s viacerými položkami
+07:12:02 ok – inventúra: ručné označenie
+07:12:02 ok – inventúra: stav položiek
+07:12:02 ok – inventúra: počet nájdených v zozname
+07:12:02 ok – inventúra: presun nájdenej položky do miestnosti (zapíše sa do evidencie)
+07:12:02 ok – inventúra: zrušenie označenia
+07:12:02 ok – inventúra: neznáme kódy
+07:12:02 ok – inventúrny protokol (PDF)
+07:12:02 ok – ukončená inventúra neprijíma skeny
+07:12:02 ok – inventúra otvorená znova
+07:12:02 ok – vymazanie inventúry
+07:12:02 inventúra v poriadku
+07:12:02 ok – mobil: zlý kľúč je odmietnutý
+07:12:02 ok – mobil: stránka s fotoaparátom
+07:12:02 ok – mobil: napísaný kód ({"ok":true,"kod":"EVITA-1","text":"1 \u2013 Router TP-Link Archer AX55 (Riadite\u013E\u0148a)"})
+07:12:02 ok – mobil: kód z fotky ({"ok":true,"kod":"EVITA-5","text":"5 \u2013 Projektor Epson EB-W51 (\u0160kolsk\u00FD klub)"})
+07:12:02 ok – mobil: z fotky s dvoma kódmi sa spracuje kód položky ({"ok":true,"kod":"EVITA-5","text":"5 \u2013 Projektor Epson EB-W51 (\u0160kolsk\u00FD klub) Na fotke: http://eaton.eu/3SMini, EVITA-5."})
+07:12:02 ok – mobil: príliš dlhý kód sa skráti
+07:12:02 mobil: adresy počítača 10.1.0.101, port 8765
+07:12:02 mobil ako skener v poriadku
+07:12:03 EAN 5099206027312:  Open Icecat: výrobok nie je v otvorenom katalógu. UPCitemdb: výrobok sa nenašiel.
+07:12:04 EAN 0889842640816: UPCitemdb: Microsoft Xbox Series X 1TB | Xbox Series X Console - Black (Xbox) Open Icecat: výrobok nie je v otvorenom katalógu.
+07:12:05 obrazovka: dashboard
+07:12:05 obrazovka: kalendar
+07:12:05 obrazovka: ulohy
+07:12:05 obrazovka: poznamky
+07:12:06 obrazovka: evidencia
+07:12:06 obrazovka: skenovanie
+07:12:07 obrazovka: statistika
+07:12:07 obrazovka: tlac
+07:12:07 ok – obrazovka Import a export: stiahnutie vzoru
+07:12:07 obrazovka: import
+07:12:07 ok – kategórie: vlastná farba ikony zadaná kódom
+07:12:07 ok – kategórie: neplatný kód farby sa nepoužije
+07:12:07 ok – kategórie: farba z palety sa ukáže aj ako kód
+07:12:07 obrazovka: kategorie
+07:12:07 obrazovka: miestnosti
+07:12:08 obrazovka: osoby
+07:12:08 obrazovka: sviatky
+07:12:08 obrazovka: kalendarium
+07:12:09 obrazovka: servis
+07:12:09 obrazovka: nastavenia
+07:12:09 obrazovka: dashboard
+07:12:09 ok – štatistika: kategórie, vek, plán obnovy po rokoch, miestnosti, stav a úplnosť údajov sedia
+07:12:10 ok – štatistika: 192 položiek, hodnota 130 502,87 €, súčty blokov sedia
+07:12:10 ok – štatistika: podokno s položkami kategórie notebook (39 ks · spolu 30 106,94 € · priemer 771,97 €)
+07:12:11 ok – štatistika: zostava na tlač a PDF (3 strán)
+07:12:11 ok – štatistika: tlač jedného bloku (Náhľad – Štatistika evidencie – Kategórie, 1 strán)
+07:12:11 ok – štatistika: bez vybranej časti sa netlačí (upozornenie)
+07:12:11 ok – štatistika: ponuka Čo tlačiť sa otvorí
+07:12:11 ok – štatistika: tlač vybraných častí (súhrn, plán obnovy, záruky – 1 strán)
+07:12:11 ok – štatistika: výber častí na tlač sa zapamätá
+07:12:12 ok – štatistika: zoznam z podokna na tlač
+07:12:12 ok – štatistika: položky z podokna v Evidencii (68)
+07:12:12 štatistika v poriadku
+07:12:12 ok – dashboard: meniny
+07:12:12 ok – dashboard: úlohy a pripnuté poznámky
+07:12:12 ok – dashboard: rýchle pridanie úlohy
+07:12:12 ok – dashboard: hotová úloha zmizne zo zoznamu
+07:12:12 dashboard: počasie 11 °C, kurzy 8 (), prepočet 112,3400 USD
+07:12:12 ok – dashboard: citát dňa
+07:12:12 dashboard: výročia dňa 6 ()
+07:12:12 ok – dashboard: ďalší citát
+07:12:12 ok – obrazovka Citáty a výročia: výročia dňa (4)
+07:12:12 ok – obrazovka Citáty a výročia: pridanie výročia
+07:12:12 ok – obrazovka Citáty a výročia: pridanie citátu
+07:12:12 ok – obrazovka Citáty a výročia: hľadanie
+07:12:13 ok – obrazovka Úlohy: pridanie a výber
+07:12:13 ok – obrazovka Úlohy: úprava s položkou
+07:12:13 ok – obrazovka Úlohy: všetky aj s hotovými
+07:12:13 ok – obrazovka Poznámky: zoznam a otvorená poznámka
+07:12:13 ok – obrazovka Poznámky: úprava novej poznámky
+07:12:13 ok – obrazovka Poznámky: rozpísaná poznámka sa pri prechode uloží
+07:12:13 ok – obrazovka Poznámky: hľadanie
+07:12:13 ok – obrazovka Nastavenia: meny
+07:12:13 ok – obrazovka Nastavenia: zmena mien sa uloží
+07:12:13 ok – obrazovka Nastavenia: export konfigurácie
+07:12:13 ok – obrazovka Nastavenia: import konfigurácie
+07:12:13 ok – obrazovka Nastavenia: uloženie jazyka
+07:12:13 ok – Language reset nastaví angličtinu
+07:12:13 ok – dashboard: najbližší deň pracovného pokoja v zozname sviatkov
+07:12:13 ok – dashboard: graf kategórií sedí s počtom položiek
+07:12:13 ok – dashboard: skrytý panel sa zapamätá
+07:12:14 ok – klik na graf zobrazí položky kategórie
+07:12:14 ok – sviatky sú pri otvorení zamknuté
+07:12:14 ok – bez „Zmeniť“ sa zmena neuloží
+07:12:14 ok – zmena v tabuľke sviatkov sa uloží
+07:12:14 ok – vrátenie pravidiel zo zákona
+07:12:14 ok – rýchly filter záruk nájde položky
+07:12:14 okno: karta položky
+07:12:15 okno: kópia položky
+07:12:15 okno: nová položka
+07:12:15 okno: hromadná zmena
+07:12:15 okno: vymazanie dát
+07:12:15 okno: prvé spustenie
+07:12:15 okno: vstup
+07:12:15 okno: nové heslo
+07:12:15 okno: zadanie hesla
+07:12:15 okno: ponuka aktualizácie
+07:12:15 ok – popis filtra pre export
+07:12:15 ok – obrazovka tlače: logo a názov organizácie
+07:12:15 ok – obrazovka tlače: voľby zostavy po miestnostiach
+07:12:15 ok – obrazovka tlače: zmena poradia stĺpcov
+07:12:15 ok – obdobie zostavy: minulý mesiac
+07:12:15 ok – uloženie zostáv
+07:12:16 ok – použitie uloženej zostavy
+07:12:16 ok – uložená zostava s obdobím „minulý mesiac“
+07:12:16 ok – popis uloženej zostavy
+07:12:16 ok – vymazanie uloženej zostavy
+07:12:16 ok – náhľad zostavy po miestnostiach (27 strán)
+07:12:17 ok – uloženie PDF z náhľadu
+07:12:17 ok – obrazovka tlače: vyfiltrované položky podľa Evidencie
+07:12:17 ok – uloženie PDF z obrazovky tlače
+07:12:17 ok – tlač z Evidencie
+07:12:18 ok – tlač z Evidencie na výšku (2 strán, na šírku 2)
+07:12:18 ok – tlač z Evidencie: filter stĺpcov
+07:12:18 ok – tlač z Evidencie: PDF na výšku so zvolenými stĺpcami
+07:12:18 ok – tlač z Evidencie: bez stĺpcov sa netlačí (zostane posledná voľba)
+07:12:18 ok – tlač z Evidencie: orientácia a stĺpce sa zapamätali
+07:12:18 okno: náhľad tlače
+07:12:18 ok – tlač: 2 strany na list
+07:12:18 ok – tlač: 4 a 8 strán na list
+07:12:18 ok – tlač: opakovanie strán (1 strana 4× na liste)
+07:12:18 ok – tlač: brožúra (poradie strán na preloženie, prázdne strany doplnené)
+07:12:18 ok – tlač: neplatné voľby sa opravia (brožúra obojstranne, bez dierovača)
+07:12:18 ok – tlač: orientácia listu podľa počtu strán na list
+07:12:19 ok – tlač bez pozadia: podklad hlavičky tabuľky 47828 → 0 bodov
+07:12:19 ok – tlač: obsah strany bez prázdnych okrajov (191 × 286 mm zo 210 × 297 mm) – zväčšenie neoreže text
+07:12:19 ok – okno tlače: 1 strana – 7 strán zostavy → 7 strán listov
+07:12:19 ok – okno tlače: 2 strany ramcek – 7 strán zostavy → 4 strán listov
+07:12:20 ok – okno tlače: 2 strany zvacsenie – 7 strán zostavy → 4 strán listov
+07:12:20 ok – okno tlače: 4 strany opakovat – 7 strán zostavy → 7 strán listov
+07:12:21 ok – okno tlače: 8 stran – 7 strán zostavy → 1 strán listov
+07:12:21 ok – okno tlače: brozura – 7 strán zostavy → 4 strán listov
+07:12:21 ok – okno tlače: bez pozadia siva – 7 strán zostavy → 7 strán listov
+07:12:21 ok – okno tlače: siva dierovac – 7 strán zostavy → 7 strán listov
+07:12:22 ok – obojstranná tlač: automaticky 1 úloha (8 strán), ručne 2 úlohy po 8 stranách (2 kópie), jednostranne 7
+07:12:22 ok – obojstranná tlač: nastavenie sa pamätá pre každú tlačiareň zvlášť
+07:12:22 ok – sprievodca: list na výšku rovno, na šírku hore nohami → otáčať len listy na šírku
+07:12:22 ok – sprievodca: ručné otáčanie – číslo 4 hore nohami → obrátené poradie a otočenie
+07:12:22 ok – okno tlače: voľby sa zapamätajú
+07:12:23 tlačiareň Microsoft Print to PDF: lístok A4 Portrait, , kópie 2, Color
+07:12:23 okno tlače v poriadku
+07:12:23 ok – PDF: 7 strán, písma vložené, text sa dá kopírovať, nešifrované
+07:12:23 ok – PDF: 2 strany – 7 strán zostavy → 4 strán PDF, text zostáva textom
+07:12:24 ok – PDF: 4 strany siva – 7 strán zostavy → 2 strán PDF, text zostáva textom
+07:12:24 ok – PDF: 8 stran – 7 strán zostavy → 1 strán PDF, text zostáva textom
+07:12:24 ok – PDF: brozura – 7 strán zostavy → 4 strán PDF, text zostáva textom
+07:12:24 ok – PDF: zosvetlit dierovac – 7 strán zostavy → 7 strán PDF, text zostáva textom
+07:12:24 ok – PDF: bez pozadia – 7 strán zostavy → 7 strán PDF, text zostáva textom
+07:12:25 ok – PDF: zákazy tlače a kopírovania → zašifrované, otvorí sa bez hesla
+07:12:25 ok – PDF: heslo zvolené, ale nezadané → upozornenie, PDF sa neuloží
+07:12:25 ok – PDF: heslo na otvorenie – bez hesla sa neotvorí, s heslom áno (2 strany na list)
+07:12:25 ok – okno PDF: 2 strany na list → 4 strán PDF
+07:12:26 ok – okno PDF: uložené zašifrované PDF s heslom
+07:12:26 ok – okno PDF: voľby sa zapamätajú, heslo sa do databázy neukladá
+07:12:26 ok – PDF: záložky miestností (panel Záložky sa otvorí)
+07:12:26 ok – PDF/A-2b: farebný profil sRGB, metadáta s označením normy, záložky, bez šifrovania
+07:12:26 ok – PDF/A-2b: aj 2 strany na list v odtieňoch sivej
+07:12:26 PDF/A-3b: vložený Excel – Súhrnný zoznam;;;; | zoskupené podľa: miestnosť · bez vyradených · 192 položiek · vytlačené 22. 10. 2026 7:12;;;; | Miestnosť: Ekonomické oddelenie 13 položiek · 6 894,55 €;;;; | Č.;;Názov;Kategória;Stav | 20;;Tlačiareň Canon i-SENSYS LBP233dw;tlačiareň;v prevádzke | 62;;Notebook HP ProBook 450 G10;notebook;v prevádzke | 100;;Počítač All-in-One Lenovo IdeaCentre AIO 3;All-in-One;v prevádzke | 107;;Tlačiareň Canon i-SENSYS LBP233dw;tlačiareň;v prevádzke | 132;;Notebook HP ProBook 450 G10;notebook;v prevádzke | 140;;Tlačiareň Brother HL-L2350DW;tlačiareň;v prevádzke
+07:12:26 ok – PDF/A-3b: vložená tabuľka v Exceli, heslo a zákazy sa pri norme nepoužijú
+07:12:26 ok – PDF/X-4: výstupný zámer CMYK, orezová veľkosť, farby označené profilom
+07:12:29 ok – PNG: 7 obrázkov 2480 bodov na šírku (A4, 300 dpi)
+07:12:31 ok – PNG: 2 strany na list → 4 obrázkov na šírku
+07:12:35 ok – TIFF: jeden súbor s 7 stranami (odtiene sivej)
+07:12:35 ok – cesta s príponou .pdf vždy dá PDF (export)
+07:12:36 ok – okno PDF: PDF/A-3b bez hesla (heslo pri norme nie je potrebné)
+07:12:36 ukladanie do PDF v poriadku
+07:12:36 ok – e-mail: heslo sa ukladá zašifrované (DPAPI)
+07:12:36 ok – e-mail: kontrola adries (viac adresátov, neplatná adresa)
+07:12:36 ok – e-mail: predmet s diakritikou ako encoded-word
+07:12:36 ok – e-mail cez SMTP (Ziadne): prihlásenie, adresáti so skrytou kópiou, príloha PDF bez zmeny (124241 B)
+07:12:36 ok – e-mail cez SMTP (SslTls): prihlásenie, adresáti so skrytou kópiou, príloha PDF bez zmeny (124241 B)
+07:12:37 ok – e-mail cez SMTP (StartTls): prihlásenie, adresáti so skrytou kópiou, príloha PDF bez zmeny (124241 B)
+07:12:37 ok – nastavenie e-mailu: skúšobný e-mail odoslaný (Skúšobný e-mail je odoslaný na evita@skola.sk. Ak nepríde, pozrite aj priečinok nevyžiadanej pošty.)
+07:12:37 ok – okno Poslať e-mailom: odoslané dvom adresátom + skrytá kópia, adresáti sa zapamätajú (E-mail je odoslaný: jana@skola.sk, peter@skola.sk)
+07:12:37 ok – e-mail cez poštový program: príloha pripravená v dočasnom priečinku
+07:12:37 posielanie e-mailom v poriadku
+07:12:37 ok – diktovanie: prevzorkovanie na 16 kHz a úprava textu
+07:12:37 ok – diktovanie: hlasové písanie Windows (Win+H) do poznámky – Hovorte… Pre slovenčinu pridajte v Nastaveniach Windows slovenskú klávesnicu (Čas a jazyk → Jazyk a oblasť).
+07:12:37 ok – diktovanie: EvitaHlas.dll je pri programe a procesor podporuje AVX2
+07:12:38 ok – diktovanie: model overený podľa SHA-256
+07:12:48 diktovanie bez internetu (5,3 s zvuku, 10 s): „Notebok v učebni číslo dva na poškodienu klávesnice. Tlačiareň v kabinete treba vymeniť.“ – Hotovo za 10 s – text je vložený na miesto kurzora.
+07:12:48 ok – diktovanie bez internetu: slovenský text rozpoznaný (5 zo 6 kľúčových slov)
+07:12:48 diktovanie v poriadku
+07:12:48 doklad – text faktúry: Notebook HP ProBook 450 G10 ×3 780 | Monitor Dell P2422H ×2 159.9 | Myš Logitech M185 ×5 12.5
+07:12:48 ok – doklad: riadky tabuľky faktúry (názov, počet, cena za kus, bez súčtov)
+07:12:48 ok – doklad: číslo, dátum a dodávateľ z hlavičky (2026104, 14. 10. 2026, ABC Computers s.r.o.)
+07:12:48 doklad – webová objednávka: Lenovo ThinkPad E14 Gen 5 ×2 1299 | Logitech MX Keys klávesnica ×1 109.9
+07:12:48 ok – doklad: webová objednávka (názov, počet a cena na samostatných riadkoch)
+07:12:48 doklad – diktovanie: Notebooky HP ProBook ×3 780 | Monitory Dell ×2 150 | Projektor Epson ×1 -
+07:12:48 ok – doklad: nadiktované položky (počet slovom, cena „po … eur“, položka bez ceny)
+07:12:48 doklad – diktovanie 2: Tlačiarne Canon ×2 200 | Slúchadiel Jabra ×5 35
+07:12:48 ok – doklad: diktovanie s číslicami („za 400 eur“ spolu = 200 € za kus)
+07:12:48 ok – doklad: naskenované EAN (každý na riadku)
+07:12:48 doklad – UBL: Notebook Lenovo ThinkPad L14 Gen 4 ×4 600 EAN 0196802345678 | Dokovacia stanica Lenovo USB-C ×1 89
+07:12:48 ok – doklad: elektronická faktúra UBL (slovenská e-faktúra / Peppol)
+07:12:48 ok – doklad: ISDOC (cena s DPH) – Webkamera Logitech C920 ×2 123
+07:12:48 ok – doklad: Factur-X / ZUGFeRD (CII) – Projektor Epson EB-W51 ×1 450 EAN 4006381333931
+07:12:48 ok – doklad: iné XML alebo text nie je e-faktúra
+07:12:48 ok – doklad: e-faktúra vložená v PDF sa nájde a prečíta
+07:12:48 ok – doklad: PDF bez prílohy nemá e-faktúru (ide na OCR)
+07:12:50 doklad – OCR (English (United States)): „Faktüra	2026104 ⏎ Dodåvatel': ABC Computers s.r.o. ⏎ Dåtum vystavenia: 14.10.2026 ⏎ Nåzov	Mnoistvo	Cena/ks	Spolu ⏎ Notebook HP ProBook 450 GIO	3 ks	780,00 €	2 340,00 € ⏎ Monitor Dell P2422H	159,90 €	319,80 € ⏎ Projektor Epson EB-W51	1 ks	520,00 €	520,00 € ⏎ spolu s DPH: 3 179,80 € ⏎  ⏎ “ → Notebook HP ProBook 450 GIO ×3 780 | Monitor Dell P2422H ×1 159.9 | Projektor Epson EB-W51 ×1 520
+07:12:50 ok – doklad: OCR faktúry v PDF v pomocnom procese (English (United States)) – rozpoznané riadky s cenou
+07:12:50 ok – okno nové položky: rozpoznané riadky, výrobca a kategória (HP ProBook 450 G10, notebook) – Rozpoznané 3 položky
+07:12:50 ok – okno nové položky: kategória podľa typového radu (ThinkPad = notebook)
+07:12:50 ok – okno nové položky: úpravy v tabuľke zostanú po novom rozpoznaní textu
+07:12:50 ok – okno nové položky: vytvorených 5 položiek (3 notebooky + 2 monitory)
+07:12:50 ok – okno nové položky: e-faktúra zo súboru (DPH sa pripočíta, poznámka s číslom dokladu) – Rozpoznané 2 položky
+07:12:50 ok – nové položky z dokladu: cena, dátum nákupu, záruka, výrobca a poznámka sú v evidencii
+07:12:50 nové položky z dokladu v poriadku
+07:12:51 ok – kalendár: týždeň
+07:12:51 ok – kalendár: zoznam
+07:12:51 ok – kalendár: mesiac s dnešnými udalosťami
+07:12:51 ok – kalendár: export .ics z obrazovky
+07:12:51 ok – udalosť: naviazanie na položku podľa čísla
+07:12:51 ok – udalosť: uloženie s časom a položkou
+07:12:51 ok – karta položky: záložka Udalosti
+07:12:51 okno: typy udalostí
+07:12:51 okno: nastavenia kalendára
+07:12:51 ok – prehľad dňa pri spustení
+07:12:52 okno: upozornenie na udalosť
+07:12:52 ok – kalendár: poznámka k dňu v týždni
+07:12:52 ok – okno udalosti: prepojené poznámky
+07:12:52 okno: udalosť s poznámkou
+07:12:52 ok – karta položky: záložka Poznámky a úlohy
+07:12:52 okno: karta položky s poznámkami
+07:12:52 okná kalendára v poriadku
+07:12:52 ok – obrazovka Skenovanie prijíma kódy
+07:12:52 ok – sken na obrazovke Skenovanie otvorí kartu položky
+07:12:53 ok – po odchode z obrazovky Skenovanie ju kódy neobchádzajú
+07:12:53 ok – sken kdekoľvek v programe otvorí kartu položky
+07:12:53 ok – kód viacerých položiek ich zobrazí v evidencii
+07:12:53 ok – neznámy kód otvorí obrazovku Skenovanie
+07:12:54 ok – hľadanie štítku EVITA-1 v evidencii nájde práve jednu položku
+07:12:54 ok – okno štítkov: náhľad 2 strán (30 štítkov · 2 strany)
+07:12:54 ok – okno štítkov: tlačiareň štítkov, náhľad najviac 12 strán
+07:12:55 ok – okno štítkov: uloženie PDF
+07:12:55 ok – štítky: poradie podľa miestností (17 miestností)
+07:12:55 ok – štítky: každá miestnosť na novom hárku (17 hárkov)
+07:12:55 ok – štítky: uložené nastavenie sa zapamätá a použije
+07:12:55 ok – tlač štítkov: náhľad strán a rozsah od – do
+07:12:55 ok – okno inventúry prijíma kódy
+07:12:55 ok – okno inventúry: sken nájdenej a cudzej položky
+07:12:56 ok – okno inventúry: len chýbajúce
+07:12:56 ok – po zatvorení inventúry kódy idú znova do hlavného okna
+07:12:59 okno: nová položka s poľom EAN
+07:12:59 okná skenovania v poriadku
+07:12:59 ok – okno exportu: formát a rozsah
+07:12:59 ok – export z okna
+07:12:59 okno: export
+07:12:59 ok – sprievodca: stiahnutie vzoru
+07:12:59 ok – sprievodca: priradenie stĺpcov (krok 2)
+07:12:59 ok – sprievodca: kontrola (krok 3)
+07:12:59 ok – sprievodca: zmena v tabuľke sa hneď skontroluje
+07:12:59 ok – sprievodca: opravený riadok
+07:12:59 ok – sprievodca: náhľad (Pribudne 5 položiek s prírastkovými číslami 211 – 215.)
+07:12:59 ok – sprievodca: import
+07:12:59 ok – sprievodca: protokol
+07:13:00 ok – sprievodca: vrátenie importu
+07:13:00 okno: sprievodca importom
+07:13:00 ok – vzor číselníkov: výber hárku podľa číselníka
+07:13:00 ok – číselník: rozpoznanie stĺpcov miestností (krok 2, jazyk sk, číselník True, Názov=nazov, Budova=budova, Poznámka=poznamka, Aktívna=aktivna; CSV, 5 riadkov, 4 stĺpcov. Rozpoznaných stĺpcov: 4 z 4.)
+07:13:00 ok – číselník: kontrola miestností (Ok, Duplicita, Chyba, Ok, Duplicita)
+07:13:00 ok – číselník: oprava riadku v tabuľke
+07:13:00 ok – číselník: náhľad (Do číselníka Miestnosti pribudne 3 záznamy.)
+07:13:00 ok – číselník: import miestností
+07:13:00 ok – číselník: protokol
+07:13:01 ok – číselník: vrátenie importu
+07:13:01 ok – číselník: osoby s menom a priezviskom v jednom stĺpci
+07:13:01 ok – číselník: osoby už v evidencii sa nepridajú znova
+07:13:01 ok – číselník: kategórie zo súboru EviTA (JSON)
+07:13:01 sprievodca: import číselníkov
+07:13:01 ok – pruh s novou verziou
+07:13:08 jazyk en: písmo PDF Segoe UI (C:\Windows\Fonts\msyh.ttc) 
+07:13:09 ok – en: import rozpozná stĺpce exportu v tomto jazyku
+07:13:09 jazyk en: na obrazovkách 75 textov so slovenskými znakmi, v kóde 0 textov bez prekladu
+07:13:16 jazyk cs: písmo PDF Segoe UI (C:\Windows\Fonts\msyh.ttc) 
+07:13:16 ok – cs: import rozpozná stĺpce exportu v tomto jazyku
+07:13:17 jazyk cs: na obrazovkách 4 textov so slovenskými znakmi, v kóde 0 textov bez prekladu
+07:13:24 jazyk pl: písmo PDF Segoe UI (C:\Windows\Fonts\msyh.ttc) 
+07:13:25 ok – pl: import rozpozná stĺpce exportu v tomto jazyku
+07:13:25 jazyk pl: na obrazovkách 70 textov so slovenskými znakmi, v kóde 0 textov bez prekladu
+07:13:32 jazyk hu: písmo PDF Segoe UI (C:\Windows\Fonts\msyh.ttc) 
+07:13:32 ok – hu: import rozpozná stĺpce exportu v tomto jazyku
+07:13:32 jazyk hu: na obrazovkách 32 textov so slovenskými znakmi, v kóde 0 textov bez prekladu
+07:13:40 jazyk ru: písmo PDF Segoe UI (C:\Windows\Fonts\msyh.ttc) 
+07:13:40 ok – ru: import rozpozná stĺpce exportu v tomto jazyku
+07:13:40 jazyk ru: na obrazovkách 69 textov so slovenskými znakmi, v kóde 0 textov bez prekladu
+07:13:50 jazyk zh: písmo PDF EviTA CJK (C:\Windows\Fonts\msyh.ttc) 
+07:13:50 ok – zh: import rozpozná stĺpce exportu v tomto jazyku
+07:13:50 jazyk zh: na obrazovkách 70 textov so slovenskými znakmi, v kóde 0 textov bez prekladu
+07:13:50 ok – počiatočné názvy sa po zmene jazyka vrátili do slovenčiny
+07:13:51 ok – vymazanie dát
+07:13:51 ok – záloha pred vymazaním má vlastný typ
+07:13:51 ok – príznak ukážkových dát zrušený
+07:13:51 ok – po vymazaní začína číslovanie od 1
+07:13:51 hlásenie: [Asterisk] Vyberte aspoň jednu časť štatistiky na tlač.
+07:13:51 hlásenie: [Question] Načítať konfiguráciu zo súboru EviTA_konfiguracia.json (EviTA 0.7.141, runnervm0xl3a, 2026-10-22T07:12:13)?
+
+Prepíšu sa tieto nastavenia:
+• jazyk programu
+• panely dashboardu
+• miesto pre počasie
+• meny v kurzovom lístku
+• nastavenia kalendára
+• pravidelné zálohy
+• názov a logo organizácie
+• formát a obsah štítkov
+• výrobca a model z internetu
+• typy udalostí kalendára (8)
+• kategórie s ikonami a farbami (15; chýbajúce sa doplnia)
+
+Evidencia (položky, kalendár, úlohy, poznámky) sa nezmení.
+07:13:51 hlásenie: [Question] Zrušiť ručné zmeny pri 1 sviatkoch v roku 2026 a vrátiť pravidlá zo zákona?
+07:13:51 hlásenie: [Question] Vymazať uloženú zostavu „Zmeny za minulý mesiac“?
+07:13:51 hlásenie: [Otvoriť] z_nahladu.pdf
+07:13:51 hlásenie: [Otvoriť] z_obrazovky.pdf
+07:13:51 hlásenie: [Tlač] EviTA – Vyfiltrované položky
+07:13:51 hlásenie: [Otvoriť] evidencia_na_vysku_stlpce.pdf
+07:13:51 hlásenie: [Exclamation] Vyberte aspoň jeden stĺpec.
+07:13:51 hlásenie: [Otvoriť] samotest_pdf_z_okna.pdf
+07:13:51 hlásenie: [E-mail] Súhrnný zoznam: Súhrnný zoznam.pdf
+07:13:51 hlásenie: [Hlasové písanie] Win+H
+07:13:51 hlásenie: [Asterisk] Kalendár je uložený na rok dopredu od 1. 10. 2026.
+
+D:\a\_temp\evita-samotest\Export\kalendar.ics
+
+Súbor otvorí Outlook (dvojklik) a v Google Kalendári ho naimportujete cez Nastavenia → Import a export.
+07:13:51 hlásenie: [Karta] 408
+07:13:51 hlásenie: [Karta] 408
+07:13:51 hlásenie: [Otvoriť] stitky_z_okna.pdf
+07:13:51 hlásenie: [Tlač] Štítky EviTA
+07:13:51 hlásenie: [Asterisk] Vyexportované: 2 položky.
+
+D:\a\_temp\evita-samotest\Export\z_okna.pdf
+07:13:51 hlásenie: [Tlač] EviTA – protokol importu
+07:13:51 hlásenie: [Question] Vrátiť evidenciu do stavu pred týmto importom?
+
+Databáza sa obnoví zo zálohy, ktorá sa urobila tesne pred importom.
+07:13:51 hlásenie: [Asterisk] Import je vrátený. Evidencia je v stave pred importom.
+07:13:51 hlásenie: [Question] Vrátiť evidenciu do stavu pred týmto importom?
+
+Databáza sa obnoví zo zálohy, ktorá sa urobila tesne pred importom.
+07:13:51 hlásenie: [Asterisk] Import je vrátený. Evidencia je v stave pred importom.
+07:13:51 hlásenie: [Question] Vrátiť evidenciu do stavu pred týmto importom?
+
+Databáza sa obnoví zo zálohy, ktorá sa urobila tesne pred importom.
+07:13:51 hlásenie: [Asterisk] Import je vrátený. Evidencia je v stave pred importom.
+07:13:51 SAMOTEST OK

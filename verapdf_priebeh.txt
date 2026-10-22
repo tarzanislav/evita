@@ -1,0 +1,44 @@
+**********************
+PowerShell transcript start
+Start time: 20261022071351
+Username: runnervm0xl3a\runneradmin
+RunAs User: runnervm0xl3a\runneradmin
+Configuration Name: 
+Machine: runnervm0xl3a (Microsoft Windows NT 10.0.26100.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -command . 'D:\a\_temp\90de0cfa-32f1-4e55-9fc5-9b5b886ce6b0.ps1'
+Process ID: 1076
+PSVersion: 7.6.6
+PSEdition: Core
+GitCommitId: 7.6.6
+OS: Microsoft Windows 10.0.26100
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+D:\a\_temp\verapdf-instalacia\verapdf-greenfield-1.30.3
+D:\a\_temp\verapdf-instalacia\auto-install.xml
+D:\a\_temp\verapdf-instalacia\instalator.zip
+D:\a\_temp\verapdf-instalacia\verapdf-greenfield-1.30.3\verapdf-install
+D:\a\_temp\verapdf-instalacia\verapdf-greenfield-1.30.3\verapdf-install.bat
+D:\a\_temp\verapdf-instalacia\verapdf-greenfield-1.30.3\verapdf-izpack-installer-1.30.3.jar
+[ Starting automated installation ]
+[ Starting to unpack ]
+[ Processing package: veraPDF GUI (1/2) ]
+[ Processing package: veraPDF CLI (2/2) ]
+[ Unpacking finished ]
+[ Writing the uninstaller data ... ]
+[ Automated installation done ]
+PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa2b_2_strany_siva.pdf 2b
+PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa2b.pdf 2b
+PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa3b.pdf 3b
+::notice::veraPDF PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa2b_2_strany_siva.pdf 2b
+::notice::veraPDF PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa2b.pdf 2b
+::notice::veraPDF PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa3b.pdf 3b
+PS>$global:?
+True
+**********************
+PowerShell transcript end
+End time: 20261022071401
+**********************

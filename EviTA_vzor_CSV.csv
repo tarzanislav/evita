@@ -1,0 +1,6 @@
+﻿Prírastkové číslo;Názov;Kategória;Miestnosť;Pridelené;Výrobca;Model;Sériové číslo;Inventárne číslo;EAN;Stav;Dátum nákupu;Cena;Záruka do;Ďalšia revízia;Dátum pridania;Dátum vyradenia;Dôvod vyradenia;Poznámka
+1;Notebook Dell Latitude 5540;notebook;Kancelária 101;Ján Novák;Dell;Latitude 5540;5CD1234XYZ;INV-2026-001;;v prevádzke;15.3.2026;1089,00;15.3.2029;;16.3.2026;;;nabíjačka v taške
+2;Tlačiareň HP LaserJet Pro M404dn;tlačiareň;Sekretariát;;HP;LaserJet Pro M404dn;PHBQK12345;INV-2025-014;;v prevádzke;4.11.2025;289,90;4.11.2027;1.5.2027;5.11.2025;;;
+3;Projektor Epson EB-W51;projektor;Učebňa 12;Mária Kováčová;Epson;EB-W51;X5LK0123456;;;v oprave;2.9.2024;459,00;2.9.2026;;3.9.2024;;;nesvieti lampa, v servise od 10. 10. 2026
+4;Monitor Dell P2422H;príslušenstvo;Sklad;;Dell;P2422H;CN-0ABC12-34567;;;v sklade;20.1.2026;179,00;20.1.2029;;21.1.2026;;;
+5;PC Lenovo ThinkCentre M70q;PC;Učebňa 12;;Lenovo;ThinkCentre M70q Gen 2;MJ0ABCDE;;;vyradené;26.8.2019;649,00;26.8.2022;;27.8.2019;30.6.2026;poškodená základná doska;

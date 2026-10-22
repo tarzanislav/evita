@@ -1,0 +1,3 @@
+PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa2b_2_strany_siva.pdf 2b
+PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa2b.pdf 2b
+PASS D:\a\_temp\evita-samotest\Export\samotest_pdf_pdfa3b.pdf 3b

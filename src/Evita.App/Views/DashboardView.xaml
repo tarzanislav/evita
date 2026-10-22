@@ -41,21 +41,23 @@
                             Visibility="{Binding UkazDnes, Converter={StaticResource BoolNaViditelnost}}">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="1.25*" />
+                                <ColumnDefinition Width="1.1*" MinWidth="150" />
+                                <ColumnDefinition Width="*" MinWidth="110" />
+                                <ColumnDefinition Width="1.3*" MinWidth="130" />
                             </Grid.ColumnDefinitions>
 
                             <!-- dátum a čas -->
-                            <StackPanel MinWidth="190" MaxWidth="270" Margin="0,0,18,0">
-                                <TextBlock Text="{Binding DatumText}" FontSize="22" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <StackPanel Margin="0,0,16,0">
+                                <TextBlock Text="{Binding DatumText}" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap" />
                                 <TextBlock Text="{Binding TyzdenText}" Style="{StaticResource Popis}" Margin="0,2,0,0" />
-                                <TextBlock Text="{Binding CasText}" FontSize="36" FontWeight="Light" Margin="0,2,0,0" />
+                                <Viewbox HorizontalAlignment="Left" StretchDirection="DownOnly" Margin="0,2,0,0">
+                                    <TextBlock Text="{Binding CasText}" FontSize="36" FontWeight="Light" />
+                                </Viewbox>
                             </StackPanel>
 
                             <!-- meniny -->
                             <Border Grid.Column="1" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                    Padding="18,0,18,0">
+                                    Padding="16,0,16,0">
                                 <StackPanel>
                                     <TextBlock Text="Meniny" Style="{StaticResource Popis}" />
                                     <TextBlock Text="{Binding MeninyDnes}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
@@ -70,7 +72,7 @@
 
                             <!-- sviatky -->
                             <Border Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                    Padding="18,0,0,0">
+                                    Padding="16,0,0,0">
                                 <StackPanel>
                                     <TextBlock Text="Sviatky" Style="{StaticResource Popis}" Margin="0,0,0,2" />
                                     <Border CornerRadius="4" Padding="8,2" Margin="0,2,0,4" HorizontalAlignment="Left"

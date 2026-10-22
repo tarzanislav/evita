@@ -83,7 +83,7 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     /// sa natiahnu na celú šírku.
     /// </summary>
     public System.Windows.GridLength SirkaLavej =>
-        UkazDnes || UkazCitat ? new System.Windows.GridLength(1.35, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+        UkazDnes || UkazCitat ? new System.Windows.GridLength(1.6, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
 
     public System.Windows.GridLength SirkaVyroci => UkazVyrocia ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
 

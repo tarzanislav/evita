@@ -70,7 +70,6 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
     }
 
     [RelayCommand]
-    [RelayCommand]
     private void ZDokladu()
     {
         if (_hlavne.Evidencia.PridatZDokladu())
@@ -80,6 +79,7 @@ public partial class ImportExportViewModel : ObservableObject, IObnovitelny
         }
     }
 
+    [RelayCommand]
     public void Importovat()
     {
         var model = new ImportViewModel();

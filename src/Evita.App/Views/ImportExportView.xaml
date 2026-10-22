@@ -36,8 +36,12 @@
                             <TextBlock Style="{StaticResource Ikona}" Text="&#xE8B5;" FontSize="20" Margin="0,0,10,0" />
                             <TextBlock Text="Import" Style="{StaticResource Podnadpis}" Margin="0" />
                         </StackPanel>
-                        <Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Padding="16,7" Margin="0,14,0,0"
-                                Style="{DynamicResource AccentButtonStyle}" Command="{Binding ImportovatCommand}" Content="Spustiť sprievodcu importom…" />
+                        <WrapPanel DockPanel.Dock="Bottom" Margin="0,14,0,0">
+                            <Button Padding="16,7" Margin="0,0,8,0"
+                                    Style="{DynamicResource AccentButtonStyle}" Command="{Binding ImportovatCommand}" Content="Spustiť sprievodcu importom…" />
+                            <Button Padding="12,7" Command="{Binding ZDokladuCommand}" Content="Nové položky z faktúry…"
+                                    ToolTip="Faktúra v PDF, elektronická faktúra (XML, ISDOC), sken alebo fotka, skopírovaná webová objednávka, diktovanie alebo EAN" />
+                        </WrapPanel>
                         <TextBlock TextWrapping="Wrap"
                                    Text="Zo starej evidencie v Exceli alebo CSV, alebo z exportu inej EviTA. Sprievodca priradí stĺpce, skontroluje údaje a duplicity a ukáže náhľad. Pred zápisom sa urobí záloha." />
                     </DockPanel>

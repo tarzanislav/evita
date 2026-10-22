@@ -49,6 +49,13 @@
                     <TextBlock Text="Nová položka" />
                 </StackPanel>
             </Button>
+            <Button Margin="0,0,6,6" Padding="12,6" Command="{Binding ZDokladuCommand}"
+                    ToolTip="Nové položky z faktúry (PDF, e-faktúra, sken), zo skopírovanej webovej objednávky, diktovaním alebo z naskenovaných EAN">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE9F9;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock Text="Z faktúry…" />
+                </StackPanel>
+            </Button>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,14,6">
                 <CheckBox IsChecked="{Binding VyrobcaZInternetu}" VerticalAlignment="Center"
                           Content="Výrobca a model z internetu"

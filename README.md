@@ -71,6 +71,18 @@ názov a logo organizácie, tlač a export, skenovanie a štítky). Heslo automa
   Kliknutím sa uloží do priečinka Stiahnuté: `EviTA_vzor_Excel.xlsx` (s návodom a výberovými zoznamami),
   `EviTA_vzor_CSV.csv`, `EviTA_vzor_JSON.json`, `EviTA_vzor_XML.xml` (spolu s popisom formátu `evita.xsd`)
   a `EviTA_vzor_ciselniky.xlsx` (kategórie, miestnosti a osoby, každý číselník na vlastnom hárku).
+- **Nové položky z dokladu** (tlačidlo *Z faktúry…* v Evidencii alebo *Nové položky z faktúry…* v Import a export):
+  - **elektronická faktúra** – XML (UBL: slovenská e-faktúra a Peppol, ISDOC, Factur-X/ZUGFeRD), aj vložená v PDF –
+    presné názvy, počty, ceny, sadzby DPH a EAN; ceny bez DPH sa dajú jedným zaškrtnutím prepočítať s DPH,
+  - **faktúra v PDF, sken alebo fotka** – text sa rozpozná vstavaným OCR systému Windows (bez internetu),
+  - **webová objednávka** – v prehliadači označte položky košíka/objednávky, Ctrl+C a *Vložiť zo schránky*,
+  - **diktovanie** – napr. „tri notebooky HP ProBook po 780 eur, dva monitory Dell po 150 eur a jeden projektor Epson“
+    (rovnaké nastavenie ako diktovanie poznámok),
+  - **EAN z ručnej čítačky** – každý kód na nový riadok, *Doplniť podľa EAN* doplní názov, výrobcu a model.
+
+  Program vytiahne názvy, počty kusov a ceny za kus (súčty, DPH, doprava sa vynechajú), odhadne výrobcu, model
+  a kategóriu; v tabuľke sa dá všetko upraviť. Spoločne sa nastaví dátum nákupu (záruka +2 roky, revízia +1 rok),
+  miestnosť a poznámka (číslo dokladu a dodávateľ). Každý kus je samostatná položka – sériové čísla sa doplnia v Evidencii.
 
 ## Aktualizácie
 
@@ -220,6 +232,8 @@ Odinštalovanie programu databázu ani zálohy nemaže.
   do jednej knižnice EvitaHlas.dll (bez GPU, bez OpenMP, nič sa počas zostavenia nesťahuje); kontroluje sa, že volá len
   jadro Windows a z advapi32.dll len čítanie názvu procesora z registra (RegOpenKeyExA, RegQueryValueExA, RegCloseKey). Modely Whisper (OpenAI, MIT) v prevedení ggml z huggingface.co/ggerganov/whisper.cpp, overené SHA-256.
   Mikrofón cez rozhranie Windows (winmm), hlasové písanie Windows cez Win+H.
+- Rozpoznanie textu faktúr (OCR): vstavané Windows.Media.Ocr a Windows.Data.Pdf – bez ďalších knižníc; e-faktúry
+  sa čítajú vlastným kódom (XML) a prílohy PDF cez PDFsharp.
 - Ikony kategórií: tvary zo sady [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons) (Microsoft, MIT) –
   vložené ako dáta kresby (cesty), žiadna knižnica ani spustiteľný kód; licencia je priložená k programu
 

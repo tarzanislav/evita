@@ -212,6 +212,24 @@ public partial class EvidenciaViewModel : ObservableObject, IObnovitelny
         }
     }
 
+    /// <summary>Nové položky z faktúry, webovej objednávky, diktovania alebo EAN. Vráti true, ak sa nejaké vytvorili.</summary>
+    public bool PridatZDokladu()
+    {
+        var okno = new NovePolozkyWindow { Owner = Dialogy.Vlastnik };
+        if (okno.ShowDialog() != true || okno.Vytvorene.Count == 0)
+        {
+            return false;
+        }
+
+        _hlavne.DataZmenene();
+        NacitajZnova();
+        ZobrazPolozky(okno.Vytvorene, Preklad.Pocet(okno.Vytvorene.Count, "{0} nová položka z dokladu", "{0} nové položky z dokladu", "{0} nových položiek z dokladu"));
+        return true;
+    }
+
+    [RelayCommand]
+    private void ZDokladu() => PridatZDokladu();
+
     [RelayCommand]
     private void Upravit()
     {

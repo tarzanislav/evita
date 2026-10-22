@@ -140,12 +140,14 @@ public static class PdfNorma
     }
 
     /// <summary>PDF/A-3: vložený súbor s dátami zostavy (príloha viditeľná v prehliadači PDF).</summary>
-    private static void Priloha(PdfDocument pdf, string nazov, byte[] data, DateTime cas)
+    /// <summary>Vloží súbor do PDF ako prílohu (PDF/A-3: /AF a strom /EmbeddedFiles).</summary>
+    internal static void Priloha(PdfDocument pdf, string nazov, byte[] data, DateTime cas,
+        string typ = "/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", string? popis = null, string vztah = "/Data")
     {
         var subor = new PdfDictionary(pdf);
         subor.CreateStream(data);
         subor.Elements.SetName("/Type", "/EmbeddedFile");
-        subor.Elements.SetName("/Subtype", "/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        subor.Elements.SetName("/Subtype", typ);
         var parametre = new PdfDictionary(pdf);
         parametre.Elements.SetInteger("/Size", data.Length);
         parametre.Elements.SetDateTime("/ModDate", cas);
@@ -156,8 +158,8 @@ public static class PdfNorma
         specifikacia.Elements.SetName("/Type", "/Filespec");
         specifikacia.Elements["/F"] = new PdfString(BezDiakritiky(nazov));
         specifikacia.Elements["/UF"] = new PdfString(nazov, PdfStringEncoding.Unicode);
-        specifikacia.Elements["/Desc"] = new PdfString(Preklad.T("Dáta zostavy v Exceli"), PdfStringEncoding.Unicode);
-        specifikacia.Elements.SetName("/AFRelationship", "/Data");
+        specifikacia.Elements["/Desc"] = new PdfString(popis ?? Preklad.T("Dáta zostavy v Exceli"), PdfStringEncoding.Unicode);
+        specifikacia.Elements.SetName("/AFRelationship", vztah);
         var prudy = new PdfDictionary(pdf);
         prudy.Elements.SetReference("/F", subor);
         prudy.Elements.SetReference("/UF", subor);

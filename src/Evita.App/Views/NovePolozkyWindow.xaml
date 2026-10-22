@@ -1,0 +1,132 @@
+<Window x:Class="Evita.Views.NovePolozkyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nové položky z dokladu"
+        Width="1240" Height="800" MinWidth="960" MinHeight="600"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel>
+        <!-- tlačidlá -->
+        <Border DockPanel.Dock="Bottom" Padding="16,10" BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource LayerFillColorDefaultBrush}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="Vytvorit" Style="{DynamicResource AccentButtonStyle}" Padding="18,6" Click="Vytvorit_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Ikona}" Text="&#xE710;" FontSize="14" Margin="0,0,8,0" />
+                            <TextBlock x:Name="TextVytvorit" Text="Vytvoriť položky" />
+                        </StackPanel>
+                    </Button>
+                    <Button Content="Zrušiť" Padding="16,6" Margin="8,0,0,0" IsCancel="True" />
+                </StackPanel>
+                <TextBlock x:Name="Suhrn" VerticalAlignment="Center" Style="{StaticResource Popis}" FontSize="13" TextWrapping="Wrap" />
+            </DockPanel>
+        </Border>
+
+        <!-- zdroj -->
+        <StackPanel DockPanel.Dock="Top" Margin="16,12,16,0">
+            <TextBlock Text="Nové položky z dokladu" Style="{StaticResource Podnadpis}" FontSize="20" />
+            <TextBlock Style="{StaticResource Popis}" FontSize="12" TextWrapping="Wrap"
+                       Text="Otvorte faktúru (PDF, elektronická faktúra XML/ISDOC, sken alebo fotka), vložte skopírovaný text webovej objednávky alebo položky nadiktujte (napr. „tri notebooky HP ProBook po 780 eur“). Riadky skontrolujte, doplňte kategóriu a vytvorte položky – sériové čísla a ďalšie údaje doplníte potom v Evidencii." />
+            <WrapPanel Margin="0,10,0,0">
+                <Button Padding="12,6" Margin="0,0,8,8" Click="Otvorit_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE8E5;" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Text="Otvoriť faktúru…" />
+                    </StackPanel>
+                </Button>
+                <Button Padding="12,6" Margin="0,0,8,8" Click="Vlozit_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE77F;" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Text="Vložiť zo schránky" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="Diktovat" Padding="12,6" Margin="0,0,4,8" Click="Diktovat_Click"
+                        ToolTip="Nadiktujte položky, napr. „dva monitory Dell P2422H po 159 eur, jeden projektor Epson za 520 eur“">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="IkonaDiktovania" Style="{StaticResource Ikona}" Text="&#xE720;" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock x:Name="TextDiktovania" Text="Diktovať" />
+                    </StackPanel>
+                </Button>
+                <Button Padding="8,6" Margin="0,0,8,8" Click="NastavenieDiktovania_Click" ToolTip="Nastavenie diktovania">
+                    <TextBlock Style="{StaticResource Ikona}" Text="&#xE713;" FontSize="12" />
+                </Button>
+                <Button x:Name="PodlaEan" Padding="12,6" Margin="0,0,8,8" Click="PodlaEan_Click"
+                        ToolTip="Riadky s EAN (napr. naskenované ručnou čítačkou do textu) doplní o názov, výrobcu a model z evidencie a z internetu">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE8D9;" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Text="Doplniť podľa EAN" />
+                    </StackPanel>
+                </Button>
+                <Rectangle x:Name="Hlasitost" Width="0" Height="6" RadiusX="3" RadiusY="3" Margin="4,0,8,8" VerticalAlignment="Center"
+                           Fill="{DynamicResource SystemFillColorSuccessBrush}" />
+                <TextBlock x:Name="Stav" Style="{StaticResource Popis}" FontSize="12" VerticalAlignment="Center" Margin="0,0,0,8" MaxWidth="560"
+                           TextWrapping="Wrap" />
+            </WrapPanel>
+        </StackPanel>
+
+        <!-- spoločné údaje -->
+        <Border DockPanel.Dock="Bottom" Style="{StaticResource Karta}" Margin="16,0,16,12" Padding="12,8">
+            <WrapPanel>
+                <StackPanel Margin="0,0,14,4" Width="150">
+                    <TextBlock Text="Dátum nákupu" Style="{StaticResource Stitok}" />
+                    <DatePicker x:Name="DatumNakupu" SelectedDateChanged="Spolocne_Changed" />
+                </StackPanel>
+                <StackPanel Margin="0,0,14,4" Width="210">
+                    <TextBlock Text="Miestnosť" Style="{StaticResource Stitok}" />
+                    <ComboBox x:Name="Miestnost" DisplayMemberPath="Nazov" SelectedValuePath="Id" />
+                </StackPanel>
+                <StackPanel Margin="0,0,14,4" Width="210">
+                    <TextBlock Text="Kategória, ak sa nerozpozná" Style="{StaticResource Stitok}" />
+                    <ComboBox x:Name="PredvolenaKategoria" DisplayMemberPath="Nazov" SelectedValuePath="Id" SelectionChanged="Spolocne_Changed" />
+                </StackPanel>
+                <StackPanel Margin="0,0,14,4" Width="330">
+                    <TextBlock Text="Poznámka ku každej položke" Style="{StaticResource Stitok}" />
+                    <TextBox x:Name="Poznamka" />
+                </StackPanel>
+                <CheckBox x:Name="PripocitatDph" Margin="0,18,0,4" Click="Spolocne_Changed" VerticalAlignment="Bottom"
+                          ToolTip="Elektronická faktúra uvádza ceny bez DPH – do evidencie sa zvyčajne zapisuje cena s DPH">
+                    <TextBlock x:Name="TextDph" Text="Pripočítať DPH k cenám" />
+                </CheckBox>
+            </WrapPanel>
+        </Border>
+
+        <Grid Margin="16,4,16,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Text dokladu" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                <TextBlock x:Name="Zdroj" DockPanel.Dock="Bottom" Style="{StaticResource Popis}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0" />
+                <TextBox x:Name="Text" AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap" FontFamily="Consolas" FontSize="12"
+                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" VerticalContentAlignment="Top"
+                         TextChanged="Text_TextChanged" />
+            </DockPanel>
+            <DockPanel Grid.Column="2">
+                <TextBlock DockPanel.Dock="Top" Text="Rozpoznané položky – skontrolujte a upravte" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+                <DataGrid x:Name="Riadky" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" CellEditEnding="Riadky_CellEditEnding">
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn Header="" Binding="{Binding Pridat, UpdateSourceTrigger=PropertyChanged}" Width="34" />
+                        <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="2*" />
+                        <DataGridTextColumn Header="Ks" Binding="{Binding Pocet}" Width="48" />
+                        <DataGridTextColumn Header="Cena/ks" Binding="{Binding CenaText}" Width="90" />
+                        <DataGridTemplateColumn Header="Kategória" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding Kategorie, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              DisplayMemberPath="Nazov" SelectedValuePath="Id"
+                                              SelectedValue="{Binding KategoriaId, UpdateSourceTrigger=PropertyChanged}" BorderThickness="0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Výrobca" Binding="{Binding Vyrobca}" Width="*" />
+                        <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="*" />
+                        <DataGridTextColumn Header="EAN" Binding="{Binding Ean}" Width="110" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -109,10 +109,10 @@
                           GridLinesVisibility="Horizontal" CellEditEnding="Riadky_CellEditEnding">
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="" Binding="{Binding Pridat, UpdateSourceTrigger=PropertyChanged}" Width="34" />
-                        <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="*" MinWidth="180" />
-                        <DataGridTextColumn Header="Ks" Binding="{Binding Pocet}" Width="40" />
-                        <DataGridTextColumn Header="Cena/ks" Binding="{Binding CenaText}" Width="78" />
-                        <DataGridTemplateColumn Header="Kategória" Width="135">
+                        <DataGridTextColumn Header="Názov" Binding="{Binding Nazov}" Width="*" MinWidth="150" />
+                        <DataGridTextColumn Header="Ks" Binding="{Binding Pocet}" Width="54" />
+                        <DataGridTextColumn Header="Cena/ks" Binding="{Binding CenaText}" Width="96" />
+                        <DataGridTemplateColumn Header="Kategória" Width="140">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox ItemsSource="{Binding Kategorie, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -121,7 +121,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Výrobca" Binding="{Binding Vyrobca}" Width="85" />
+                        <DataGridTextColumn Header="Výrobca" Binding="{Binding Vyrobca}" Width="100" />
                         <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="115" />
                         <DataGridTextColumn Header="EAN" Binding="{Binding Ean}" Width="105" />
                     </DataGrid.Columns>

@@ -2247,5 +2247,7 @@
  "Vytvorí sa {0} položka|Vytvoria sa {0} položky|Vytvorí sa {0} položiek": "{0} item will be created|{0} items will be created|{0} items will be created",
  "Vytvoriť {0} položku|Vytvoriť {0} položky|Vytvoriť {0} položiek": "Create {0} item|Create {0} items|Create {0} items",
  "Hovorte – Windows píše text na miesto kurzora. Ukončíte znova klávesmi Win+H alebo kliknutím mimo.": "Speak – Windows types the text at the cursor. Stop with Win+H again or by clicking elsewhere.",
- "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Text recognition (OCR) is not available in Windows. Copy the document text and paste it into the window."
+ "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Text recognition (OCR) is not available in Windows. Copy the document text and paste it into the window.",
+ "Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu.": "Text recognition took too long. Try a smaller file or copy the document text.",
+ "Rozpoznávanie textu zlyhalo (kód {0}).": "Text recognition failed (code {0})."
 }

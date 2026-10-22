@@ -2247,5 +2247,7 @@
  "Vytvorí sa {0} položka|Vytvoria sa {0} položky|Vytvorí sa {0} položiek": "Zostanie utworzona {0} pozycja|Zostaną utworzone {0} pozycje|Zostanie utworzonych {0} pozycji",
  "Vytvoriť {0} položku|Vytvoriť {0} položky|Vytvoriť {0} položiek": "Utwórz {0} pozycję|Utwórz {0} pozycje|Utwórz {0} pozycji",
  "Hovorte – Windows píše text na miesto kurzora. Ukončíte znova klávesmi Win+H alebo kliknutím mimo.": "Mów – Windows wpisuje tekst w miejscu kursora. Zakończysz ponownie klawiszami Win+H lub kliknięciem obok.",
- "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Rozpoznawanie tekstu (OCR) nie jest dostępne w Windows. Skopiuj tekst dokumentu i wklej go do okna."
+ "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Rozpoznawanie tekstu (OCR) nie jest dostępne w Windows. Skopiuj tekst dokumentu i wklej go do okna.",
+ "Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu.": "Rozpoznawanie tekstu trwało zbyt długo. Spróbuj mniejszego pliku lub skopiuj tekst dokumentu.",
+ "Rozpoznávanie textu zlyhalo (kód {0}).": "Rozpoznawanie tekstu nie powiodło się (kod {0})."
 }

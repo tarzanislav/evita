@@ -2247,5 +2247,7 @@
  "Vytvorí sa {0} položka|Vytvoria sa {0} položky|Vytvorí sa {0} položiek": "将创建 {0} 个项目|将创建 {0} 个项目|将创建 {0} 个项目",
  "Vytvoriť {0} položku|Vytvoriť {0} položky|Vytvoriť {0} položiek": "创建 {0} 个项目|创建 {0} 个项目|创建 {0} 个项目",
  "Hovorte – Windows píše text na miesto kurzora. Ukončíte znova klávesmi Win+H alebo kliknutím mimo.": "请说话——Windows 会在光标处输入文本。再次按 Win+H 或单击其他位置结束。",
- "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Windows 中无法使用文本识别（OCR）。请复制单据文本并粘贴到窗口中。"
+ "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Windows 中无法使用文本识别（OCR）。请复制单据文本并粘贴到窗口中。",
+ "Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu.": "文本识别耗时过长。请尝试较小的文件或复制单据文本。",
+ "Rozpoznávanie textu zlyhalo (kód {0}).": "文本识别失败（代码 {0}）。"
 }

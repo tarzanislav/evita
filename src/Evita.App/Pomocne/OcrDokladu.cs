@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Text;
 using Evita.Services;
 using Windows.Data.Pdf;
@@ -46,27 +48,88 @@ public static class OcrDokladu
         return null;
     }
 
-    /// <summary>Jazyk rozpoznávania, ak je OCR vo Windows dostupné (zisťuje sa mimo vlákna okna), inak null.</summary>
-    public static Task<string?> DostupnyJazykAsync() => Task.Run(() => Engine(out var jazyk) is null ? null : jazyk);
+    /// <summary>Výsledok rozpoznania v pomocnom procese.</summary>
+    private sealed record VysledokOcr(string? Text, string? Jazyk, string? Chyba);
 
     /// <summary>Text z PDF (každá strana sa vykreslí a rozpozná) alebo z obrázka.</summary>
     /// <remarks>
-    /// Beží na vlákne mimo okna (MTA): objekty Windows Runtime (PDF, OCR) tak nie sú viazané na vlákno okna a uvoľnia sa
-    /// ešte počas behu, nie až pri ukončení programu.
+    /// Rozpoznáva sa v samostatnom procese EviTA (parameter --ocr): súčasti Windows na PDF a OCR pri ukončení procesu
+    /// padajú (0xC000000D) – v pomocnom procese to nevadí a hlavný program zostane v poriadku.
     /// </remarks>
-    public static Task<(string Text, string Jazyk)> PrecitajAsync(string cesta, CancellationToken zrusenie = default) =>
-        Task.Run(async () =>
+    public static async Task<(string Text, string Jazyk)> PrecitajAsync(string cesta, CancellationToken zrusenie = default)
+    {
+        var vystup = Path.Combine(Path.GetTempPath(), $"evita_ocr_{Guid.NewGuid():N}.json");
+        var program = Environment.ProcessPath ?? throw new EvitaException(Preklad.T("Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna."));
+        var spustenie = new ProcessStartInfo(program) { UseShellExecute = false, CreateNoWindow = true };
+        spustenie.ArgumentList.Add(Parameter);
+        spustenie.ArgumentList.Add(Path.GetFullPath(cesta));
+        spustenie.ArgumentList.Add(vystup);
+        try
+        {
+            using var proces = Process.Start(spustenie) ?? throw new InvalidOperationException("--ocr");
+            using var limit = CancellationTokenSource.CreateLinkedTokenSource(zrusenie);
+            limit.CancelAfter(TimeSpan.FromMinutes(3));
+            try
+            {
+                await proces.WaitForExitAsync(limit.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                proces.Kill(true);
+                zrusenie.ThrowIfCancellationRequested();
+                throw new EvitaException(Preklad.T("Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu."));
+            }
+
+            if (!File.Exists(vystup))
+            {
+                throw new EvitaException(Preklad.F($"Rozpoznávanie textu zlyhalo (kód {proces.ExitCode})."));
+            }
+
+            var vysledok = JsonSerializer.Deserialize<VysledokOcr>(await File.ReadAllTextAsync(vystup, zrusenie));
+            if (vysledok?.Chyba is { } chyba)
+            {
+                throw new EvitaException(chyba);
+            }
+
+            return (vysledok?.Text ?? "", vysledok?.Jazyk ?? "");
+        }
+        finally
         {
             try
             {
-                return await PrecitajVPozadiAsync(cesta, zrusenie);
+                File.Delete(vystup);
             }
-            finally
+            catch (Exception)
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+                // dočasný súbor
             }
-        }, zrusenie);
+        }
+    }
+
+    /// <summary>Parameter pomocného procesu: EviTA.exe --ocr &lt;súbor&gt; &lt;výstup.json&gt;.</summary>
+    public const string Parameter = "--ocr";
+
+    /// <summary>Pomocný proces: rozpozná text, zapíše výsledok a hneď sa ukončí (bez upratovania súčastí Windows).</summary>
+    public static void SpustiPomocnyProces(string cesta, string vystup)
+    {
+        VysledokOcr vysledok;
+        try
+        {
+            var (text, jazyk) = Task.Run(() => PrecitajVPozadiAsync(cesta, CancellationToken.None)).GetAwaiter().GetResult();
+            vysledok = new VysledokOcr(text, jazyk, null);
+        }
+        catch (EvitaException ex)
+        {
+            vysledok = new VysledokOcr(null, null, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            vysledok = new VysledokOcr(null, null, Preklad.F($"Doklad sa nepodarilo prečítať: {ex.GetBaseException().Message}"));
+        }
+
+        File.WriteAllText(vystup, JsonSerializer.Serialize(vysledok));
+        Process.GetCurrentProcess().Kill();
+    }
 
     private static async Task<(string Text, string Jazyk)> PrecitajVPozadiAsync(string cesta, CancellationToken zrusenie)
     {

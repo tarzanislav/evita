@@ -21,6 +21,14 @@ public partial class App : Application
         NastavJazyk(samotest ? "sk" : Preklad.JazykZDatabazy());
         DispatcherUnhandledException += NeosetrenaChyba;
 
+        if (e.Args.Length == 3 && e.Args[0] == OcrDokladu.Parameter)
+        {
+            // pomocný proces na rozpoznanie textu dokladu (Nové položky z dokladu)
+            OcrDokladu.SpustiPomocnyProces(e.Args[1], e.Args[2]);
+            Shutdown(0);
+            return;
+        }
+
         if (samotest)
         {
             Dialogy.TichyRezim = true;

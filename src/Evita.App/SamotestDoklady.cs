@@ -211,17 +211,18 @@ internal static partial class Samotest
         Over(vlozene is not null && DokladService.ZXml(vlozene, "pdf") is { Riadky.Count: 2 }, "doklad: e-faktúra vložená v PDF sa nájde a prečíta");
         Over(DokladService.XmlZPdf(pdfText) is null, "doklad: PDF bez prílohy nemá e-faktúru (ide na OCR)");
 
-        if (Cakaj(OcrDokladu.DostupnyJazykAsync()) is not { } jazyk)
+        // OCR beží v pomocnom procese EviTA (--ocr)
+        try
         {
-            Krok("doklad – OCR: preskočené (Windows nemá rozpoznávanie textu)");
-        }
-        else
-        {
-            var (text, _) = Cakaj(OcrDokladu.PrecitajAsync(pdfText));
+            var (text, jazyk) = Cakaj(OcrDokladu.PrecitajAsync(pdfText));
             var ocr = DokladService.ZTextu(text, "ocr");
             Krok($"doklad – OCR ({jazyk}): „{text.Replace("\r", "").Replace("\n", " ⏎ ")}“ → {PopisDokladu(ocr)}");
             Over(ocr.Riadky.Count(r => r.CenaKus is 780m or 159.9m or 520m) >= 2,
-                $"doklad: OCR faktúry v PDF ({jazyk}) – rozpoznané riadky s cenou");
+                $"doklad: OCR faktúry v PDF v pomocnom procese ({jazyk}) – rozpoznané riadky s cenou");
+        }
+        catch (EvitaException ex)
+        {
+            Krok("doklad – OCR: preskočené – " + ex.Message);
         }
 
         // okno: rozpoznanie, kategórie, vytvorenie položiek

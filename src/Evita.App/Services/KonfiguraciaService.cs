@@ -59,6 +59,7 @@ public static class KonfiguraciaService
         ("Ean.", Preklad.N("účet Icecat pre údaje podľa EAN")),
         ("Vyrobca.ZInternetu", Preklad.N("výrobca a model z internetu")),
         ("Email.", Preklad.N("posielanie PDF e-mailom (bez hesla)")),
+        ("Poznamky.Diktovanie", Preklad.N("diktovanie poznámok (spôsob a model)")),
     };
 
     /// <summary>Kľúče, ktoré sa neprenášajú: heslo je zašifrované len pre tento počítač, ostatné sú interné.</summary>

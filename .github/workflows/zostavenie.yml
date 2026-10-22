@@ -91,6 +91,107 @@ jobs:
           New-Item -ItemType Directory -Force src/Evita.App/Native | Out-Null
           Copy-Item $dll.FullName src/Evita.App/Native/ZXing.dll
 
+      - name: Vyrovnávacia pamäť – prepis hlasu (whisper.cpp)
+        id: cache-hlas
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/evita-hlas-dll
+          key: evita-hlas-d1be6fde11ac6e0407606b4e42fe72d34add8037-${{ hashFiles('nastroje/hlas/**') }}
+
+      - name: Prepis hlasu whisper.cpp zo zdrojového kódu (overená verzia)
+        # prepis diktovania bez internetu: whisper.cpp sa nepreberá hotový, ale skompiluje sa z pevne určeného commitu
+        # spolu s tenkou vrstvou nastroje/hlas/evita_hlas.c; kontroluje sa, z ktorých knižníc Windows volá funkcie
+        shell: pwsh
+        run: |
+          $verzia = "v1.9.5"
+          $overenyCommit = "d1be6fde11ac6e0407606b4e42fe72d34add8037"
+          $ciel = Join-Path $env:RUNNER_TEMP "evita-hlas-dll"
+          if (-not (Test-Path (Join-Path $ciel "EvitaHlas.dll"))) {
+            $zdroj = Join-Path $env:RUNNER_TEMP "whisper.cpp"
+            git clone --quiet --depth 1 --branch $verzia https://github.com/ggml-org/whisper.cpp $zdroj
+            $commit = (git -C $zdroj rev-parse HEAD).Trim()
+            if ($commit -ne $overenyCommit) {
+              Write-Host "::error::whisper.cpp $verzia má commit $commit, overený je $overenyCommit"
+              exit 1
+            }
+            $zostava = Join-Path $env:RUNNER_TEMP "evita-hlas-build"
+            cmake -S nastroje/hlas -B $zostava -A x64 "-DWHISPER_ZDROJ=$zdroj"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            cmake --build $zostava --config Release --target EvitaHlas --parallel
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            $dll = Get-ChildItem $zostava -Recurse -Filter EvitaHlas.dll | Where-Object FullName -match '\\Release\\' | Select-Object -First 1
+            if (-not $dll) { Write-Host "::error::EvitaHlas.dll sa nezostavila"; exit 1 }
+            New-Item -ItemType Directory -Force $ciel | Out-Null
+            Copy-Item $dll.FullName (Join-Path $ciel "EvitaHlas.dll")
+            Copy-Item (Join-Path $zdroj "LICENSE") (Join-Path $ciel "LICENSE-whisper.cpp.txt")
+          }
+          $dll = Get-Item (Join-Path $ciel "EvitaHlas.dll")
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          $dumpbin = Get-ChildItem (Join-Path $vs "VC\Tools\MSVC") -Recurse -Filter dumpbin.exe |
+            Where-Object FullName -match 'Hostx64\\x64' | Select-Object -First 1
+          $importy = & $dumpbin.FullName /nologo /imports $dll.FullName
+          $kniznice = $importy | ForEach-Object { if ($_ -match '^\s+(\S+\.dll)\s*$') { $Matches[1].ToLowerInvariant() } } | Sort-Object -Unique
+          Write-Host "::notice::EvitaHlas.dll používa len tieto knižnice Windows: $($kniznice -join ', ')"
+          $povolene = '^(kernel32\.dll|vcruntime140(_1)?\.dll|msvcp140\.dll|api-ms-win-crt-[a-z0-9-]+\.dll)$'
+          $zakazane = $kniznice | Where-Object { $_ -notmatch $povolene }
+          if ($zakazane) {
+            Write-Host "::error::Prepis hlasu používa nepovolené knižnice: $($zakazane -join ', ')"
+            exit 1
+          }
+          $exporty = (& $dumpbin.FullName /nologo /exports $dll.FullName) -join "`n"
+          foreach ($f in @("evita_hlas_otvor", "evita_hlas_prepis", "evita_hlas_zavri")) {
+            if ($exporty -notmatch $f) { Write-Host "::error::EvitaHlas.dll nemá funkciu $f"; exit 1 }
+          }
+          $hash = (Get-FileHash $dll.FullName -Algorithm SHA256).Hash
+          Write-Host "::notice::EvitaHlas.dll z whisper.cpp $verzia ($overenyCommit), SHA-256 $hash"
+          New-Item -ItemType Directory -Force src/Evita.App/Native | Out-Null
+          Copy-Item $dll.FullName src/Evita.App/Native/EvitaHlas.dll
+          Copy-Item (Join-Path $ciel "LICENSE-whisper.cpp.txt") src/Evita.App/Native/LICENSE-whisper.cpp.txt
+
+      - name: Vyrovnávacia pamäť – model na prepis pre samotest
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/evita-model
+          key: evita-model-ggml-small-1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b
+
+      - name: Model a slovenská skúšobná nahrávka pre samotest diktovania
+        # len pre samotest: model ggml-small (overený SHA-256) a slovenská veta z hlasového syntetizátora Piper
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $priecinok = Join-Path $env:RUNNER_TEMP "evita-model"
+          New-Item -ItemType Directory -Force $priecinok | Out-Null
+          $model = Join-Path $priecinok "ggml-small.bin"
+          $sha = "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b"
+          if (-not (Test-Path $model) -or (Get-FileHash $model -Algorithm SHA256).Hash -ne $sha) {
+            Invoke-WebRequest "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin" -OutFile $model
+          }
+          if ((Get-FileHash $model -Algorithm SHA256).Hash -ne $sha) { Write-Host "::error::Model ggml-small.bin má iný SHA-256"; exit 1 }
+
+          $hlas = Join-Path $env:RUNNER_TEMP "evita-hlas-test"
+          New-Item -ItemType Directory -Force $hlas | Out-Null
+          python -m pip install --quiet piper-tts
+          $zaklad = "https://huggingface.co/rhasspy/piper-voices/resolve/main/sk/sk_SK/lili/medium/sk_SK-lili-medium.onnx"
+          Invoke-WebRequest $zaklad -OutFile (Join-Path $hlas "sk.onnx")
+          Invoke-WebRequest "$zaklad.json" -OutFile (Join-Path $hlas "sk.onnx.json")
+          $skript = Join-Path $hlas "syntetizuj.py"
+          @"
+          import sys, wave
+          from piper import PiperVoice
+          hlas = PiperVoice.load(sys.argv[1])
+          with wave.open(sys.argv[2], "wb") as w:
+              if hasattr(hlas, "synthesize_wav"):
+                  hlas.synthesize_wav(sys.argv[3], w)
+              else:
+                  hlas.synthesize(sys.argv[3], w)
+          "@ | Set-Content $skript -Encoding utf8
+          $wav = Join-Path $hlas "poznamka.wav"
+          python $skript (Join-Path $hlas "sk.onnx") $wav "Notebook v učebni číslo dva má poškodenú klávesnicu. Tlačiareň v kabinete treba vymeniť."
+          if (-not (Test-Path $wav)) { Write-Host "::warning::Slovenská nahrávka sa nevytvorila"; exit 0 }
+          "EVITA_SAMOTEST_HLAS=$wav" >> $env:GITHUB_ENV
+          "EVITA_SAMOTEST_HLAS_MODEL=$model" >> $env:GITHUB_ENV
+          Copy-Item $wav (Join-Path $env:RUNNER_TEMP "poznamka_skusobna.wav")
+
       - name: Zostaviť program
         shell: pwsh
         run: >
@@ -107,9 +208,9 @@ jobs:
           $p = Start-Process -FilePath "publish\EviTA.exe" -ArgumentList "--samotest" -PassThru
           $null = $p.Handle
           $log = Join-Path $env:EVITA_DATA_DIR "samotest.log"
-          if (-not $p.WaitForExit(300000)) {
+          if (-not $p.WaitForExit(480000)) {
             $p.Kill()
-            Write-Host "::error::Samotest neskončil do 5 minút"
+            Write-Host "::error::Samotest neskončil do 8 minút"
             if (Test-Path $log) { Get-Content $log }
             $priebeh = Join-Path $env:EVITA_DATA_DIR "samotest_priebeh.log"
             if (Test-Path $priebeh) {

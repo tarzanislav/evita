@@ -47,6 +47,13 @@
     <None Include="Native\ZXing.dll" Link="ZXing.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup Condition="Exists('Native\EvitaHlas.dll')">
+    <!-- prepis diktovania bez internetu: whisper.cpp (MIT) – zostavuje ju GitHub Actions zo zdrojového kódu overenej verzie -->
+    <None Include="Native\EvitaHlas.dll" Link="EvitaHlas.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="Native\LICENSE-whisper.cpp.txt" Link="LICENSE-whisper.cpp.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
+          Condition="Exists('Native\LICENSE-whisper.cpp.txt')" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- preklady textov programu: slovenský text → text v danom jazyku -->
     <EmbeddedResource Include="Preklady\*.json" LogicalName="Evita.Preklady.%(Filename).json" />

@@ -32,6 +32,11 @@ overí, že každý text v programe má preklad vo všetkých jazykoch.
 - **Úlohy:** samostatný zoznam úloh s prioritou, termínom, popisom a voliteľným naviazaním na položku evidencie.
 - **Poznámky:** poznámkový blok s farbami, pripnutím a vyhľadávaním; poznámku možno prepojiť s dňom v kalendári,
   s udalosťou alebo s položkou evidencie (zobrazí sa v kalendári aj v karte položky).
+- **Diktovanie poznámok** (tlačidlo *Diktovať* v poznámke, slovenčina): buď **hlasové písanie Windows** (Win+H –
+  píše počas hovorenia, potrebuje internet, rozpoznáva Microsoft; v systéme musí byť slovenská klávesnica), alebo
+  **prepis v počítači bez internetu** (Whisper – zvuk ani text neodchádzajú z počítača; model 148 – 574 MB sa raz
+  stiahne a overí podľa SHA-256, ukladá sa mimo databázy, aby nezväčšoval zálohy). Spôsob a model sa volia
+  v *Nastavenia → Diktovanie poznámok…*. Prepis v počítači potrebuje procesor s AVX2 (približne od roku 2013).
 
 ## Citát dňa a výročia
 
@@ -210,6 +215,11 @@ Odinštalovanie programu databázu ani zálohy nemaže.
 - C# / .NET 10 (LTS), WPF s Fluent vzhľadom Windows 11
 - SQLite cez Entity Framework Core
 - Čiarové a QR kódy: [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) v3.1.1 (Apache-2.0); kamera cez Windows.Media.Capture
+- Prepis diktovania bez internetu: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) v1.9.5 (MIT, commit
+  d1be6fde…) – zostavuje sa v GitHub Actions zo zdrojového kódu spolu s tenkou vrstvou `nastroje/hlas/evita_hlas.c`
+  do jednej knižnice EvitaHlas.dll (bez GPU, bez OpenMP, nič sa počas zostavenia nesťahuje); kontroluje sa, že volá len
+  jadro Windows. Modely Whisper (OpenAI, MIT) v prevedení ggml z huggingface.co/ggerganov/whisper.cpp, overené SHA-256.
+  Mikrofón cez rozhranie Windows (winmm), hlasové písanie Windows cez Win+H.
 - Ikony kategórií: tvary zo sady [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons) (Microsoft, MIT) –
   vložené ako dáta kresby (cesty), žiadna knižnica ani spustiteľný kód; licencia je priložená k programu
 

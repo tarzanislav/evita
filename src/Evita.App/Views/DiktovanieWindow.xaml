@@ -1,0 +1,63 @@
+<Window x:Class="Evita.Views.DiktovanieWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Diktovanie poznámok"
+        Width="620" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+    <StackPanel Margin="24,18,24,20">
+        <TextBlock Text="Diktovanie poznámok" Style="{StaticResource Podnadpis}" FontSize="18" />
+        <TextBlock Style="{StaticResource Popis}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,8"
+                   Text="Tlačidlom Diktovať v poznámke hovoríte do mikrofónu a text sa zapíše na miesto kurzora. Rozpoznáva sa slovenčina." />
+
+        <RadioButton x:Name="Windows" GroupName="sposob" Click="Sposob_Click">
+            <TextBlock TextWrapping="Wrap" FontWeight="SemiBold" Text="Hlasové písanie Windows (Win+H)" />
+        </RadioButton>
+        <TextBlock Style="{StaticResource Popis}" FontSize="12" Margin="28,2,0,0" TextWrapping="Wrap"
+                   Text="Nič sa nesťahuje, text sa píše počas hovorenia. Potrebuje internet – reč rozpoznáva Microsoft (Azure). Pre slovenčinu musí byť v systéme slovenská klávesnica (Nastavenia Windows → Čas a jazyk → Jazyk a oblasť)." />
+        <TextBlock x:Name="SlovencinaInfo" FontSize="12" Margin="28,2,0,0" TextWrapping="Wrap" />
+
+        <RadioButton x:Name="Offline" GroupName="sposob" Click="Sposob_Click" Margin="0,12,0,0">
+            <TextBlock TextWrapping="Wrap" FontWeight="SemiBold" Text="Prepis v počítači bez internetu (Whisper)" />
+        </RadioButton>
+        <TextBlock Style="{StaticResource Popis}" FontSize="12" Margin="28,2,0,0" TextWrapping="Wrap"
+                   Text="Zvuk ani text neodchádzajú z počítača. Najprv nahráte celú poznámku, po zastavení sa prepíše (niekoľko sekúnd). Model na rozpoznávanie sa raz stiahne." />
+        <TextBlock x:Name="Prekazka" FontSize="12" Margin="28,4,0,0" TextWrapping="Wrap"
+                   Foreground="{DynamicResource SystemFillColorCautionBrush}" />
+
+        <StackPanel x:Name="SekciaModelov" Margin="28,8,0,0">
+            <TextBlock Text="Model na rozpoznávanie" Style="{StaticResource Stitok}" Margin="0,0,0,4" />
+            <ItemsControl x:Name="Modely">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <RadioButton GroupName="model" IsChecked="{Binding Vybrany, Mode=TwoWay}" Margin="0,2">
+                            <StackPanel>
+                                <TextBlock>
+                                    <Run Text="{Binding Nazov, Mode=OneWay}" FontWeight="SemiBold" />
+                                    <Run Text="{Binding Velkost, Mode=OneWay}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                </TextBlock>
+                                <TextBlock Text="{Binding Popis}" Style="{StaticResource Popis}" FontSize="12" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Stav}" FontSize="12" Foreground="{DynamicResource SystemFillColorSuccessBrush}" />
+                            </StackPanel>
+                        </RadioButton>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Button x:Name="Stiahnut" Padding="12,5" Click="Stiahnut_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Ikona}" Text="&#xE896;" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Text="Stiahnuť vybraný model" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="Vymazat" Padding="12,5" Margin="8,0,0,0" Click="Vymazat_Click" Content="Vymazať model" />
+            </StackPanel>
+            <ProgressBar x:Name="Priebeh" Height="6" Margin="0,8,0,0" Maximum="1" Visibility="Collapsed" />
+            <TextBlock x:Name="StavStahovania" Style="{StaticResource Popis}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+            <Button Content="Uložiť" MinWidth="120" Style="{DynamicResource AccentButtonStyle}" Click="Ulozit_Click" IsDefault="True" />
+            <Button x:Name="Zrusit" Content="Zrušiť" MinWidth="110" Margin="8,0,0,0" IsCancel="True" />
+        </StackPanel>
+    </StackPanel>
+</Window>

@@ -1092,6 +1092,7 @@ internal static partial class Samotest
             SamotestOknaTlace();
             SamotestPdf();
             SamotestEmail();
+            SamotestDiktovania();
 
             // kalendár: týždeň, zoznam, udalosť, typy, nastavenia, prehľad dňa, upozornenie
             okno.OznacSekciu("kalendar");

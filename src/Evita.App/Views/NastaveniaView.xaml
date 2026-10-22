@@ -72,6 +72,7 @@
                             <TextBlock Text="Ďalšie nastavenia" Style="{StaticResource Podnadpis}" />
                             <WrapPanel>
                                 <Button Content="Nastavenia kalendára…" Padding="12,5" Margin="0,0,8,8" Command="{Binding NastaveniaKalendaraCommand}" />
+                                <Button Content="Diktovanie poznámok…" Padding="12,5" Margin="0,0,8,8" Command="{Binding NastavenieDiktovaniaCommand}" />
                                 <Button Content="E-mail (posielanie PDF)…" Padding="12,5" Margin="0,0,8,8" Command="{Binding NastavenieEmailuCommand}" />
                                 <Button Content="Zálohy a servis…" Padding="12,5" Margin="0,0,8,8" Command="{Binding OtvorSekciuCommand}" CommandParameter="servis" />
                                 <Button Content="Názov a logo organizácie…" Padding="12,5" Margin="0,0,8,8" Command="{Binding OtvorSekciuCommand}" CommandParameter="tlac" />

@@ -38,6 +38,24 @@
             </ItemsControl>
         </DockPanel>
 
+        <!-- diktovanie hlasom -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+            <Button x:Name="Diktovat" Padding="10,4" Click="Diktovat_Click"
+                    ToolTip="Diktovať poznámku do mikrofónu – text sa zapíše na miesto kurzora (slovenčina)">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="IkonaDiktovania" Style="{StaticResource Ikona}" Text="&#xE720;" FontSize="13" Margin="0,0,6,0" />
+                    <TextBlock x:Name="TextDiktovania" Text="Diktovať" />
+                </StackPanel>
+            </Button>
+            <Button DockPanel.Dock="Right" Padding="8,4" Click="NastavenieDiktovania_Click" ToolTip="Nastavenie diktovania">
+                <TextBlock Style="{StaticResource Ikona}" Text="&#xE713;" FontSize="12" />
+            </Button>
+            <Rectangle x:Name="Hlasitost" Width="0" Height="6" RadiusX="3" RadiusY="3" Margin="10,0,0,0" VerticalAlignment="Center"
+                       Fill="{DynamicResource SystemFillColorSuccessBrush}" />
+            <TextBlock x:Name="StavDiktovania" Style="{StaticResource Popis}" FontSize="12" Margin="10,0,8,0" VerticalAlignment="Center"
+                       TextWrapping="Wrap" />
+        </DockPanel>
+
         <!-- prepojenia -->
         <Border DockPanel.Dock="Bottom" Style="{StaticResource Karta}" Padding="12,8,12,10" Margin="0,10,0,0">
             <StackPanel>

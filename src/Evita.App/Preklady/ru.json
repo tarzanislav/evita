@@ -2098,7 +2098,6 @@
  "Od koľkých rokov (z dátumu nákupu) je položka kandidát na obnovu": "Со скольких лет (от даты покупки) позиция – кандидат на замену",
  "rokov": "лет",
  "Prepočítať": "Пересчитать",
- "Celá štatistika ako zostava – náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "Вся статистика как отчёт – просмотр, печать, PDF (также PDF/A-3b с данными в Excel)",
  "Tlačiť / PDF…": "Печать / PDF…",
  "Zavrieť podokno": "Закрыть панель",
  "Zobrazí tieto položky v Evidencii – napr. na doplnenie údajov alebo hromadnú zmenu": "Показывает эти позиции в Учёте – например, чтобы дополнить данные или для массового изменения",
@@ -2249,5 +2248,13 @@
  "Hovorte – Windows píše text na miesto kurzora. Ukončíte znova klávesmi Win+H alebo kliknutím mimo.": "Говорите – Windows вводит текст в место курсора. Завершить: снова Win+H или щелчок в другом месте.",
  "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Распознавание текста (OCR) недоступно в Windows. Скопируйте текст документа и вставьте его в окно.",
  "Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu.": "Распознавание текста заняло слишком много времени. Попробуйте файл поменьше или скопируйте текст документа.",
- "Rozpoznávanie textu zlyhalo (kód {0}).": "Не удалось распознать текст (код {0})."
+ "Rozpoznávanie textu zlyhalo (kód {0}).": "Не удалось распознать текст (код {0}).",
+ "Vyberte aspoň jednu časť štatistiky na tlač.": "Выберите хотя бы одну часть статистики для печати.",
+ "Vyberte, čo tlačiť – celú štatistiku alebo len niektoré bloky; náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "Выберите, что печатать – всю статистику или только некоторые блоки; просмотр, печать, PDF (также PDF/A-3b с данными в Excel)",
+ "Čo tlačiť": "Что печатать",
+ "Všetko": "Всё",
+ "Nič": "Ничего",
+ "Náhľad a tlač vybraného…": "Просмотр и печать выбранного…",
+ "Jeden blok vytlačíte aj tlačidlom tlačiarne priamo na jeho karte.": "Отдельный блок можно напечатать и кнопкой принтера прямо на его карточке.",
+ "Tlačiť len tento blok – náhľad, tlač, PDF": "Печатать только этот блок – просмотр, печать, PDF"
 }

@@ -2098,7 +2098,6 @@
  "Od koľkých rokov (z dátumu nákupu) je položka kandidát na obnovu": "物品从购买日期起满多少年即为更新候选",
  "rokov": "年",
  "Prepočítať": "重新计算",
- "Celá štatistika ako zostava – náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "整个统计作为报表——预览、打印、PDF（含带 Excel 数据的 PDF/A-3b）",
  "Tlačiť / PDF…": "打印 / PDF…",
  "Zavrieť podokno": "关闭窗格",
  "Zobrazí tieto položky v Evidencii – napr. na doplnenie údajov alebo hromadnú zmenu": "在台账中显示这些物品——例如补全数据或批量修改",
@@ -2249,5 +2248,13 @@
  "Hovorte – Windows píše text na miesto kurzora. Ukončíte znova klávesmi Win+H alebo kliknutím mimo.": "请说话——Windows 会在光标处输入文本。再次按 Win+H 或单击其他位置结束。",
  "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Windows 中无法使用文本识别（OCR）。请复制单据文本并粘贴到窗口中。",
  "Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu.": "文本识别耗时过长。请尝试较小的文件或复制单据文本。",
- "Rozpoznávanie textu zlyhalo (kód {0}).": "文本识别失败（代码 {0}）。"
+ "Rozpoznávanie textu zlyhalo (kód {0}).": "文本识别失败（代码 {0}）。",
+ "Vyberte aspoň jednu časť štatistiky na tlač.": "请至少选择统计的一个部分进行打印。",
+ "Vyberte, čo tlačiť – celú štatistiku alebo len niektoré bloky; náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "选择要打印的内容——整个统计或仅部分区块；预览、打印、PDF（也可 PDF/A-3b，附 Excel 数据）",
+ "Čo tlačiť": "打印内容",
+ "Všetko": "全部",
+ "Nič": "无",
+ "Náhľad a tlač vybraného…": "预览并打印所选…",
+ "Jeden blok vytlačíte aj tlačidlom tlačiarne priamo na jeho karte.": "也可以直接用区块卡片上的打印机按钮打印单个区块。",
+ "Tlačiť len tento blok – náhľad, tlač, PDF": "仅打印此区块——预览、打印、PDF"
 }

@@ -57,6 +57,38 @@ internal static partial class Samotest
         st.TlacitCommand.Execute(null);
         Pumpuj();
         Over(st.Posledny is { PocetStran: > 0 }, $"štatistika: zostava na tlač a PDF ({st.Posledny?.PocetStran} strán)");
+        var stranVsetko = st.Posledny?.PocetStran ?? 0;
+        st.Posledny?.Close();
+
+        // jednotlivé bloky samostatne a vlastný výber častí
+        st.TlacitBlokCommand.Execute("kategorie");
+        Pumpuj();
+        Over(st.Posledny is { PocetStran: > 0 } blok && blok.PocetStran <= stranVsetko && blok.Title.Contains("Kategórie", StringComparison.Ordinal),
+            $"štatistika: tlač jedného bloku ({st.Posledny?.Title}, {st.Posledny?.PocetStran} strán)");
+        st.Posledny?.Close();
+        st.ZiadneCastiCommand.Execute(null);
+        var pocetHlaseni = Pomocne.Dialogy.TicheHlasenia.Count;
+        st.TlacitCommand.Execute(null);
+        Over(Pomocne.Dialogy.TicheHlasenia.Count > pocetHlaseni, "štatistika: bez vybranej časti sa netlačí (upozornenie)");
+        foreach (var c in st.CastiTlace)
+        {
+            c.Vybrana = c.Kluc is "suhrn" or "plan" or "zaruky";
+        }
+
+        st.OtvoritVyberTlaceCommand.Execute(null);
+        Pumpuj();
+        Over(st.VyberTlaceOtvoreny, "štatistika: ponuka Čo tlačiť sa otvorí");
+        st.TlacitCommand.Execute(null);
+        Pumpuj();
+        Over(!st.VyberTlaceOtvoreny && st.Posledny is { PocetStran: > 0 } vyber && vyber.PocetStran <= stranVsetko,
+            $"štatistika: tlač vybraných častí (súhrn, plán obnovy, záruky – {st.Posledny?.PocetStran} strán)");
+        st.Posledny?.Close();
+        var znova = new StatistikaViewModel(model);
+        Over(znova.CastiTlace.Count(c => c.Vybrana) == 3 && znova.CastiTlace.First(c => c.Kluc == "plan").Vybrana,
+            "štatistika: výber častí na tlač sa zapamätá");
+        st.VsetkyCastiCommand.Execute(null);
+        st.TlacitCommand.Execute(null);
+        Pumpuj();
         st.Posledny?.Close();
         st.TlacitPodoknoCommand.Execute(null);
         Pumpuj();

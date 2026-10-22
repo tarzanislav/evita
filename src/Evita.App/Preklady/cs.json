@@ -2098,7 +2098,6 @@
  "Od koľkých rokov (z dátumu nákupu) je položka kandidát na obnovu": "Od kolika let (z data nákupu) je položka kandidátem na obnovu",
  "rokov": "let",
  "Prepočítať": "Přepočítat",
- "Celá štatistika ako zostava – náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "Celá statistika jako sestava – náhled, tisk, PDF (i PDF/A-3b s daty v Excelu)",
  "Tlačiť / PDF…": "Tisk / PDF…",
  "Zavrieť podokno": "Zavřít podokno",
  "Zobrazí tieto položky v Evidencii – napr. na doplnenie údajov alebo hromadnú zmenu": "Zobrazí tyto položky v Evidenci – např. pro doplnění údajů nebo hromadnou změnu",
@@ -2249,5 +2248,13 @@
  "Hovorte – Windows píše text na miesto kurzora. Ukončíte znova klávesmi Win+H alebo kliknutím mimo.": "Mluvte – Windows píše text na místo kurzoru. Ukončíte znovu klávesami Win+H nebo kliknutím jinam.",
  "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Rozpoznávání textu (OCR) není ve Windows dostupné. Zkopírujte text dokladu a vložte jej do okna.",
  "Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu.": "Rozpoznávání textu trvalo příliš dlouho. Zkuste menší soubor nebo zkopírujte text dokladu.",
- "Rozpoznávanie textu zlyhalo (kód {0}).": "Rozpoznávání textu selhalo (kód {0})."
+ "Rozpoznávanie textu zlyhalo (kód {0}).": "Rozpoznávání textu selhalo (kód {0}).",
+ "Vyberte aspoň jednu časť štatistiky na tlač.": "Vyberte alespoň jednu část statistiky k tisku.",
+ "Vyberte, čo tlačiť – celú štatistiku alebo len niektoré bloky; náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "Vyberte, co tisknout – celou statistiku nebo jen některé bloky; náhled, tisk, PDF (i PDF/A-3b s daty v Excelu)",
+ "Čo tlačiť": "Co tisknout",
+ "Všetko": "Vše",
+ "Nič": "Nic",
+ "Náhľad a tlač vybraného…": "Náhled a tisk vybraného…",
+ "Jeden blok vytlačíte aj tlačidlom tlačiarne priamo na jeho karte.": "Jeden blok vytisknete i tlačítkem tiskárny přímo na jeho kartě.",
+ "Tlačiť len tento blok – náhľad, tlač, PDF": "Tisknout jen tento blok – náhled, tisk, PDF"
 }

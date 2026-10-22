@@ -12,6 +12,21 @@ public sealed record BlokStatistiky(string Kluc, string Nadpis, string Popis, st
     public bool JePrazdny => Riadky.Count == 0;
 }
 
+/// <summary>Časť štatistiky na výber do tlače (súhrn alebo blok).</summary>
+public sealed partial class CastTlaceStatistiky : ObservableObject
+{
+    public CastTlaceStatistiky(string kluc, string nazov, bool vybrana)
+    {
+        Kluc = kluc;
+        _nazov = nazov;
+        _vybrana = vybrana;
+    }
+
+    public string Kluc { get; }
+    [ObservableProperty] private string _nazov;
+    [ObservableProperty] private bool _vybrana;
+}
+
 /// <summary>Dlaždica súhrnu (číslo s popisom).</summary>
 public sealed record DlazdicaStatistiky(string Nazov, string Hodnota, string Popis, bool Upozornit = false);
 
@@ -24,11 +39,35 @@ public partial class StatistikaViewModel : ObservableObject, IObnovitelny
     private readonly MainViewModel _hlavne;
     private bool _nacitavam;
 
+    /// <summary>Kľúče častí vybraných do tlače (oddelené čiarkou; prázdne = všetky).</summary>
+    public const string KlucCastiTlace = "Statistika.TlacCasti";
+
     public StatistikaViewModel(MainViewModel hlavne)
     {
         _hlavne = hlavne;
         _hranica = StatistikaEvidencie.NacitajHranicu();
+        string? ulozene = null;
+        try
+        {
+            using var db = Data.Databaza.Otvor();
+            ulozene = Data.Databaza.Citaj(db, KlucCastiTlace);
+        }
+        catch (Exception)
+        {
+            // predvolene sa tlačí všetko
+        }
+
+        var vybrane = string.IsNullOrWhiteSpace(ulozene) ? null : ulozene.Split(',', StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+        CastiTlace = StatistikaZostava.Casti(_hranica)
+            .Select(c => new CastTlaceStatistiky(c.Kluc, c.Nazov, vybrane is null || vybrane.Contains(c.Kluc)))
+            .ToList();
     }
+
+    /// <summary>Výber častí do tlače (súhrn a bloky).</summary>
+    public IReadOnlyList<CastTlaceStatistiky> CastiTlace { get; }
+
+    /// <summary>Otvorená ponuka „Čo tlačiť“.</summary>
+    [ObservableProperty] private bool _vyberTlaceOtvoreny;
 
     public IReadOnlyList<int> HraniceVolby { get; } = new[] { 3, 4, 5, 6, 7, 8, 10 };
 
@@ -85,6 +124,14 @@ public partial class StatistikaViewModel : ObservableObject, IObnovitelny
         {
             var s = StatistikaEvidencie.Vypocitaj(StatistikaEvidencie.NacitajPolozky(AVyradene), DateTime.Today, Hranica);
             Statistika = s;
+            foreach (var (kluc, nazov) in StatistikaZostava.Casti(Hranica))
+            {
+                if (CastiTlace.FirstOrDefault(c => c.Kluc == kluc) is { } cast)
+                {
+                    cast.Nazov = nazov;
+                }
+            }
+
             var stare = s.Stare;
             var bezDatumu = s.Polozky.Count(p => p.DatumNakupu is null);
             var bezCeny = s.Polozky.Count(p => p.Cena is null);
@@ -184,9 +231,65 @@ public partial class StatistikaViewModel : ObservableObject, IObnovitelny
         _hlavne.Evidencia.ZobrazPolozky(riadok.Polozky.Select(p => p.Id), DetailNadpis);
     }
 
-    /// <summary>Celá štatistika ako zostava (náhľad, tlač, PDF vrátane PDF/A-3b s dátami v Exceli).</summary>
+    /// <summary>Ponuka „Čo tlačiť“ – súhrn a jednotlivé bloky.</summary>
+    [RelayCommand]
+    private void OtvoritVyberTlace() => VyberTlaceOtvoreny = true;
+
+    [RelayCommand]
+    private void VsetkyCasti()
+    {
+        foreach (var c in CastiTlace)
+        {
+            c.Vybrana = true;
+        }
+    }
+
+    [RelayCommand]
+    private void ZiadneCasti()
+    {
+        foreach (var c in CastiTlace)
+        {
+            c.Vybrana = false;
+        }
+    }
+
+    /// <summary>Vybrané časti štatistiky ako zostava (náhľad, tlač, PDF vrátane PDF/A-3b s dátami v Exceli).</summary>
     [RelayCommand]
     private void Tlacit()
+    {
+        var vybrane = CastiTlace.Where(c => c.Vybrana).Select(c => c.Kluc).ToList();
+        if (vybrane.Count == 0)
+        {
+            Dialogy.Info(Preklad.T("Vyberte aspoň jednu časť štatistiky na tlač."));
+            return;
+        }
+
+        VyberTlaceOtvoreny = false;
+        try
+        {
+            using var db = Data.Databaza.Otvor();
+            Data.Databaza.Zapis(db, KlucCastiTlace, vybrane.Count == CastiTlace.Count ? "" : string.Join(",", vybrane));
+            db.SaveChanges();
+        }
+        catch (Exception)
+        {
+            // výber sa nezapamätá, tlač pokračuje
+        }
+
+        Zostava(vybrane.Count == CastiTlace.Count ? null : vybrane);
+    }
+
+    /// <summary>Jeden blok štatistiky samostatne (tlačidlo tlačiarne na karte bloku).</summary>
+    [RelayCommand]
+    private void TlacitBlok(string? kluc)
+    {
+        if (!string.IsNullOrEmpty(kluc))
+        {
+            Zostava(new[] { kluc });
+        }
+    }
+
+    private void Zostava(IReadOnlyCollection<string>? casti)
     {
         if (Statistika is not { } s)
         {
@@ -194,8 +297,12 @@ public partial class StatistikaViewModel : ObservableObject, IObnovitelny
         }
 
         var aVyradene = AVyradene;
-        var okno = new NahladWindow(() => StatistikaZostava.Vytvor(StatistikaEvidencie.Vypocitaj(StatistikaEvidencie.NacitajPolozky(aVyradene), DateTime.Today, s.Hranica), aVyradene),
-            false, Preklad.T("Štatistika evidencie"), $"Statistika_EviTA_{DateTime.Today:yyyy-MM-dd}.pdf") { Owner = Dialogy.Vlastnik };
+        var nazov = casti is { Count: 1 } && CastiTlace.FirstOrDefault(c => casti.Contains(c.Kluc)) is { } jedna
+            ? Preklad.T("Štatistika evidencie") + " – " + jedna.Nazov
+            : Preklad.T("Štatistika evidencie");
+        var subor = casti is { Count: 1 } ? $"Statistika_EviTA_{casti.First()}_{DateTime.Today:yyyy-MM-dd}.pdf" : $"Statistika_EviTA_{DateTime.Today:yyyy-MM-dd}.pdf";
+        var okno = new NahladWindow(() => StatistikaZostava.Vytvor(StatistikaEvidencie.Vypocitaj(StatistikaEvidencie.NacitajPolozky(aVyradene), DateTime.Today, s.Hranica), aVyradene, casti),
+            false, nazov, subor) { Owner = Dialogy.Vlastnik };
         if (Dialogy.TichyRezim)
         {
             okno.Show();

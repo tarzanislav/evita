@@ -2098,7 +2098,6 @@
  "Od koľkých rokov (z dátumu nákupu) je položka kandidát na obnovu": "Hány évtől (a vásárlás dátumától) jelölt a tétel cserére",
  "rokov": "év",
  "Prepočítať": "Újraszámolás",
- "Celá štatistika ako zostava – náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "A teljes statisztika kimutatásként – előnézet, nyomtatás, PDF (PDF/A-3b is Excel-adatokkal)",
  "Tlačiť / PDF…": "Nyomtatás / PDF…",
  "Zavrieť podokno": "Panel bezárása",
  "Zobrazí tieto položky v Evidencii – napr. na doplnenie údajov alebo hromadnú zmenu": "Megjeleníti ezeket a tételeket a Nyilvántartásban – pl. adatok pótlásához vagy csoportos módosításhoz",
@@ -2249,5 +2248,13 @@
  "Hovorte – Windows píše text na miesto kurzora. Ukončíte znova klávesmi Win+H alebo kliknutím mimo.": "Beszéljen – a Windows a kurzor helyére írja a szöveget. Befejezés: ismét Win+H vagy kattintás máshová.",
  "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "A szövegfelismerés (OCR) nem érhető el a Windowsban. Másolja ki a bizonylat szövegét, és illessze be az ablakba.",
  "Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu.": "A szövegfelismerés túl sokáig tartott. Próbáljon kisebb fájlt, vagy másolja ki a bizonylat szövegét.",
- "Rozpoznávanie textu zlyhalo (kód {0}).": "A szövegfelismerés nem sikerült (kód: {0})."
+ "Rozpoznávanie textu zlyhalo (kód {0}).": "A szövegfelismerés nem sikerült (kód: {0}).",
+ "Vyberte aspoň jednu časť štatistiky na tlač.": "Válasszon ki legalább egy részt a statisztikából a nyomtatáshoz.",
+ "Vyberte, čo tlačiť – celú štatistiku alebo len niektoré bloky; náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "Válassza ki, mit nyomtat – a teljes statisztikát vagy csak egyes blokkokat; előnézet, nyomtatás, PDF (PDF/A-3b is, Excel-adatokkal)",
+ "Čo tlačiť": "Mit nyomtasson",
+ "Všetko": "Mind",
+ "Nič": "Egyik sem",
+ "Náhľad a tlač vybraného…": "A kijelöltek előnézete és nyomtatása…",
+ "Jeden blok vytlačíte aj tlačidlom tlačiarne priamo na jeho karte.": "Egyetlen blokkot a kártyáján lévő nyomtató gombbal is kinyomtathat.",
+ "Tlačiť len tento blok – náhľad, tlač, PDF": "Csak ennek a blokknak a nyomtatása – előnézet, nyomtatás, PDF"
 }

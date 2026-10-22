@@ -57,7 +57,9 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     public string VerziaProgramu => Preklad.F($"EviTA {AktualizaciaService.AktualnaVerzia}, verzia dátovej štruktúry {Databaza.VerziaSchemy}");
 
     // ktoré panely sú zobrazené
-    [ObservableProperty] private bool _ukazDnes = true;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SirkaLavej))]
+    private bool _ukazDnes = true;
     [ObservableProperty] private bool _ukazPocty = true;
     [ObservableProperty] private bool _ukazGraf = true;
     [ObservableProperty] private bool _ukazUpozornenia = true;
@@ -69,17 +71,21 @@ public partial class DashboardViewModel : ObservableObject, IObnovitelny
     [ObservableProperty] private bool _ukazKurzy = true;
     [ObservableProperty] private bool _ukazPoznamky = true;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SirkaCitatu))]
+    [NotifyPropertyChangedFor(nameof(SirkaLavej))]
     private bool _ukazCitat = true;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SirkaVyroci))]
     private bool _ukazVyrocia = true;
 
-    /// <summary>Šírka stĺpca citátu vedľa dnešného dňa (skrytý panel nezaberá miesto).</summary>
-    public System.Windows.GridLength SirkaCitatu => UkazCitat ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+    /// <summary>
+    /// Šírka ľavého stĺpca hornej časti (dnešný deň nad citátom); skryté panely nezaberajú miesto a výročia vpravo
+    /// sa natiahnu na celú šírku.
+    /// </summary>
+    public System.Windows.GridLength SirkaLavej =>
+        UkazDnes || UkazCitat ? new System.Windows.GridLength(1.35, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
 
-    public System.Windows.GridLength SirkaVyroci => UkazVyrocia ? new System.Windows.GridLength(1.3, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+    public System.Windows.GridLength SirkaVyroci => UkazVyrocia ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
 
     /// <summary>Sviatky do odrážkového zoznamu: dnešné sviatky a pamätné dni, najbližší deň pracovného pokoja.</summary>
     public List<string> SviatkyZoznam =>

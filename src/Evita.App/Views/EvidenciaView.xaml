@@ -95,8 +95,8 @@
             </Button>
         </WrapPanel>
 
-        <!-- 2. riadok: práca s označenými položkami -->
-        <WrapPanel DockPanel.Dock="Top" Margin="0,2,0,0">
+        <!-- 2. riadok: práca s označenými položkami (na stred) -->
+        <WrapPanel DockPanel.Dock="Top" Margin="0,2,0,0" HorizontalAlignment="Center">
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding UpravitCommand}" ToolTip="Enter alebo F2"
                     Content="Upraviť" />
             <Button Style="{StaticResource TlacidloNastroja}" Command="{Binding KopiaCommand}"

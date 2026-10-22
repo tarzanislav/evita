@@ -2098,7 +2098,6 @@
  "Od koľkých rokov (z dátumu nákupu) je položka kandidát na obnovu": "Od ilu lat (z daty zakupu) pozycja jest kandydatem do wymiany",
  "rokov": "lat",
  "Prepočítať": "Przelicz",
- "Celá štatistika ako zostava – náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "Cała statystyka jako zestawienie – podgląd, druk, PDF (także PDF/A-3b z danymi w Excelu)",
  "Tlačiť / PDF…": "Drukuj / PDF…",
  "Zavrieť podokno": "Zamknij panel",
  "Zobrazí tieto položky v Evidencii – napr. na doplnenie údajov alebo hromadnú zmenu": "Pokazuje te pozycje w Ewidencji – np. do uzupełnienia danych lub zmiany zbiorczej",
@@ -2249,5 +2248,13 @@
  "Hovorte – Windows píše text na miesto kurzora. Ukončíte znova klávesmi Win+H alebo kliknutím mimo.": "Mów – Windows wpisuje tekst w miejscu kursora. Zakończysz ponownie klawiszami Win+H lub kliknięciem obok.",
  "Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna.": "Rozpoznawanie tekstu (OCR) nie jest dostępne w Windows. Skopiuj tekst dokumentu i wklej go do okna.",
  "Rozpoznávanie textu trvalo príliš dlho. Skúste menší súbor alebo skopírujte text dokladu.": "Rozpoznawanie tekstu trwało zbyt długo. Spróbuj mniejszego pliku lub skopiuj tekst dokumentu.",
- "Rozpoznávanie textu zlyhalo (kód {0}).": "Rozpoznawanie tekstu nie powiodło się (kod {0})."
+ "Rozpoznávanie textu zlyhalo (kód {0}).": "Rozpoznawanie tekstu nie powiodło się (kod {0}).",
+ "Vyberte aspoň jednu časť štatistiky na tlač.": "Wybierz co najmniej jedną część statystyki do druku.",
+ "Vyberte, čo tlačiť – celú štatistiku alebo len niektoré bloky; náhľad, tlač, PDF (aj PDF/A-3b s dátami v Exceli)": "Wybierz, co drukować – całą statystykę lub tylko niektóre bloki; podgląd, druk, PDF (także PDF/A-3b z danymi w Excelu)",
+ "Čo tlačiť": "Co drukować",
+ "Všetko": "Wszystko",
+ "Nič": "Nic",
+ "Náhľad a tlač vybraného…": "Podgląd i druk wybranych…",
+ "Jeden blok vytlačíte aj tlačidlom tlačiarne priamo na jeho karte.": "Pojedynczy blok wydrukujesz też przyciskiem drukarki bezpośrednio na jego karcie.",
+ "Tlačiť len tento blok – náhľad, tlač, PDF": "Drukuj tylko ten blok – podgląd, druk, PDF"
 }

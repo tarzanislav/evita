@@ -26,7 +26,7 @@ overí, že každý text v programe má preklad vo všetkých jazykoch.
 
 ## Dashboard, úlohy a poznámky
 
-- **Dashboard:** dnešný deň s meninami a sviatkami, úlohy (To Do), **počasie** pre zvolené mesto alebo obec
+- **Dashboard:** hore široký pás s dátumom, časom, meninami a sviatkami, pod ním citát dňa, vpravo výročia dňa; úlohy (To Do), **počasie** pre zvolené mesto alebo obec
   (Open-Meteo, predpoveď na 5 dní), **kurzový lístok** ECB s vývojom za 30 dní a prepočtom mien, pripnuté poznámky,
   kalendár na 7 dní, počty, upozornenia. Panely sa dajú skryť (*Prispôsobiť dashboard*).
 - **Úlohy:** samostatný zoznam úloh s prioritou, termínom, popisom a voliteľným naviazaním na položku evidencie.
@@ -144,8 +144,9 @@ počet položiek na obnovu, záruky) a bloky **Kategórie** (kusy a hodnota), **
 nákupu, hranica obnovy nastaviteľná, predvolene 5 rokov), **Obnova podľa kategórií**, **Plán obnovy na 5 rokov**
 (v ktorom roku položky dosiahnu hranicu – odhad rozpočtu), **Miestnosti** (kusy, hodnota, staré, v oprave, prevládajúca
 kategória), **Stav**, **Záruky a revízie**, **Nákupy po rokoch**, **Pridelené osobám** a **Úplnosť údajov**. Kliknutím
-na riadok sa v podokne zobrazia položky s cenami a sumami; dajú sa otvoriť v Evidencii alebo vytlačiť. Celá štatistika
-sa vytlačí alebo uloží ako PDF (aj PDF/A-3b s dátami v Exceli).
+na riadok sa v podokne zobrazia položky s cenami a sumami; dajú sa otvoriť v Evidencii alebo vytlačiť. Tlačidlom
+*Tlačiť / PDF…* sa vyberie, čo tlačiť (súhrn a ľubovoľné bloky, výber sa zapamätá); jeden blok sa vytlačí aj tlačidlom
+tlačiarne priamo na jeho karte. Výstup: náhľad, tlač alebo PDF (aj PDF/A-3b s dátami v Exceli).
 
 ## Skenovanie, štítky a inventúra
 

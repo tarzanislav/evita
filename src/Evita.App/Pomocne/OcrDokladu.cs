@@ -47,7 +47,25 @@ public static class OcrDokladu
     }
 
     /// <summary>Text z PDF (každá strana sa vykreslí a rozpozná) alebo z obrázka.</summary>
-    public static async Task<(string Text, string Jazyk)> PrecitajAsync(string cesta, CancellationToken zrusenie = default)
+    /// <remarks>
+    /// Beží na vlákne mimo okna (MTA): objekty Windows Runtime (PDF, OCR) tak nie sú viazané na vlákno okna a uvoľnia sa
+    /// ešte počas behu, nie až pri ukončení programu.
+    /// </remarks>
+    public static Task<(string Text, string Jazyk)> PrecitajAsync(string cesta, CancellationToken zrusenie = default) =>
+        Task.Run(async () =>
+        {
+            try
+            {
+                return await PrecitajVPozadiAsync(cesta, zrusenie);
+            }
+            finally
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }, zrusenie);
+
+    private static async Task<(string Text, string Jazyk)> PrecitajVPozadiAsync(string cesta, CancellationToken zrusenie)
     {
         var engine = Engine(out var jazyk)
                      ?? throw new EvitaException(Preklad.T("Rozpoznávanie textu (OCR) nie je vo Windows dostupné. Skopírujte text dokladu a vložte ho do okna."));
